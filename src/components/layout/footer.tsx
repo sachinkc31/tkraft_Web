@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { FOOTER_LINKS, SITE_CONFIG } from "@/lib/constants";
+import { NewsletterForm } from "./newsletter-form";
 
 const FacebookIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -82,6 +83,8 @@ export function Footer() {
                 </a>
               ))}
             </div>
+            
+            <NewsletterForm />
           </div>
 
           {/* Categories */}
