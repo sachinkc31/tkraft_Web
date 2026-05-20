@@ -1,0 +1,271 @@
+{
+  "name": "Tkraft E-commerce Order Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "webhook",
+        "options": {}
+      },
+      "id": "e6f4776b-9524-4f01-9a7f-7123abcd501f",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        250,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "value1": "={{ $json.body.event }}",
+              "value2": "order_placed"
+            },
+            {
+              "value1": "={{ $json.body.event }}",
+              "value2": "order_paid"
+            }
+          ]
+        }
+      },
+      "id": "c1f7b7cb-8c90-4822-ba78-958412abcd99",
+      "name": "Event Switch",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [
+        480,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SPREADSHEET_ID_HERE",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Orders",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Order ID": "={{ $json.body.order.id }}",
+            "Customer Name": "={{ $json.body.order.billing.first_name }} {{ $json.body.order.billing.last_name }}",
+            "Email": "={{ $json.body.order.billing.email }}",
+            "Phone": "={{ $json.body.order.billing.phone }}",
+            "Total": "={{ $json.body.order.total }}",
+            "Payment Method": "={{ $json.body.order.payment_method }}",
+            "Status": "={{ $json.body.order.status }}",
+            "Date": "={{ $json.body.timestamp }}"
+          },
+          "matchingColumns": []
+        },
+        "options": {}
+      },
+      "id": "d13bf0b8-9324-4f01-8ef7-7986abcd30ef",
+      "name": "Log to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        750,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://apiv2.shiprocket.in/v1/external/orders/create/adhoc",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_SHIPROCKET_JWT_TOKEN"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "order_id",
+              "value": "={{ $json.body.order.id }}"
+            },
+            {
+              "name": "order_date",
+              "value": "={{ $json.body.timestamp }}"
+            },
+            {
+              "name": "pickup_location",
+              "value": "Primary Warehouse"
+            },
+            {
+              "name": "billing_customer_name",
+              "value": "={{ $json.body.order.billing.first_name }}"
+            },
+            {
+              "name": "billing_last_name",
+              "value": "={{ $json.body.order.billing.last_name }}"
+            },
+            {
+              "name": "billing_address",
+              "value": "={{ $json.body.order.billing.address_1 }}"
+            },
+            {
+              "name": "billing_city",
+              "value": "={{ $json.body.order.billing.city }}"
+            },
+            {
+              "name": "billing_pincode",
+              "value": "={{ $json.body.order.billing.postcode }}"
+            },
+            {
+              "name": "billing_state",
+              "value": "={{ $json.body.order.billing.state }}"
+            },
+            {
+              "name": "billing_country",
+              "value": "India"
+            },
+            {
+              "name": "billing_email",
+              "value": "={{ $json.body.order.billing.email }}"
+            },
+            {
+              "name": "billing_phone",
+              "value": "={{ $json.body.order.billing.phone }}"
+            },
+            {
+              "name": "shipping_is_billing",
+              "value": true
+            },
+            {
+              "name": "order_items",
+              "value": "={{ $json.body.order.line_items }}"
+            },
+            {
+              "name": "payment_method",
+              "value": "= {{ $json.body.order.payment_method === 'cod' ? 'COD' : 'Prepaid' }}"
+            },
+            {
+              "name": "sub_total",
+              "value": "={{ $json.body.order.total }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e67bf0b8-9324-4f01-8ef7-7986abcd30ef",
+      "name": "Create Shiprocket Shipment",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        980,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.body.order.billing.email }}",
+        "subject": "Order Confirmed! (Order #{{ $json.body.order.id }})",
+        "html": "<h3>Thank you for your order!</h3><p>Hi {{ $json.body.order.billing.first_name }},</p><p>We've received your order <strong>#{{ $json.body.order.id }}</strong>. We're getting it ready to ship right away.</p><p><strong>Payment Method:</strong> {{ $json.body.order.payment_method === 'cod' ? 'Cash on Delivery' : 'Online Paid' }}<br><strong>Total:</strong> INR {{ $json.body.order.total }}</p><p>Best regards,<br>Tkraft Team</p>",
+        "options": {}
+      },
+      "id": "f56bf0b8-9324-4f01-8ef7-7986abcd30ef",
+      "name": "Send Email Notification",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "content": "🚨 **New COD Order Placed**\n**Order ID:** #{{ $json.body.order.id }}\n**Customer:** {{ $json.body.order.billing.first_name }} {{ $json.body.order.billing.last_name }}\n**Total:** ₹{{ $json.body.order.total }}\n**Status:** Processing"
+      },
+      "id": "a34bf0b8-9324-4f01-8ef7-7986abcd30ef",
+      "name": "Discord Notification (COD)",
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 1,
+      "position": [
+        750,
+        500
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Event Switch",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Event Switch": {
+      "main": [
+        [
+          {
+            "node": "Log to Google Sheets",
+            "index": 0
+          },
+          {
+            "node": "Discord Notification (COD)",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log to Google Sheets",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log to Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Create Shiprocket Shipment",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Shiprocket Shipment": {
+      "main": [
+        [
+          {
+            "node": "Send Email Notification",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Discord Notification (COD)": {
+      "main": [
+        [
+          {
+            "node": "Send Email Notification",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {},
+  "meta": {
+    "instanceId": "f98725ea1476b7012e873ab01289cf719bcd7f"
+  },
+  "pinData": {}
+}

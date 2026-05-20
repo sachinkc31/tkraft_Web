@@ -1,65 +1,130 @@
-import Image from "next/image";
+import type { Metadata } from "next";
+import { Suspense } from "react";
+import { HeroSection } from "@/features/home/hero-section";
+import { TrustBadges } from "@/features/home/trust-badges";
+import { CategoryGrid } from "@/features/home/category-grid";
+import { NewArrivalsSection } from "@/features/home/new-arrivals-section";
+import { TrendingSection } from "@/features/home/trending-section";
+import { ProductCardSkeleton } from "@/components/ui/product-card";
+import { SITE_CONFIG } from "@/lib/constants";
+import {
+  getNewArrivals,
+  getOnSaleProducts,
+  getTopCategories,
+} from "@/services/woocommerce";
 
-export default function Home() {
+export const metadata: Metadata = {
+  title: `${SITE_CONFIG.name} – ${SITE_CONFIG.tagline}`,
+  description: SITE_CONFIG.description,
+};
+
+// ISR — regenerate homepage every hour
+export const revalidate = 3600;
+
+export default async function HomePage() {
+  // Parallel server-side data fetching
+  const [newArrivals, trendingProducts, categories] = await Promise.all([
+    getNewArrivals(8).catch(() => []),
+    getOnSaleProducts(8).catch(() => []),
+    getTopCategories().catch(() => []),
+  ]);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <>
+      {/* Hero */}
+      <HeroSection />
+
+      {/* Trust Badges */}
+      <TrustBadges />
+
+      {/* Category Grid */}
+      <section className="section bg-[hsl(210,20%,98%)]">
+        <div className="container">
+          <SectionHeading
+            label="Shop by Category"
+            title="Everything Your Home Needs"
+            subtitle="Explore our curated categories for home, kitchen, and personal care"
+          />
+          <CategoryGrid categories={categories} />
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </section>
+
+      {/* New Arrivals */}
+      <section className="section">
+        <div className="container">
+          <SectionHeading
+            label="Fresh In"
+            title="New Arrivals"
+            subtitle="The latest additions to our collection"
+            cta={{ label: "View All", href: "/shop?sort=date" }}
+          />
+          <Suspense fallback={<ProductGridSkeleton />}>
+            <NewArrivalsSection products={newArrivals} />
+          </Suspense>
         </div>
-      </main>
+      </section>
+
+      {/* Trending / On Sale */}
+      <section className="section bg-[hsl(210,20%,98%)]">
+        <div className="container">
+          <SectionHeading
+            label="Hot Deals"
+            title="Trending Now"
+            subtitle="Best sellers and biggest discounts this week"
+            cta={{ label: "View All Deals", href: "/shop?sort=popularity" }}
+          />
+          <Suspense fallback={<ProductGridSkeleton />}>
+            <TrendingSection products={trendingProducts} />
+          </Suspense>
+        </div>
+      </section>
+    </>
+  );
+}
+
+// ---- Shared sub-components ----
+function SectionHeading({
+  label,
+  title,
+  subtitle,
+  cta,
+}: {
+  label: string;
+  title: string;
+  subtitle?: string;
+  cta?: { label: string; href: string };
+}) {
+  return (
+    <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
+      <div>
+        <span className="text-xs font-bold uppercase tracking-widest text-[hsl(27,96%,55%)] mb-2 block">
+          {label}
+        </span>
+        <h2 className="text-2xl md:text-3xl font-display font-bold text-[hsl(222,47%,11%)]">
+          {title}
+        </h2>
+        {subtitle && (
+          <p className="text-[hsl(215,16%,47%)] mt-2 text-sm">{subtitle}</p>
+        )}
+      </div>
+      {cta && (
+        <a
+          href={cta.href}
+          className="flex-shrink-0 inline-flex items-center gap-1.5 text-sm font-semibold text-[hsl(217,70%,38%)] hover:text-[hsl(217,70%,28%)] transition-colors"
+        >
+          {cta.label} →
+        </a>
+      )}
+    </div>
+  );
+}
+
+function ProductGridSkeleton() {
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+      {Array.from({ length: 8 }).map((_, i) => (
+        <ProductCardSkeleton key={i} />
+      ))}
     </div>
   );
 }

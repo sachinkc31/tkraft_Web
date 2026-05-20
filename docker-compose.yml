@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  # n8n Automation Service
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: tkraft-n8n
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_HOST=0.0.0.0
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - WEBHOOK_URL=http://localhost:5678/
+      - GENERIC_TIMEZONE=Asia/Kolkata
+    volumes:
+      - n8n_data:/home/node/.n8n
+    networks:
+      - tkraft-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5678/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  # PostgreSQL (optional, for n8n data persistence)
+  postgres:
+    image: postgres:16-alpine
+    container_name: tkraft-postgres
+    environment:
+      POSTGRES_DB: n8n
+      POSTGRES_USER: n8n
+      POSTGRES_PASSWORD: n8n_password_change_me
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - tkraft-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U n8n"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Next.js App (optional, for full stack in Docker)
+  # app:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   container_name: tkraft-app
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     - NODE_ENV=development
+  #     - N8N_WEBHOOK_URL=http://n8n:5678/webhook
+  #   depends_on:
+  #     n8n:
+  #       condition: service_healthy
+  #   networks:
+  #     - tkraft-network
+
+volumes:
+  n8n_data:
+  postgres_data:
+
+networks:
+  tkraft-network:
+    driver: bridge
