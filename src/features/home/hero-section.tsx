@@ -3,7 +3,8 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight, ShoppingBag, Star } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 const SLIDES = [
   {
@@ -12,7 +13,7 @@ const SLIDES = [
     title: "Fresh Home\nEssentials",
     subtitle: "Premium quality products for every corner of your home.",
     cta: { label: "Shop Now", href: "/shop" },
-    bg: "from-[hsl(217,70%,38%)] to-[hsl(217,70%,26%)]",
+    bg: "from-[hsl(var(--color-accent))] to-[hsl(217,70%,26%)]",
     accent: "hsl(27,96%,55%)",
     stat1: { value: "62+", label: "Products" },
     stat2: { value: "₹499", label: "Free Shipping" },
@@ -77,23 +78,24 @@ export function HeroSection() {
               transition={{ delay: 0.4 }}
               className="flex flex-wrap gap-3"
             >
-              <Link href="/shop">
-                <Button
-                  size="xl"
-                  className="bg-[hsl(27,96%,55%)] hover:bg-[hsl(27,96%,47%)] text-white shadow-lg shadow-orange-500/30"
-                  rightIcon={<ArrowRight className="h-5 w-5" />}
-                >
-                  Shop Now
-                </Button>
+              <Link 
+                href="/shop"
+                className={cn(
+                  buttonVariants({ size: "xl" }),
+                  "bg-[hsl(27,96%,55%)] hover:bg-[hsl(27,96%,47%)] text-white shadow-lg shadow-orange-500/30"
+                )}
+              >
+                Shop Now
+                <ArrowRight className="h-5 w-5" />
               </Link>
-              <Link href="/shop?on_sale=true">
-                <Button
-                  size="xl"
-                  variant="outline"
-                  className="border-white/40 text-white hover:bg-white/10 hover:border-white/60"
-                >
-                  View Deals
-                </Button>
+              <Link 
+                href="/shop?on_sale=true"
+                className={cn(
+                  buttonVariants({ size: "xl", variant: "outline" }),
+                  "border-white/40 text-white hover:bg-white/10 hover:border-white/60"
+                )}
+              >
+                View Deals
               </Link>
             </motion.div>
 
@@ -155,7 +157,7 @@ export function HeroSection() {
             <Link
               key={link.href}
               href={link.href}
-              className="flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium text-[hsl(215,16%,47%)] hover:text-[hsl(217,70%,38%)] hover:bg-[hsl(217,70%,95%)] transition-colors"
+              className="flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium text-[hsl(215,16%,47%)] hover:text-[hsl(var(--color-accent))] hover:bg-[hsl(217,70%,95%)] transition-colors"
             >
               {link.label}
             </Link>

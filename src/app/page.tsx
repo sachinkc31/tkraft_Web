@@ -97,7 +97,7 @@ ${darkColorVars}
         ))
       ) : (
         <div className="container py-24 text-center">
-          <p className="text-[hsl(var(--color-textMuted))]">No homepage layout sections configured.</p>
+          <p className="text-[hsl(var(--color-text-muted))]">No homepage layout sections configured.</p>
         </div>
       )}
     </>

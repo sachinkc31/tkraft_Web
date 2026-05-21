@@ -9,7 +9,7 @@ import { z } from "zod";
 import { motion } from "framer-motion";
 import { ShieldCheck, ArrowLeft, CreditCard, Truck, CheckCircle } from "lucide-react";
 import { useCartStore, useUIStore, useCurrencyStore } from "@/store";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { formatPrice, cn } from "@/lib/utils";
 import { getPriceMultiplier, COUNTRY_RULES } from "@/lib/geo-config";
 
@@ -35,6 +35,8 @@ export function CheckoutClient() {
   const showToast = useUIStore((s) => s.showToast);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
   const [selectedShippingMethod, setSelectedShippingMethod] = useState<"standard" | "express" | "pickup">("standard");
 
   const totalPrice = getTotalPrice();
@@ -244,11 +246,23 @@ export function CheckoutClient() {
     }
   };
 
+  if (!mounted) {
+    return (
+      <div className="space-y-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="skeleton h-32 rounded-2xl" />
+        ))}
+      </div>
+    );
+  }
+
   if (items.length === 0 && !orderPlaced) {
     return (
       <div className="text-center py-16">
         <p className="text-[hsl(215,16%,47%)] mb-4">Your cart is empty.</p>
-        <Link href="/shop"><Button variant="primary">Shop Now</Button></Link>
+        <Link href="/shop" className={cn(buttonVariants({ variant: "primary" }))}>
+          Shop Now
+        </Link>
       </div>
     );
   }
@@ -269,14 +283,16 @@ export function CheckoutClient() {
         <p className="text-[hsl(215,16%,47%)] mb-8">
           Thank you for your order. You will receive a confirmation email shortly.
         </p>
-        <Link href="/shop"><Button variant="primary" size="lg">Continue Shopping</Button></Link>
+        <Link href="/shop" className={cn(buttonVariants({ variant: "primary", size: "lg" }))}>
+          Continue Shopping
+        </Link>
       </motion.div>
     );
   }
 
   const fieldClass = (hasError: boolean) =>
     cn(
-      "w-full h-11 px-3 rounded-xl border-2 text-sm transition-colors focus:outline-none focus:border-[hsl(217,70%,38%)]",
+      "w-full h-11 px-3 rounded-xl border-2 text-sm transition-colors focus:outline-none focus:border-[hsl(var(--color-accent))]",
       hasError
         ? "border-[hsl(0,72%,51%)] bg-[hsl(0,72%,98%)]"
         : "border-[hsl(214,13%,90%)] bg-white hover:border-[hsl(217,70%,60%)]"
@@ -291,7 +307,7 @@ export function CheckoutClient() {
       <div className="flex items-center">
         <Link
           href="/cart"
-          className="inline-flex items-center gap-2 text-sm font-semibold text-[hsl(217,70%,38%)] hover:text-[hsl(217,70%,50%)] transition-colors group"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-[hsl(var(--color-accent))] hover:text-[hsl(217,70%,50%)] transition-colors group"
         >
           <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
           Back to Shopping Cart
@@ -334,7 +350,7 @@ export function CheckoutClient() {
             {/* Shipping Address */}
             <div className="bg-white rounded-2xl border border-[hsl(214,13%,90%)] p-6">
               <h2 className="font-display font-bold text-lg text-[hsl(222,47%,11%)] mb-5 flex items-center gap-2">
-                <Truck className="h-5 w-5 text-[hsl(217,70%,38%)]" />
+                <Truck className="h-5 w-5 text-[hsl(var(--color-accent))]" />
                 Shipping Address
               </h2>
               <div className="space-y-4">
@@ -386,7 +402,7 @@ export function CheckoutClient() {
             {/* Shipping Methods */}
             <div className="bg-white rounded-2xl border border-[hsl(214,13%,90%)] p-6">
               <h2 className="font-display font-bold text-lg text-[hsl(222,47%,11%)] mb-5 flex items-center gap-2">
-                <Truck className="h-5 w-5 text-[hsl(217,70%,38%)]" />
+                <Truck className="h-5 w-5 text-[hsl(var(--color-accent))]" />
                 Shipping Method
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -421,7 +437,7 @@ export function CheckoutClient() {
                     className={cn(
                       "flex flex-col justify-between p-4 rounded-xl border-2 cursor-pointer transition-all hover:border-[hsl(217,70%,60%)]",
                       selectedShippingMethod === method.id
-                        ? "border-[hsl(217,70%,38%)] bg-[hsl(217,70%,97%)]"
+                        ? "border-[hsl(var(--color-accent))] bg-[hsl(217,70%,97%)]"
                         : "border-[hsl(214,13%,90%)] bg-white"
                     )}
                   >
@@ -432,7 +448,7 @@ export function CheckoutClient() {
                         value={method.id}
                         checked={selectedShippingMethod === method.id}
                         onChange={() => setSelectedShippingMethod(method.id as any)}
-                        className="mt-1 accent-[hsl(217,70%,38%)]"
+                        className="mt-1 accent-[hsl(var(--color-accent))]"
                       />
                       <div>
                         <div className="flex items-center gap-1.5">
@@ -459,7 +475,7 @@ export function CheckoutClient() {
             {/* Payment */}
             <div className="bg-white rounded-2xl border border-[hsl(214,13%,90%)] p-6">
               <h2 className="font-display font-bold text-lg text-[hsl(222,47%,11%)] mb-5 flex items-center gap-2">
-                <CreditCard className="h-5 w-5 text-[hsl(217,70%,38%)]" />
+                <CreditCard className="h-5 w-5 text-[hsl(var(--color-accent))]" />
                 Payment Method
               </h2>
               <div className="space-y-3">
@@ -482,11 +498,11 @@ export function CheckoutClient() {
                     className={cn(
                       "flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all",
                       paymentMethod === option.value
-                        ? "border-[hsl(217,70%,38%)] bg-[hsl(217,70%,97%)]"
+                        ? "border-[hsl(var(--color-accent))] bg-[hsl(217,70%,97%)]"
                         : "border-[hsl(214,13%,90%)] hover:border-[hsl(217,70%,60%)]"
                     )}
                   >
-                    <input type="radio" {...register("payment_method")} value={option.value} className="mt-0.5 accent-[hsl(217,70%,38%)]" />
+                    <input type="radio" {...register("payment_method")} value={option.value} className="mt-0.5 accent-[hsl(var(--color-accent))]" />
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-[hsl(222,47%,11%)] text-sm">{option.label}</span>
@@ -544,7 +560,7 @@ export function CheckoutClient() {
                       {/* Info */}
                       <div className="flex-1 min-w-0 flex flex-col justify-between">
                         <div>
-                          <h4 className="font-semibold text-[hsl(222,47%,11%)] line-clamp-1 hover:text-[hsl(217,70%,38%)] transition-colors">
+                          <h4 className="font-semibold text-[hsl(222,47%,11%)] line-clamp-1 hover:text-[hsl(var(--color-accent))] transition-colors">
                             {item.product.name}
                           </h4>
                           {truncatedDescription && (
@@ -607,7 +623,7 @@ export function CheckoutClient() {
                 Secured by Razorpay
               </div>
 
-              <Link href="/cart" className="flex items-center justify-center gap-1.5 mt-3 text-xs text-[hsl(217,70%,38%)] hover:underline">
+              <Link href="/cart" className="flex items-center justify-center gap-1.5 mt-3 text-xs text-[hsl(var(--color-accent))] hover:underline">
                 <ArrowLeft className="h-3 w-3" /> Back to Cart
               </Link>
             </div>

@@ -22,7 +22,7 @@ const BADGES = [
     icon: ShieldCheck,
     title: "Secure Payment",
     description: "100% safe & encrypted",
-    color: "text-[hsl(217,70%,38%)]",
+    color: "text-[hsl(var(--color-accent))]",
     bg: "bg-[hsl(217,70%,95%)]",
   },
   {

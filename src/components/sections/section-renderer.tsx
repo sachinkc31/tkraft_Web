@@ -25,7 +25,8 @@ import type { HomepageSection } from "@/services/cms";
 import type { WooProduct, WooCategory } from "@/types";
 import { ProductCarousel } from "@/components/carousel/product-carousel";
 import { CategoryGrid } from "@/features/home/category-grid";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface SectionRendererProps {
   section: HomepageSection;
@@ -51,14 +52,14 @@ export function SectionRenderer({ section, products, categories }: SectionRender
 
     case "categoryGrid":
       return (
-        <section className="section bg-[hsl(var(--color-surface2))] py-12 md:py-16">
+        <section className="bg-[hsl(var(--color-surface-2))] py-8 md:py-10">
           <div className="container">
-            <div className="text-center mb-10">
+            <div className="text-center mb-6">
               <h2 className="text-2xl md:text-3xl font-display font-extrabold text-[hsl(var(--color-text))]">
                 {section.title || "Shop by Category"}
               </h2>
               {section.subtitle && (
-                <p className="text-[hsl(var(--color-textMuted))] mt-2 text-sm max-w-lg mx-auto leading-relaxed">
+                <p className="text-[hsl(var(--color-text-muted))] mt-2 text-sm max-w-lg mx-auto leading-relaxed">
                   {section.subtitle}
                 </p>
               )}
@@ -73,7 +74,6 @@ export function SectionRenderer({ section, products, categories }: SectionRender
     case "bestSellerProducts":
     case "featuredProducts":
     case "flashSale": {
-      // Map section types to appropriate product collections
       let targetProducts: WooProduct[] = [];
       let defaultTitle = "Featured Collection";
 
@@ -90,7 +90,6 @@ export function SectionRenderer({ section, products, categories }: SectionRender
         targetProducts = products.flashSale;
         defaultTitle = "Flash Sale";
       } else if (section.type === "productCarousel") {
-        // CMS specified custom collection
         const collection = section.data?.collection || "featured";
         if (collection === "trending") targetProducts = products.trending;
         else if (collection === "bestsellers") targetProducts = products.bestsellers;
@@ -99,7 +98,7 @@ export function SectionRenderer({ section, products, categories }: SectionRender
       }
 
       return (
-        <section className="section py-12 md:py-16">
+        <section className="py-8 md:py-10">
           <div className="container">
             <ProductCarousel
               title={section.title || defaultTitle}
@@ -164,7 +163,7 @@ function HeroBannerBlock({ data }: { data: any }) {
   }, [slides.length]);
 
   return (
-    <section className="relative overflow-hidden w-full h-[500px] md:h-[600px] bg-[hsl(var(--color-surface2))]">
+    <section className="relative overflow-hidden w-full h-[500px] md:h-[600px] bg-[hsl(var(--color-surface-2))]">
       <AnimatePresence mode="wait">
         <motion.div
           key={current}
@@ -174,7 +173,6 @@ function HeroBannerBlock({ data }: { data: any }) {
           transition={{ duration: 0.8 }}
           className="absolute inset-0 w-full h-full"
         >
-          {/* Slide Background Image */}
           <div className="absolute inset-0 bg-black/45 z-10" />
           <Image
             src={slides[current].image}
@@ -184,8 +182,6 @@ function HeroBannerBlock({ data }: { data: any }) {
             sizes="100vw"
             className="object-cover"
           />
-
-          {/* Slide Content */}
           <div className="absolute inset-0 z-20 flex items-center">
             <div className="container py-12 md:py-24">
               <div className="max-w-2xl text-white">
@@ -218,14 +214,15 @@ function HeroBannerBlock({ data }: { data: any }) {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5 }}
                 >
-                  <Link href={slides[current].cta_link || "/shop"}>
-                    <Button 
-                      size="xl" 
-                      className="bg-[hsl(var(--color-primary))] text-white hover:bg-[hsl(var(--color-primary-dark))] shadow-lg font-bold"
-                      rightIcon={<ArrowRight className="h-4 w-4" />}
-                    >
-                      {slides[current].cta_text || "Shop Now"}
-                    </Button>
+                  <Link
+                    href={slides[current].cta_link || "/shop"}
+                    className={cn(
+                      buttonVariants({ size: "xl" }),
+                      "bg-[hsl(var(--color-primary))] text-white hover:bg-[hsl(var(--color-primary-dark))] shadow-lg font-bold"
+                    )}
+                  >
+                    {slides[current].cta_text || "Shop Now"}
+                    <ArrowRight className="h-4 w-4" />
                   </Link>
                 </motion.div>
               </div>
@@ -234,7 +231,6 @@ function HeroBannerBlock({ data }: { data: any }) {
         </motion.div>
       </AnimatePresence>
 
-      {/* Nav Controls */}
       {slides.length > 1 && (
         <>
           <button
@@ -251,8 +247,6 @@ function HeroBannerBlock({ data }: { data: any }) {
           >
             <ChevronRight className="h-5 w-5" />
           </button>
-
-          {/* Indicators */}
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex gap-2">
             {slides.map((_: any, idx: number) => (
               <button
@@ -295,7 +289,7 @@ function PromoBannerBlock({ data }: { data: any }) {
   ];
 
   return (
-    <section className="py-12 md:py-16 bg-[hsl(var(--color-surface))]">
+    <section className="py-8 md:py-10 bg-[hsl(var(--color-surface))]">
       <div className="container">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {banners.map((banner: any, idx: number) => (
@@ -305,21 +299,18 @@ function PromoBannerBlock({ data }: { data: any }) {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: idx * 0.1, duration: 0.4 }}
-              className={`relative overflow-hidden rounded-2xl aspect-[4/3] md:aspect-auto md:h-[280px] bg-[hsl(var(--color-surface2))] border border-[hsl(var(--color-border))] group ${
+              className={`relative overflow-hidden rounded-2xl aspect-[4/3] md:aspect-auto md:h-[280px] bg-[hsl(var(--color-surface-2))] border border-[hsl(var(--color-border))] group ${
                 banner.className || ""
               }`}
             >
-              {/* Background Cover Overlay */}
               <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-black/25 group-hover:from-black/65 group-hover:to-black/35 transition-colors duration-300 z-10" />
               <Image
                 src={banner.image}
                 alt={banner.title}
                 fill
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                className="object-cover transition-transform duration-500 group-hover:scale-103"
+                className="object-cover transition-transform duration-500 group-hover:scale-105"
               />
-
-              {/* Text */}
               <div className="absolute inset-0 z-20 flex flex-col justify-end p-6 md:p-8 text-white">
                 <span className="text-xs font-bold tracking-widest uppercase text-[hsl(var(--color-primary-light))] mb-1.5 block">
                   Limited Offer
@@ -331,13 +322,14 @@ function PromoBannerBlock({ data }: { data: any }) {
                   {banner.subtitle}
                 </p>
                 <div>
-                  <Link href={banner.cta_link || "/shop"}>
-                    <Button 
-                      size="sm" 
-                      className="bg-[hsl(var(--color-primary))] text-white hover:bg-[hsl(var(--color-primary-dark))] font-bold"
-                    >
-                      {banner.cta_text || "Shop Deals"}
-                    </Button>
+                  <Link
+                    href={banner.cta_link || "/shop"}
+                    className={cn(
+                      buttonVariants({ size: "sm" }),
+                      "bg-[hsl(var(--color-primary))] text-white hover:bg-[hsl(var(--color-primary-dark))] font-bold"
+                    )}
+                  >
+                    {banner.cta_text || "Shop Deals"}
                   </Link>
                 </div>
               </div>
@@ -354,7 +346,7 @@ function CtaBannerBlock({ section }: { section: HomepageSection }) {
   const bgImage = section.data?.bg_image || "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1600&q=80";
 
   return (
-    <section className="relative overflow-hidden py-16 md:py-20 my-4 bg-[hsl(var(--color-surface3))]">
+    <section className="relative overflow-hidden py-12 md:py-16 bg-[hsl(var(--color-surface-3))]">
       <div className="absolute inset-0 bg-black/55 z-10" />
       <Image
         src={bgImage}
@@ -372,13 +364,14 @@ function CtaBannerBlock({ section }: { section: HomepageSection }) {
             {section.subtitle}
           </p>
         )}
-        <Link href={section.data?.cta_link || "/shop"}>
-          <Button 
-            size="lg" 
-            className="bg-[hsl(var(--color-primary))] text-white hover:bg-[hsl(var(--color-primary-dark))] shadow-lg px-8 font-bold"
-          >
-            {section.data?.cta_text || "Explore Products"}
-          </Button>
+        <Link
+          href={section.data?.cta_link || "/shop"}
+          className={cn(
+            buttonVariants({ size: "lg" }),
+            "bg-[hsl(var(--color-primary))] text-white hover:bg-[hsl(var(--color-primary-dark))] shadow-lg px-8 font-bold"
+          )}
+        >
+          {section.data?.cta_text || "Explore Products"}
         </Link>
       </div>
     </section>
@@ -388,40 +381,24 @@ function CtaBannerBlock({ section }: { section: HomepageSection }) {
 // 4. FEATURE ICONS (TRUST BAR)
 function FeatureIconsBlock() {
   const items = [
-    {
-      icon: <Truck className="h-6 w-6 text-[hsl(var(--color-primary))]" />,
-      title: "Free Shipping",
-      desc: "On all orders above ₹499",
-    },
-    {
-      icon: <ShieldCheck className="h-6 w-6 text-[hsl(var(--color-primary))]" />,
-      title: "Secure Payments",
-      desc: "Razorpay secure gateways",
-    },
-    {
-      icon: <CreditCard className="h-6 w-6 text-[hsl(var(--color-primary))]" />,
-      title: "Cash on Delivery",
-      desc: "Pay on arrival options",
-    },
-    {
-      icon: <Clock className="h-6 w-6 text-[hsl(var(--color-primary))]" />,
-      title: "24/7 Support",
-      desc: "Always here for help",
-    },
+    { icon: <Truck className="h-6 w-6 text-[hsl(var(--color-primary))]" />, title: "Free Shipping", desc: "On all orders above ₹499" },
+    { icon: <ShieldCheck className="h-6 w-6 text-[hsl(var(--color-primary))]" />, title: "Secure Payments", desc: "Razorpay secure gateways" },
+    { icon: <CreditCard className="h-6 w-6 text-[hsl(var(--color-primary))]" />, title: "Cash on Delivery", desc: "Pay on arrival options" },
+    { icon: <Clock className="h-6 w-6 text-[hsl(var(--color-primary))]" />, title: "24/7 Support", desc: "Always here for help" },
   ];
 
   return (
-    <section className="py-8 bg-[hsl(var(--color-surface2))] border-y border-[hsl(var(--color-border))]">
+    <section className="py-6 bg-[hsl(var(--color-surface-2))] border-y border-[hsl(var(--color-border))]">
       <div className="container">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
           {items.map((item, idx) => (
             <div key={idx} className="flex gap-3 items-start p-2">
-              <div className="h-10 w-10 rounded-xl bg-[hsl(var(--color-primary-light))]/10 flex items-center justify-center flex-shrink-0">
+              <div className="h-10 w-10 rounded-xl bg-[hsl(var(--color-surface-3))] flex items-center justify-center flex-shrink-0">
                 {item.icon}
               </div>
               <div>
                 <h4 className="font-semibold text-sm text-[hsl(var(--color-text))]">{item.title}</h4>
-                <p className="text-xs text-[hsl(var(--color-textMuted))] mt-0.5">{item.desc}</p>
+                <p className="text-xs text-[hsl(var(--color-text-muted))] mt-0.5">{item.desc}</p>
               </div>
             </div>
           ))}
@@ -431,19 +408,18 @@ function FeatureIconsBlock() {
   );
 }
 
-// 5. TRUST BADGES / BRAND PARTNERS
+// 5. TRUST BADGES
 function TrustSectionBlock() {
   return (
-    <section className="py-10 bg-[hsl(var(--color-surface))]">
+    <section className="py-8 bg-[hsl(var(--color-surface))]">
       <div className="container text-center">
-        <p className="text-xs uppercase font-extrabold tracking-widest text-[hsl(var(--color-textMuted))] mb-6">
+        <p className="text-xs uppercase font-extrabold tracking-widest text-[hsl(var(--color-text-muted))] mb-6">
           Trusted By Families Across India
         </p>
         <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16 opacity-65 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-300">
           {[1, 2, 3, 4, 5].map((idx) => (
             <div key={idx} className="relative h-12 w-28">
-              {/* Fallback mock brand logo using text for portability */}
-              <div className="absolute inset-0 flex items-center justify-center border border-[hsl(var(--color-border))] rounded-lg bg-[hsl(var(--color-surface2))] text-[hsl(var(--color-textMuted))] font-display font-black tracking-wide text-xs">
+              <div className="absolute inset-0 flex items-center justify-center border border-[hsl(var(--color-border))] rounded-lg bg-[hsl(var(--color-surface-2))] text-[hsl(var(--color-text-muted))] font-display font-black tracking-wide text-xs">
                 BRAND_0{idx}
               </div>
             </div>
@@ -457,60 +433,36 @@ function TrustSectionBlock() {
 // 6. TESTIMONIALS
 function TestimonialsBlock({ section }: { section: HomepageSection }) {
   const reviews = [
-    {
-      name: "Rohan Sharma",
-      loc: "Mumbai",
-      stars: 5,
-      comment: "Superb quality! The airtight kitchen jars are sturdy, leakproof, and they look incredibly elegant on my pantry shelves. Exceeded all expectations.",
-    },
-    {
-      name: "Priyanka Patel",
-      loc: "Ahmedabad",
-      stars: 5,
-      comment: "Fast delivery to Gujarat. Ordered cleaning items and they are far better quality than standard cheap items from offline local shops.",
-    },
-    {
-      name: "Vikram Malhotra",
-      loc: "Delhi",
-      stars: 4,
-      comment: "Highly functional storage organizer organizers. Reduced cabinet clutter instantly. Shipping was fast. Recommend the product range.",
-    }
+    { name: "Rohan Sharma", loc: "Mumbai", stars: 5, comment: "Superb quality! The airtight kitchen jars are sturdy, leakproof, and they look incredibly elegant on my pantry shelves. Exceeded all expectations." },
+    { name: "Priyanka Patel", loc: "Ahmedabad", stars: 5, comment: "Fast delivery to Gujarat. Ordered cleaning items and they are far better quality than standard cheap items from offline local shops." },
+    { name: "Vikram Malhotra", loc: "Delhi", stars: 4, comment: "Highly functional storage organizers. Reduced cabinet clutter instantly. Shipping was fast. Recommend the product range." },
   ];
 
   return (
-    <section className="py-12 md:py-16 bg-[hsl(var(--color-surface2))] border-y border-[hsl(var(--color-border))]">
+    <section className="py-8 md:py-10 bg-[hsl(var(--color-surface-2))] border-y border-[hsl(var(--color-border))]">
       <div className="container">
-        <div className="text-center mb-10">
+        <div className="text-center mb-8">
           <h2 className="text-2xl md:text-3xl font-display font-extrabold text-[hsl(var(--color-text))]">
             {section.title || "Loved by Customers"}
           </h2>
           {section.subtitle && (
-            <p className="text-[hsl(var(--color-textMuted))] mt-2 text-sm max-w-lg mx-auto leading-relaxed">
+            <p className="text-[hsl(var(--color-text-muted))] mt-2 text-sm max-w-lg mx-auto leading-relaxed">
               {section.subtitle}
             </p>
           )}
         </div>
-
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {reviews.map((rev, idx) => (
-            <div 
-              key={idx} 
-              className="p-6 rounded-2xl bg-[hsl(var(--color-surface))] border border-[hsl(var(--color-border))] shadow-[var(--shadow-sm)]"
-            >
+            <div key={idx} className="p-6 rounded-2xl bg-[hsl(var(--color-surface))] border border-[hsl(var(--color-border))] shadow-[var(--shadow-sm)]">
               <div className="flex gap-1 text-[hsl(var(--color-warning))] mb-3">
                 {Array.from({ length: 5 }).map((_, s) => (
-                  <Star 
-                    key={s} 
-                    className={`h-4 w-4 ${s < rev.stars ? "fill-current" : "text-gray-200"}`} 
-                  />
+                  <Star key={s} className={`h-4 w-4 ${s < rev.stars ? "fill-current" : "text-gray-200"}`} />
                 ))}
               </div>
-              <p className="text-sm text-[hsl(var(--color-text))] italic mb-4 leading-relaxed">
-                "{rev.comment}"
-              </p>
+              <p className="text-sm text-[hsl(var(--color-text))] italic mb-4 leading-relaxed">"{rev.comment}"</p>
               <div className="border-t border-[hsl(var(--color-border))] pt-3 flex justify-between items-center text-xs">
                 <span className="font-bold text-[hsl(var(--color-text))]">{rev.name}</span>
-                <span className="text-[hsl(var(--color-textMuted))]">{rev.loc}</span>
+                <span className="text-[hsl(var(--color-text-muted))]">{rev.loc}</span>
               </div>
             </div>
           ))}
@@ -538,7 +490,7 @@ function NewsletterBlock() {
   };
 
   return (
-    <section className="py-12 md:py-16 bg-[hsl(var(--color-accent))] text-white my-4 rounded-xl max-w-5xl mx-auto border border-white/5">
+    <section className="py-8 md:py-10 bg-[hsl(var(--color-accent))] text-white my-2 rounded-xl max-w-5xl mx-auto border border-white/5">
       <div className="container max-w-3xl text-center px-6">
         <Mail className="h-10 w-10 text-[hsl(var(--color-primary-light))] mx-auto mb-4" />
         <h2 className="text-2xl md:text-3xl font-display font-extrabold mb-3">
@@ -547,7 +499,6 @@ function NewsletterBlock() {
         <p className="text-sm text-white/70 mb-8 max-w-md mx-auto leading-relaxed">
           Subscribe to our newsletter for exclusive offers, styling guides, and fresh launches.
         </p>
-
         {subscribed ? (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -602,15 +553,15 @@ function BlogSectionBlock({ section }: { section: HomepageSection }) {
   ];
 
   return (
-    <section className="py-12 md:py-16 bg-[hsl(var(--color-surface))]">
+    <section className="py-8 md:py-10 bg-[hsl(var(--color-surface))]">
       <div className="container">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-10">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-6">
           <div>
             <h2 className="text-2xl md:text-3xl font-display font-extrabold text-[hsl(var(--color-text))]">
               {section.title || "Home Styling & Guides"}
             </h2>
             {section.subtitle && (
-              <p className="text-[hsl(var(--color-textMuted))] mt-2 text-sm leading-relaxed">
+              <p className="text-[hsl(var(--color-text-muted))] mt-2 text-sm leading-relaxed">
                 {section.subtitle}
               </p>
             )}
@@ -619,10 +570,9 @@ function BlogSectionBlock({ section }: { section: HomepageSection }) {
             View All Guides <ArrowRight className="h-3 w-3" />
           </Link>
         </div>
-
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {posts.map((post, idx) => (
-            <motion.article 
+            <motion.article
               key={idx}
               initial={{ opacity: 0, y: 15 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -636,17 +586,17 @@ function BlogSectionBlock({ section }: { section: HomepageSection }) {
                   alt={post.title}
                   fill
                   sizes="(max-width: 768px) 100vw, 50vw"
-                  className="object-cover group-hover:scale-103 transition-transform duration-500"
+                  className="object-cover group-hover:scale-105 transition-transform duration-500"
                 />
               </div>
-              <div className="flex items-center gap-4 text-xs text-[hsl(var(--color-textMuted))] mb-2">
+              <div className="flex items-center gap-4 text-xs text-[hsl(var(--color-text-muted))] mb-2">
                 <span className="flex items-center gap-1"><User className="h-3 w-3" /> {post.author}</span>
                 <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {post.date}</span>
               </div>
               <h3 className="font-display font-bold text-lg text-[hsl(var(--color-text))] group-hover:text-[hsl(var(--color-primary))] transition-colors mb-2 leading-snug">
                 {post.title}
               </h3>
-              <p className="text-sm text-[hsl(var(--color-textMuted))] leading-relaxed line-clamp-2">
+              <p className="text-sm text-[hsl(var(--color-text-muted))] leading-relaxed line-clamp-2">
                 {post.desc}
               </p>
             </motion.article>

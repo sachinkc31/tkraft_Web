@@ -6,8 +6,8 @@ import Link from "next/link";
 import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCartStore, useCurrencyStore } from "@/store";
-import { formatPrice } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { formatPrice, cn } from "@/lib/utils";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { getPriceMultiplier, COUNTRY_RULES } from "@/lib/geo-config";
 import type { WooProduct } from "@/types";
 import { ProductCard } from "@/components/ui/product-card";
@@ -22,6 +22,9 @@ export function CartClient() {
 
   const totalPrice = getTotalPrice();
   const totalItems = getTotalItems();
+
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
   
   const geoMultiplier = getPriceMultiplier(estCountry);
   const multipliedTotalPrice = totalPrice * geoMultiplier;
@@ -77,6 +80,16 @@ export function CartClient() {
   }, [items]);
 
 
+  if (!mounted) {
+    return (
+      <div className="space-y-4">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="skeleton h-28 rounded-2xl" />
+        ))}
+      </div>
+    );
+  }
+
   if (items.length === 0) {
     return (
       <motion.div
@@ -93,10 +106,15 @@ export function CartClient() {
         <p className="text-[hsl(215,16%,47%)] mb-8 max-w-sm">
           Looks like you haven&apos;t added anything yet. Start exploring our collection!
         </p>
-        <Link href="/shop">
-          <Button variant="primary" size="lg" leftIcon={<ArrowLeft className="h-4 w-4" />}>
-            Continue Shopping
-          </Button>
+        <Link 
+          href="/shop"
+          className={cn(
+            buttonVariants({ variant: "primary", size: "lg" }),
+            "inline-flex items-center gap-2"
+          )}
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Continue Shopping
         </Link>
       </motion.div>
     );
@@ -145,14 +163,14 @@ export function CartClient() {
                 {/* Info */}
                 <div className="flex-1 min-w-0">
                   <Link href={`/products/${item.product.slug}`}>
-                    <h3 className="font-semibold text-[hsl(222,47%,11%)] line-clamp-2 text-sm hover:text-[hsl(217,70%,38%)] transition-colors">
+                    <h3 className="font-semibold text-[hsl(222,47%,11%)] line-clamp-2 text-sm hover:text-[hsl(var(--color-accent))] transition-colors">
                       {item.product.name}
                     </h3>
                   </Link>
                   {item.product.categories[0] && (
                     <p className="text-xs text-[hsl(215,16%,47%)] mt-0.5">{item.product.categories[0].name}</p>
                   )}
-                  <p className="font-semibold text-[hsl(217,70%,38%)] mt-2">
+                  <p className="font-semibold text-[hsl(var(--color-accent))] mt-2">
                     {formatPrice(item.product.price)}
                     <span className="text-xs text-[hsl(215,16%,47%)] font-normal"> each</span>
                   </p>
@@ -173,14 +191,14 @@ export function CartClient() {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                        className="h-7 w-7 rounded-lg border border-[hsl(214,13%,90%)] flex items-center justify-center text-[hsl(215,16%,47%)] hover:border-[hsl(217,70%,38%)] hover:text-[hsl(217,70%,38%)] transition-colors"
+                        className="h-7 w-7 rounded-lg border border-[hsl(214,13%,90%)] flex items-center justify-center text-[hsl(215,16%,47%)] hover:border-[hsl(var(--color-accent))] hover:text-[hsl(var(--color-accent))] transition-colors"
                       >
                         <Minus className="h-3 w-3" />
                       </button>
                       <span className="w-7 text-center text-sm font-semibold">{item.quantity}</span>
                       <button
                         onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        className="h-7 w-7 rounded-lg border border-[hsl(214,13%,90%)] flex items-center justify-center text-[hsl(215,16%,47%)] hover:border-[hsl(217,70%,38%)] hover:text-[hsl(217,70%,38%)] transition-colors"
+                        className="h-7 w-7 rounded-lg border border-[hsl(214,13%,90%)] flex items-center justify-center text-[hsl(215,16%,47%)] hover:border-[hsl(var(--color-accent))] hover:text-[hsl(var(--color-accent))] transition-colors"
                       >
                         <Plus className="h-3 w-3" />
                       </button>
@@ -193,7 +211,7 @@ export function CartClient() {
         </AnimatePresence>
 
         <div className="pt-2">
-          <Link href="/shop" className="inline-flex items-center gap-2 text-sm font-medium text-[hsl(217,70%,38%)] hover:underline">
+          <Link href="/shop" className="inline-flex items-center gap-2 text-sm font-medium text-[hsl(var(--color-accent))] hover:underline">
             <ArrowLeft className="h-4 w-4" /> Continue Shopping
           </Link>
         </div>
@@ -213,7 +231,7 @@ export function CartClient() {
             <select
               value={estCountry}
               onChange={(e) => setCountryCode(e.target.value)}
-              className="w-full h-10 px-3 rounded-xl border border-[hsl(214,13%,90%)] text-xs bg-white focus:outline-none focus:border-[hsl(217,70%,38%)] cursor-pointer"
+              className="w-full h-10 px-3 rounded-xl border border-[hsl(214,13%,90%)] text-xs bg-white focus:outline-none focus:border-[hsl(var(--color-accent))] cursor-pointer"
             >
               <option value="IN">India</option>
               <option value="US">United States</option>
@@ -245,7 +263,7 @@ export function CartClient() {
           </div>
 
           {!hasFreeShipping && (
-            <div className="mt-4 p-3 rounded-xl bg-[hsl(217,70%,95%)] text-[hsl(217,70%,38%)] text-xs leading-relaxed">
+            <div className="mt-4 p-3 rounded-xl bg-[hsl(217,70%,95%)] text-[hsl(var(--color-accent))] text-xs leading-relaxed">
               Add {formatPrice(rule.freeLimit - multipliedTotalPrice, false)} more for <strong>free shipping</strong> to {rule.name}!
             </div>
           )}
@@ -256,10 +274,14 @@ export function CartClient() {
             <span className="text-xl">{formatPrice(multipliedTotalPrice + shippingCost + taxCost, false)}</span>
           </div>
 
-          <Link href="/checkout" className="block mt-5">
-            <Button variant="primary" size="lg" className="w-full shadow-md shadow-blue-500/20">
-              Proceed to Checkout
-            </Button>
+          <Link 
+            href="/checkout" 
+            className={cn(
+              buttonVariants({ variant: "primary", size: "lg" }),
+              "block w-full text-center shadow-md shadow-blue-500/20 mt-5"
+            )}
+          >
+            Proceed to Checkout
           </Link>
 
           <div className="mt-4 flex items-center justify-center gap-4 text-xs text-[hsl(215,16%,47%)]">

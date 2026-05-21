@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { SlidersHorizontal, LayoutGrid, List, ChevronDown } from "lucide-react";
@@ -19,6 +19,7 @@ export function ShopClient() {
   );
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [showFilters, setShowFilters] = useState(false);
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
   const category = searchParams.get("category") || undefined;
   const search = searchParams.get("search") || undefined;
@@ -34,6 +35,22 @@ export function ShopClient() {
 
   const allProducts = data?.pages.flatMap((p) => p.data) ?? [];
   const totalProducts = data?.pages[0]?.total ?? 0;
+
+  // Intersection observer — auto-fetch next page when sentinel is visible
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { rootMargin: "200px" }
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const handleSortChange = useCallback(
     (value: SortOption) => {
@@ -79,7 +96,7 @@ export function ShopClient() {
             <select
               value={sortBy}
               onChange={(e) => handleSortChange(e.target.value as SortOption)}
-              className="appearance-none h-9 pl-3 pr-8 rounded-xl border border-[hsl(214,13%,90%)] text-sm font-medium text-[hsl(222,47%,11%)] bg-white focus:border-[hsl(217,70%,38%)] focus:outline-none cursor-pointer"
+              className="appearance-none h-9 pl-3 pr-8 rounded-xl border border-[hsl(214,13%,90%)] text-sm font-medium text-[hsl(222,47%,11%)] bg-white focus:border-[hsl(var(--color-accent))] focus:outline-none cursor-pointer"
             >
               {SORT_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -98,7 +115,7 @@ export function ShopClient() {
                 onClick={() => setViewMode(mode)}
                 className={`h-9 w-9 flex items-center justify-center transition-colors ${
                   viewMode === mode
-                    ? "bg-[hsl(217,70%,38%)] text-white"
+                    ? "bg-[hsl(var(--color-accent))] text-white"
                     : "text-[hsl(215,16%,47%)] hover:bg-[hsl(210,16%,96%)]"
                 }`}
                 aria-label={`${mode} view`}
@@ -144,7 +161,7 @@ export function ShopClient() {
       ) : allProducts.length === 0 ? (
         <div className="text-center py-24">
           <p className="text-5xl mb-4">🔍</p>
-          <h3 className="text-xl font-bold text-[hsl(222,47%,11%)] mb-2">No products found</h3>
+          <h3 className="text-xl font-bold text-[hsl(var(--color-primary-light))] mb-2">No products found</h3>
           <p className="text-[hsl(215,16%,47%)]">Try a different filter or search term.</p>
         </div>
       ) : (
@@ -164,18 +181,24 @@ export function ShopClient() {
         </AnimatePresence>
       )}
 
-      {/* Infinite Scroll Load More */}
-      {hasNextPage && (
-        <div className="flex justify-center mt-10">
-          <Button
-            variant="outline"
-            size="lg"
-            loading={isFetchingNextPage}
-            onClick={() => fetchNextPage()}
-          >
-            {isFetchingNextPage ? "Loading…" : "Load More Products"}
-          </Button>
+      {/* Infinite scroll sentinel */}
+      <div ref={sentinelRef} className="h-1" />
+
+      {/* Loading spinner */}
+      {isFetchingNextPage && (
+        <div className="flex justify-center mt-8">
+          <div className="flex items-center gap-2 text-sm text-[hsl(215,16%,47%)]">
+            <div className="h-5 w-5 rounded-full border-2 border-[hsl(var(--color-accent))] border-t-transparent animate-spin" />
+            Loading more products…
+          </div>
         </div>
+      )}
+
+      {/* End of results */}
+      {!hasNextPage && allProducts.length > 0 && !isLoading && (
+        <p className="text-center text-sm text-[hsl(215,16%,47%)] mt-10">
+          You&apos;ve seen all {totalProducts} products
+        </p>
       )}
     </div>
   );

@@ -111,7 +111,7 @@ export function SearchOverlay() {
             {/* Input Form */}
             <form onSubmit={handleSubmit} className="flex items-center gap-3 p-4 border-b border-[hsl(214,13%,90%)]">
               {loading ? (
-                <Loader2 className="h-5 w-5 text-[hsl(217,70%,38%)] animate-spin flex-shrink-0" />
+                <Loader2 className="h-5 w-5 text-[hsl(var(--color-accent))] animate-spin flex-shrink-0" />
               ) : (
                 <Search className="h-5 w-5 text-[hsl(215,14%,70%)] flex-shrink-0" />
               )}
@@ -133,7 +133,7 @@ export function SearchOverlay() {
               )}
               <button
                 type="submit"
-                className="flex items-center gap-1.5 px-4 py-2 bg-[hsl(217,70%,38%)] hover:bg-[hsl(217,70%,32%)] text-white rounded-xl text-xs font-semibold shadow-sm transition-colors active:scale-95"
+                className="flex items-center gap-1.5 px-4 py-2 bg-[hsl(var(--color-accent))] hover:bg-[hsl(217,70%,32%)] text-white rounded-xl text-xs font-semibold shadow-sm transition-colors active:scale-95"
               >
                 Search <ArrowRight className="h-3.5 w-3.5" />
               </button>
@@ -152,7 +152,7 @@ export function SearchOverlay() {
                         key={cat.slug}
                         href={cat.href}
                         onClick={closeSearch}
-                        className="px-3.5 py-2 rounded-xl bg-[hsl(210,20%,98%)] border border-[hsl(214,13%,90%)] text-xs font-semibold text-[hsl(215,16%,47%)] hover:border-[hsl(217,70%,38%)] hover:text-[hsl(217,70%,38%)] transition-colors active:scale-95"
+                        className="px-3.5 py-2 rounded-xl bg-[hsl(210,20%,98%)] border border-[hsl(214,13%,90%)] text-xs font-semibold text-[hsl(215,16%,47%)] hover:border-[hsl(var(--color-accent))] hover:text-[hsl(var(--color-accent))] transition-colors active:scale-95"
                       >
                         {cat.label}
                       </Link>
@@ -197,7 +197,7 @@ export function SearchOverlay() {
                             <h4 className="text-xs font-semibold text-[hsl(222,47%,11%)] line-clamp-1">
                               <HighlightText text={prod.name} highlight={query} />
                             </h4>
-                            <p className="text-[10px] font-semibold text-[hsl(217,70%,38%)] mt-0.5">
+                            <p className="text-[10px] font-semibold text-[hsl(var(--color-accent))] mt-0.5">
                               {formatPrice(parseFloat(prod.price))}
                             </p>
                           </div>
@@ -226,7 +226,7 @@ export function SearchOverlay() {
                             <span className="truncate">
                               <HighlightText text={cat.name} highlight={query} />
                             </span>
-                            <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all text-[hsl(217,70%,38%)]" />
+                            <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all text-[hsl(var(--color-accent))]" />
                           </Link>
                         ))}
                       </div>

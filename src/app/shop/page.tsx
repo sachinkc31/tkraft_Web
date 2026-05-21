@@ -21,7 +21,7 @@ export default function ShopPage() {
             <span>Home</span> <span className="mx-2">/</span>
             <span className="text-[hsl(222,47%,11%)] font-medium">Shop</span>
           </nav>
-          <h1 className="text-3xl md:text-4xl font-display font-bold text-[hsl(222,47%,11%)]">
+          <h1 className="text-3xl md:text-4xl font-display font-bold text-[hsl(var(--color-primary-light))]">
             All Products
           </h1>
           <p className="text-[hsl(215,16%,47%)] mt-2">

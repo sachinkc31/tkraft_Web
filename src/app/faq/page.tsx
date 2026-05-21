@@ -69,7 +69,7 @@ export default function FAQPage() {
         <div className="space-y-8">
           {FAQS.map((cat) => (
             <div key={cat.category} className="space-y-4">
-              <h2 className="text-lg font-bold uppercase tracking-wider text-[hsl(217,70%,38%)] border-b border-[hsl(214,13%,90%)] pb-2">
+              <h2 className="text-lg font-bold uppercase tracking-wider text-[hsl(var(--color-accent))] border-b border-[hsl(214,13%,90%)] pb-2">
                 {cat.category}
               </h2>
               <div className="space-y-4">

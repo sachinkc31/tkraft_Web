@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
 import { getCategoryBySlug, getAllCategorySlugs, getProducts } from "@/services/woocommerce";
 import { ProductCard, ProductCardSkeleton } from "@/components/ui/product-card";
@@ -15,7 +15,8 @@ export const revalidate = 3600;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const category = await getCategoryBySlug(slug).catch(() => null);
+  const targetSlug = slug === "storage-organization" ? "storage-and-organization" : slug;
+  const category = await getCategoryBySlug(targetSlug).catch(() => null);
   if (!category) return { title: "Category Not Found" };
   return {
     title: category.name,
@@ -29,6 +30,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function CategoryPage({ params }: Props) {
   const { slug } = await params;
+  if (slug === "storage-organization") {
+    redirect("/category/storage-and-organization");
+  }
   const category = await getCategoryBySlug(slug).catch(() => null);
   if (!category) notFound();
 
@@ -41,14 +45,14 @@ export default async function CategoryPage({ params }: Props) {
         {/* Header */}
         <div className="mb-10">
           <nav className="text-sm text-[hsl(215,16%,47%)] mb-3">
-            <a href="/" className="hover:text-[hsl(217,70%,38%)]">Home</a>
+            <a href="/" className="hover:text-[hsl(var(--color-accent))]">Home</a>
             <span className="mx-2">/</span>
-            <a href="/shop" className="hover:text-[hsl(217,70%,38%)]">Shop</a>
+            <a href="/shop" className="hover:text-[hsl(var(--color-accent))]">Shop</a>
             <span className="mx-2">/</span>
-            <span className="text-[hsl(222,47%,11%)] font-medium">{category.name}</span>
+            <span className="text-[hsl(222,47%,11%)] font-medium" dangerouslySetInnerHTML={{ __html: category.name }} />
           </nav>
-          <h1 className="text-3xl md:text-4xl font-display font-bold text-[hsl(222,47%,11%)]">
-            {category.name}
+          <h1 className="text-3xl md:text-4xl font-display font-bold text-[hsl(var(--color-primary-light))]">
+            <span dangerouslySetInnerHTML={{ __html: category.name }} />
           </h1>
           {category.description && (
             <p className="text-[hsl(215,16%,47%)] mt-2 max-w-2xl" dangerouslySetInnerHTML={{ __html: category.description }} />
@@ -62,7 +66,7 @@ export default async function CategoryPage({ params }: Props) {
         {productsResult.data.length === 0 ? (
           <div className="text-center py-16">
             <p className="text-5xl mb-4">📦</p>
-            <h2 className="text-xl font-bold text-[hsl(222,47%,11%)] mb-2">No products yet</h2>
+            <h2 className="text-xl font-bold text-[hsl(var(--color-primary-light))] mb-2">No products yet</h2>
             <p className="text-[hsl(215,16%,47%)]">Check back soon — new items are being added.</p>
           </div>
         ) : (

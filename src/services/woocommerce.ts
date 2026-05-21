@@ -227,8 +227,9 @@ export async function getCategories(): Promise<WooCategory[]> {
 export async function getCategoryBySlug(
   slug: string
 ): Promise<WooCategory | null> {
+  const targetSlug = slug === "storage-organization" ? "storage-and-organization" : slug;
   const categories = await wooFetch<WooCategory[]>(
-    `/products/categories?slug=${slug}`
+    `/products/categories?slug=${targetSlug}`
   );
   return categories[0] || null;
 }

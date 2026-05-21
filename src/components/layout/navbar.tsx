@@ -50,7 +50,7 @@ export function Navbar() {
   return (
     <>
       {/* Top Bar */}
-      <div className="bg-[hsl(217,70%,38%)] text-white text-xs py-2 hidden md:block">
+      <div className="bg-[hsl(var(--color-accent))] text-white text-xs py-2 hidden md:block">
         <div className="container flex items-center justify-between">
           <span className="flex items-center gap-1.5">
             <Phone className="h-3 w-3" /> Free shipping on orders above ₹499
@@ -90,10 +90,16 @@ export function Navbar() {
             {/* Logo */}
             <Link
               href="/"
-              className="flex-shrink-0 font-display font-800 text-2xl text-[hsl(217,70%,38%)] tracking-tight"
+              className="flex-shrink-0 font-display font-800 text-2xl text-[hsl(var(--color-accent))] tracking-tight"
             >
-              <Image src={SITE_CONFIG.logo} alt={SITE_CONFIG.name} width={120} height={40} className="inline-block mr-2 align-middle object-contain" />
-              {SITE_CONFIG.name}
+              <Image 
+                src={SITE_CONFIG.logo} 
+                alt={SITE_CONFIG.name} 
+                width={120} 
+                height={40} 
+                className="inline-block mr-2 align-middle object-contain" 
+                priority
+              />
             </Link>
 
             {/* Desktop Nav */}
@@ -105,7 +111,7 @@ export function Navbar() {
                   className={cn(
                     "px-3.5 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap",
                     pathname === cat.href
-                      ? "bg-[hsl(217,70%,95%)] text-[hsl(217,70%,38%)]"
+                      ? "bg-[hsl(217,70%,95%)] text-[hsl(var(--color-accent))]"
                       : "text-[hsl(215,16%,47%)] hover:text-[hsl(222,47%,11%)] hover:bg-[hsl(210,16%,96%)]"
                   )}
                 >
@@ -118,7 +124,7 @@ export function Navbar() {
             <div className="hidden md:flex flex-1 max-w-md mx-4">
               <button
                 onClick={toggleSearch}
-                className="flex items-center gap-2 w-full h-10 px-4 rounded-xl bg-[hsl(210,20%,98%)] border border-[hsl(214,13%,90%)] text-[hsl(215,16%,47%)] text-sm hover:border-[hsl(217,70%,38%)] transition-colors"
+                className="flex items-center gap-2 w-full h-10 px-4 rounded-xl bg-[hsl(210,20%,98%)] border border-[hsl(214,13%,90%)] text-[hsl(215,16%,47%)] text-sm hover:border-[hsl(var(--color-accent))] transition-colors"
               >
                 <Search className="h-4 w-4 flex-shrink-0" />
                 <span>Search</span>
@@ -211,7 +217,7 @@ export function Navbar() {
                     className={cn(
                       "px-4 py-3 rounded-xl text-sm font-medium transition-colors",
                       pathname === cat.href
-                        ? "bg-[hsl(217,70%,95%)] text-[hsl(217,70%,38%)]"
+                        ? "bg-[hsl(217,70%,95%)] text-[hsl(var(--color-accent))]"
                         : "text-[hsl(215,16%,47%)] hover:bg-[hsl(210,16%,96%)]"
                     )}
                   >

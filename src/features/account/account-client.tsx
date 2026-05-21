@@ -262,7 +262,7 @@ export function AccountClient() {
               className={cn(
                 "flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold transition-all",
                 authTab === "mobile"
-                  ? "bg-white text-[hsl(217,70%,38%)] shadow-sm"
+                  ? "bg-white text-[hsl(var(--color-accent))] shadow-sm"
                   : "text-[hsl(215,16%,47%)] hover:text-[hsl(222,47%,11%)]"
               )}
             >
@@ -273,7 +273,7 @@ export function AccountClient() {
               className={cn(
                 "flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold transition-all",
                 authTab === "jwt"
-                  ? "bg-white text-[hsl(217,70%,38%)] shadow-sm"
+                  ? "bg-white text-[hsl(var(--color-accent))] shadow-sm"
                   : "text-[hsl(215,16%,47%)] hover:text-[hsl(222,47%,11%)]"
               )}
             >
@@ -306,7 +306,7 @@ export function AccountClient() {
                         value={phone}
                         onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
                         placeholder="98765 43210"
-                        className="w-full h-11 pl-14 pr-4 rounded-xl border-2 border-[hsl(214,13%,90%)] text-sm font-medium focus:outline-none focus:border-[hsl(217,70%,38%)] transition-colors"
+                        className="w-full h-11 pl-14 pr-4 rounded-xl border-2 border-[hsl(214,13%,90%)] text-sm font-medium focus:outline-none focus:border-[hsl(var(--color-accent))] transition-colors"
                         required
                         disabled={isLoading}
                       />
@@ -343,7 +343,7 @@ export function AccountClient() {
                       <button
                         type="button"
                         onClick={() => setOtpSent(false)}
-                        className="text-xs font-semibold text-[hsl(217,70%,38%)] hover:underline"
+                        className="text-xs font-semibold text-[hsl(var(--color-accent))] hover:underline"
                       >
                         Change Number
                       </button>
@@ -354,7 +354,7 @@ export function AccountClient() {
                       value={otp}
                       onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
                       placeholder="Enter 6-digit code"
-                      className="w-full h-11 px-4 tracking-[0.4em] text-center font-mono font-bold text-lg rounded-xl border-2 border-[hsl(214,13%,90%)] focus:outline-none focus:border-[hsl(217,70%,38%)] transition-colors"
+                      className="w-full h-11 px-4 tracking-[0.4em] text-center font-mono font-bold text-lg rounded-xl border-2 border-[hsl(214,13%,90%)] focus:outline-none focus:border-[hsl(var(--color-accent))] transition-colors"
                       required
                       disabled={isLoading}
                     />
@@ -370,7 +370,7 @@ export function AccountClient() {
                         <button
                           type="button"
                           onClick={handleSendOtp}
-                          className="text-xs font-semibold text-[hsl(217,70%,38%)] hover:underline"
+                          className="text-xs font-semibold text-[hsl(var(--color-accent))] hover:underline"
                         >
                           Resend OTP
                         </button>
@@ -409,7 +409,7 @@ export function AccountClient() {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="name@example.com"
-                  className="w-full h-11 px-4 rounded-xl border-2 border-[hsl(214,13%,90%)] text-sm focus:outline-none focus:border-[hsl(217,70%,38%)] transition-colors"
+                  className="w-full h-11 px-4 rounded-xl border-2 border-[hsl(214,13%,90%)] text-sm focus:outline-none focus:border-[hsl(var(--color-accent))] transition-colors"
                   required
                   disabled={isLoading}
                 />
@@ -424,7 +424,7 @@ export function AccountClient() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full h-11 px-4 rounded-xl border-2 border-[hsl(214,13%,90%)] text-sm focus:outline-none focus:border-[hsl(217,70%,38%)] transition-colors"
+                  className="w-full h-11 px-4 rounded-xl border-2 border-[hsl(214,13%,90%)] text-sm focus:outline-none focus:border-[hsl(var(--color-accent))] transition-colors"
                   required
                   disabled={isLoading}
                 />
@@ -458,7 +458,7 @@ export function AccountClient() {
     <div className="section min-h-[calc(100vh-200px)] bg-[hsl(210,20%,98%)] py-10">
       <div className="container max-w-6xl">
         {/* Welcome greeting banner */}
-        <div className="bg-gradient-to-r from-[hsl(217,70%,38%)] to-[hsl(222,47%,11%)] rounded-3xl p-6 md:p-8 text-white shadow-lg mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="bg-gradient-to-r from-[hsl(var(--color-accent))] to-[hsl(222,47%,11%)] rounded-3xl p-6 md:p-8 text-white shadow-lg mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="font-display font-extrabold text-2xl md:text-3xl">
               Hello, {user?.first_name || "Customer"}! 👋
@@ -491,7 +491,7 @@ export function AccountClient() {
                   className={cn(
                     "w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold transition-all",
                     dashboardTab === tab.id
-                      ? "bg-white text-[hsl(217,70%,38%)] shadow-sm border border-[hsl(214,13%,90%)]"
+                      ? "bg-white text-[hsl(var(--color-accent))] shadow-sm border border-[hsl(214,13%,90%)]"
                       : "text-[hsl(215,16%,47%)] hover:bg-white/50 hover:text-[hsl(222,47%,11%)]"
                   )}
                 >
@@ -500,7 +500,7 @@ export function AccountClient() {
                     <span>{tab.label}</span>
                   </div>
                   {tab.badge && (
-                    <span className="px-2 py-0.5 rounded-full bg-[hsl(217,70%,38%)] text-white text-[10px] font-bold">
+                    <span className="px-2 py-0.5 rounded-full bg-[hsl(var(--color-accent))] text-white text-[10px] font-bold">
                       {tab.badge}
                     </span>
                   )}
@@ -557,7 +557,7 @@ export function AccountClient() {
                       {orders.length > 0 && (
                         <button
                           onClick={() => setDashboardTab("orders")}
-                          className="text-xs font-semibold text-[hsl(217,70%,38%)] hover:underline flex items-center gap-0.5"
+                          className="text-xs font-semibold text-[hsl(var(--color-accent))] hover:underline flex items-center gap-0.5"
                         >
                           View all <ChevronRight className="h-3 w-3" />
                         </button>
@@ -605,7 +605,7 @@ export function AccountClient() {
                             {orders[0].status === "pending" && (
                               <Link
                                 href={`/checkout/pay?orderId=${orders[0].id}`}
-                                className="mt-2 text-[10px] font-bold uppercase tracking-wider bg-[hsl(217,70%,38%)] text-white hover:bg-[hsl(217,70%,30%)] transition-colors px-2.5 py-1 rounded-lg flex items-center justify-center gap-1 w-fit"
+                                className="mt-2 text-[10px] font-bold uppercase tracking-wider bg-[hsl(var(--color-accent))] text-white hover:bg-[hsl(217,70%,30%)] transition-colors px-2.5 py-1 rounded-lg flex items-center justify-center gap-1 w-fit"
                               >
                                 Complete Payment
                               </Link>
@@ -685,7 +685,7 @@ export function AccountClient() {
                               {order.status === "pending" && (
                                 <Link
                                   href={`/checkout/pay?orderId=${order.id}`}
-                                  className="mt-2 text-[10px] font-bold uppercase tracking-wider bg-[hsl(217,70%,38%)] text-white hover:bg-[hsl(217,70%,30%)] transition-colors px-2.5 py-1 rounded-lg flex items-center justify-center gap-1 w-fit"
+                                  className="mt-2 text-[10px] font-bold uppercase tracking-wider bg-[hsl(var(--color-accent))] text-white hover:bg-[hsl(217,70%,30%)] transition-colors px-2.5 py-1 rounded-lg flex items-center justify-center gap-1 w-fit"
                                 >
                                   Complete Payment
                                 </Link>
@@ -737,7 +737,7 @@ export function AccountClient() {
                           type="text"
                           value={billingForm.first_name}
                           onChange={(e) => setBillingForm({ ...billingForm, first_name: e.target.value })}
-                          className="w-full h-11 px-4 rounded-xl border-2 border-[hsl(214,13%,90%)] text-sm focus:outline-none focus:border-[hsl(217,70%,38%)]"
+                          className="w-full h-11 px-4 rounded-xl border-2 border-[hsl(214,13%,90%)] text-sm focus:outline-none focus:border-[hsl(var(--color-accent))]"
                           required
                         />
                       </div>
@@ -749,7 +749,7 @@ export function AccountClient() {
                           type="text"
                           value={billingForm.last_name}
                           onChange={(e) => setBillingForm({ ...billingForm, last_name: e.target.value })}
-                          className="w-full h-11 px-4 rounded-xl border-2 border-[hsl(214,13%,90%)] text-sm focus:outline-none focus:border-[hsl(217,70%,38%)]"
+                          className="w-full h-11 px-4 rounded-xl border-2 border-[hsl(214,13%,90%)] text-sm focus:outline-none focus:border-[hsl(var(--color-accent))]"
                           required
                         />
                       </div>
@@ -763,7 +763,7 @@ export function AccountClient() {
                         type="text"
                         value={billingForm.address_1}
                         onChange={(e) => setBillingForm({ ...billingForm, address_1: e.target.value })}
-                        className="w-full h-11 px-4 rounded-xl border-2 border-[hsl(214,13%,90%)] text-sm focus:outline-none focus:border-[hsl(217,70%,38%)]"
+                        className="w-full h-11 px-4 rounded-xl border-2 border-[hsl(214,13%,90%)] text-sm focus:outline-none focus:border-[hsl(var(--color-accent))]"
                         placeholder="House/Apartment number, street name, layout"
                         required
                       />
@@ -778,7 +778,7 @@ export function AccountClient() {
                           type="text"
                           value={billingForm.city}
                           onChange={(e) => setBillingForm({ ...billingForm, city: e.target.value })}
-                          className="w-full h-11 px-4 rounded-xl border-2 border-[hsl(214,13%,90%)] text-sm focus:outline-none focus:border-[hsl(217,70%,38%)]"
+                          className="w-full h-11 px-4 rounded-xl border-2 border-[hsl(214,13%,90%)] text-sm focus:outline-none focus:border-[hsl(var(--color-accent))]"
                           required
                         />
                       </div>
@@ -790,7 +790,7 @@ export function AccountClient() {
                           type="text"
                           value={billingForm.state}
                           onChange={(e) => setBillingForm({ ...billingForm, state: e.target.value })}
-                          className="w-full h-11 px-4 rounded-xl border-2 border-[hsl(214,13%,90%)] text-sm focus:outline-none focus:border-[hsl(217,70%,38%)]"
+                          className="w-full h-11 px-4 rounded-xl border-2 border-[hsl(214,13%,90%)] text-sm focus:outline-none focus:border-[hsl(var(--color-accent))]"
                           required
                         />
                       </div>
@@ -803,7 +803,7 @@ export function AccountClient() {
                           maxLength={6}
                           value={billingForm.postcode}
                           onChange={(e) => setBillingForm({ ...billingForm, postcode: e.target.value.replace(/\D/g, "") })}
-                          className="w-full h-11 px-4 rounded-xl border-2 border-[hsl(214,13%,90%)] text-sm focus:outline-none focus:border-[hsl(217,70%,38%)]"
+                          className="w-full h-11 px-4 rounded-xl border-2 border-[hsl(214,13%,90%)] text-sm focus:outline-none focus:border-[hsl(var(--color-accent))]"
                           placeholder="400001"
                           required
                         />
@@ -819,7 +819,7 @@ export function AccountClient() {
                         maxLength={10}
                         value={billingForm.phone}
                         onChange={(e) => setBillingForm({ ...billingForm, phone: e.target.value.replace(/\D/g, "") })}
-                        className="w-full h-11 px-4 rounded-xl border-2 border-[hsl(214,13%,90%)] text-sm focus:outline-none focus:border-[hsl(217,70%,38%)]"
+                        className="w-full h-11 px-4 rounded-xl border-2 border-[hsl(214,13%,90%)] text-sm focus:outline-none focus:border-[hsl(var(--color-accent))]"
                         placeholder="9876543210"
                         required
                       />

@@ -241,11 +241,11 @@ export function ProductDetailClient({ product }: Props) {
       <div className="container">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-sm text-[hsl(215,16%,47%)] mb-8">
-          <a href="/" className="hover:text-[hsl(217,70%,38%)] transition-colors">Home</a>
+          <a href="/" className="hover:text-[hsl(var(--color-accent))] transition-colors">Home</a>
           <ChevronRight className="h-3.5 w-3.5" />
           {product.categories[0] && (
             <>
-              <a href={`/category/${product.categories[0].slug}`} className="hover:text-[hsl(217,70%,38%)] transition-colors">
+              <a href={`/category/${product.categories[0].slug}`} className="hover:text-[hsl(var(--color-accent))] transition-colors">
                 {product.categories[0].name}
               </a>
               <ChevronRight className="h-3.5 w-3.5" />
@@ -306,7 +306,7 @@ export function ProductDetailClient({ product }: Props) {
                     className={cn(
                       "flex-shrink-0 h-20 w-20 rounded-xl overflow-hidden border-2 transition-all",
                       selectedImage === idx
-                        ? "border-[hsl(217,70%,38%)] shadow-md"
+                        ? "border-[hsl(var(--color-accent))] shadow-md"
                         : "border-[hsl(214,13%,90%)] hover:border-[hsl(217,70%,60%)]"
                     )}
                   >
@@ -323,12 +323,12 @@ export function ProductDetailClient({ product }: Props) {
           <div className="space-y-6">
             {/* Category + Name */}
             {product.categories[0] && (
-              <a href={`/category/${product.categories[0].slug}`} className="text-sm font-semibold text-[hsl(217,70%,38%)] uppercase tracking-wider hover:underline">
+              <a href={`/category/${product.categories[0].slug}`} className="text-sm font-semibold text-[hsl(var(--color-accent))] uppercase tracking-wider hover:underline">
                 {product.categories[0].name}
               </a>
             )}
 
-            <h1 className="text-2xl md:text-3xl font-display font-bold text-[hsl(222,47%,11%)] leading-tight">
+            <h1 className="text-2xl md:text-3xl font-display font-bold text-[hsl(var(--color-primary-light))] leading-tight">
               {product.name}
             </h1>
 
@@ -393,70 +393,76 @@ export function ProductDetailClient({ product }: Props) {
             </div>
 
             {/* Quantity + Add to Cart */}
-            <div className="flex flex-col sm:flex-row gap-3">
-              {/* Quantity Selector */}
-              <div className="flex items-center gap-3 h-12 px-4 rounded-xl border-2 border-[hsl(214,13%,90%)] w-fit">
-                <button
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="text-[hsl(215,16%,47%)] hover:text-[hsl(222,47%,11%)] transition-colors"
+            <div className="flex flex-col gap-3">
+              {/* Row 1: Quantity + Add to Cart */}
+              <div className="flex flex-row gap-3 items-center">
+                <div className="flex items-center gap-3 h-12 px-4 rounded-xl border-2 border-[hsl(214,13%,90%)] flex-shrink-0">
+                  <button
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    className="text-[hsl(215,16%,47%)] hover:text-[hsl(222,47%,11%)] transition-colors"
+                  >
+                    <Minus className="h-4 w-4" />
+                  </button>
+                  <span className="w-8 text-center font-semibold text-[hsl(222,47%,11%)]">
+                    {quantity}
+                  </span>
+                  <button
+                    onClick={() => setQuantity(quantity + 1)}
+                    className="text-[hsl(215,16%,47%)] hover:text-[hsl(222,47%,11%)] transition-colors"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </button>
+                </div>
+
+                <Button
+                  variant="primary"
+                  size="lg"
+                  disabled={isOutOfStock}
+                  onClick={handleAddToCart}
+                  leftIcon={<ShoppingCart className="h-5 w-5" />}
+                  className="flex-1 shadow-lg shadow-blue-500/20"
                 >
-                  <Minus className="h-4 w-4" />
-                </button>
-                <span className="w-8 text-center font-semibold text-[hsl(222,47%,11%)]">
-                  {quantity}
-                </span>
-                <button
-                  onClick={() => setQuantity(quantity + 1)}
-                  className="text-[hsl(215,16%,47%)] hover:text-[hsl(222,47%,11%)] transition-colors"
-                >
-                  <Plus className="h-4 w-4" />
-                </button>
+                  {isOutOfStock ? "Out of Stock" : "Add to Cart"}
+                </Button>
               </div>
 
-              {/* Sticky Add to Cart */}
-              <Button
-                variant="primary"
-                size="lg"
-                disabled={isOutOfStock}
-                onClick={handleAddToCart}
-                leftIcon={<ShoppingCart className="h-5 w-5" />}
-                className="flex-1 shadow-lg shadow-blue-500/20"
-              >
-                {isOutOfStock ? "Out of Stock" : "Add to Cart"}
-              </Button>
+              {/* Row 2: Wishlist + Share */}
+              <div className="flex flex-row gap-3">
+                <button
+                  onClick={handleToggleWishlist}
+                  className={cn(
+                    "flex-1 h-12 rounded-xl border-2 flex items-center justify-center gap-2 text-sm font-medium transition-all",
+                    isInWishlist
+                      ? "border-red-200 text-red-500 bg-red-50"
+                      : "border-[hsl(214,13%,90%)] text-[hsl(215,16%,47%)] hover:border-red-300 hover:text-red-500 hover:bg-red-50"
+                  )}
+                  aria-label={isInWishlist ? "Remove from Wishlist" : "Add to Wishlist"}
+                >
+                  <Heart className={cn("h-5 w-5", isInWishlist && "fill-current")} />
+                  {isInWishlist ? "Wishlisted" : "Wishlist"}
+                </button>
 
-              <button
-                onClick={handleToggleWishlist}
-                className={cn(
-                  "h-12 w-12 flex-shrink-0 rounded-xl border-2 flex items-center justify-center transition-all",
-                  isInWishlist
-                    ? "border-red-200 text-red-500 bg-red-50"
-                    : "border-[hsl(214,13%,90%)] text-[hsl(215,16%,47%)] hover:border-red-300 hover:text-red-500 hover:bg-red-50"
-                )}
-                aria-label={isInWishlist ? "Remove from Wishlist" : "Add to Wishlist"}
-              >
-                <Heart className={cn("h-5 w-5", isInWishlist && "fill-current")} />
-              </button>
-
-              <button
-                className="h-12 w-12 flex-shrink-0 rounded-xl border-2 border-[hsl(214,13%,90%)] flex items-center justify-center text-[hsl(215,16%,47%)] hover:border-[hsl(217,70%,38%)] hover:text-[hsl(217,70%,38%)] transition-all"
-                aria-label="Share"
-              >
-                <Share2 className="h-5 w-5" />
-              </button>
+                <button
+                  className="flex-1 h-12 rounded-xl border-2 border-[hsl(214,13%,90%)] flex items-center justify-center gap-2 text-sm font-medium text-[hsl(215,16%,47%)] hover:border-[hsl(var(--color-accent))] hover:text-[hsl(var(--color-accent))] transition-all"
+                  aria-label="Share"
+                >
+                  <Share2 className="h-5 w-5" />
+                  Share
+                </button>
+              </div>
             </div>
 
             {/* Pincode Checker */}
             <div className="p-4 rounded-xl bg-[hsl(210,20%,98%)] border border-[hsl(214,13%,90%)]">
               <p className="text-sm font-semibold text-[hsl(222,47%,11%)] mb-3 flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-[hsl(217,70%,38%)]" />
+                <MapPin className="h-4 w-4 text-[hsl(var(--color-accent))]" />
                 Check Delivery Availability
               </p>
               <div className="flex gap-2">
                 <select
                   value={deliveryCountry}
                   onChange={(e) => setDeliveryCountry(e.target.value)}
-                  className="h-9 px-2 rounded-lg border border-[hsl(214,13%,90%)] text-xs bg-white focus:border-[hsl(217,70%,38%)] focus:outline-none cursor-pointer font-medium"
+                  className="h-9 px-2 rounded-lg border border-[hsl(214,13%,90%)] text-xs bg-white focus:border-[hsl(var(--color-accent))] focus:outline-none cursor-pointer font-medium"
                 >
                   <option value="IN">🇮🇳 IN</option>
                   <option value="US">🇺🇸 US</option>
@@ -488,9 +494,9 @@ export function ProductDetailClient({ product }: Props) {
                       setPincode(val.replace(/[^a-zA-Z0-9 -]/g, ""));
                     }
                   }}
-                  className="flex-1 h-9 px-3 rounded-lg border border-[hsl(214,13%,90%)] text-xs focus:border-[hsl(217,70%,38%)] focus:outline-none"
+                  className="flex-1 h-9 px-3 rounded-lg border border-[hsl(214,13%,90%)] text-xs focus:border-[hsl(var(--color-accent))] focus:outline-none"
                 />
-                <Button variant="outline" size="sm" onClick={checkPincode} className="h-9">
+                <Button variant="primary" size="sm" onClick={checkPincode} className="h-9">
                   Check
                 </Button>
               </div>
@@ -520,7 +526,7 @@ export function ProductDetailClient({ product }: Props) {
                   key={text}
                   className="flex flex-col items-center gap-1.5 text-center p-3 rounded-xl bg-[hsl(210,20%,98%)]"
                 >
-                  <Icon className="h-5 w-5 text-[hsl(217,70%,38%)]" />
+                  <Icon className="h-5 w-5 text-[hsl(var(--color-accent))]" />
                   <span className="text-[10px] text-[hsl(215,16%,47%)] font-medium leading-snug">{text}</span>
                 </div>
               ))}
@@ -538,7 +544,7 @@ export function ProductDetailClient({ product }: Props) {
                 className={cn(
                   "px-5 py-2.5 text-sm font-semibold capitalize transition-colors border-b-2 -mb-px",
                   activeTab === tab
-                    ? "border-[hsl(217,70%,38%)] text-[hsl(217,70%,38%)]"
+                    ? "border-[hsl(var(--color-accent))] text-[hsl(var(--color-accent))]"
                     : "border-transparent text-[hsl(215,16%,47%)] hover:text-[hsl(222,47%,11%)]"
                 )}
               >
@@ -567,7 +573,7 @@ export function ProductDetailClient({ product }: Props) {
                   {/* Left Column: Stats & Write Form */}
                   <div className="lg:col-span-2 space-y-8">
                     <div className="bg-[hsl(210,20%,98%)] border border-[hsl(214,13%,90%)] p-6 rounded-2xl">
-                      <h3 className="font-display font-bold text-base text-[hsl(222,47%,11%)] mb-3">Customer Rating</h3>
+                      <h3 className="font-display font-bold text-base text-[hsl(var(--color-primary-light))] mb-3">Customer Rating</h3>
                       <div className="flex items-baseline gap-2 mb-2">
                         <span className="text-4xl font-display font-extrabold text-[hsl(222,47%,11%)]">
                           {averageRating > 0 ? averageRating.toFixed(1) : "0.0"}
@@ -592,7 +598,7 @@ export function ProductDetailClient({ product }: Props) {
 
                     {/* Write Review Form */}
                     <form onSubmit={handleSubmitReview} className="space-y-4">
-                      <h3 className="font-display font-bold text-base text-[hsl(222,47%,11%)]">Write a Review</h3>
+                      <h3 className="font-display font-bold text-base text-[hsl(var(--color-primary-light))]">Write a Review</h3>
                       
                       <div className="space-y-1">
                         <label className="text-xs font-semibold text-[hsl(222,47%,11%)] uppercase tracking-wider block">Your Rating</label>
@@ -624,7 +630,7 @@ export function ProductDetailClient({ product }: Props) {
                           value={reviewerName}
                           onChange={(e) => setReviewerName(e.target.value)}
                           placeholder="Your full name"
-                          className="w-full h-10 px-3 rounded-xl border border-[hsl(214,13%,90%)] text-sm focus:border-[hsl(217,70%,38%)] focus:outline-none"
+                          className="w-full h-10 px-3 rounded-xl border border-[hsl(214,13%,90%)] text-sm focus:border-[hsl(var(--color-accent))] focus:outline-none"
                         />
                       </div>
 
@@ -637,7 +643,7 @@ export function ProductDetailClient({ product }: Props) {
                           value={reviewerEmail}
                           onChange={(e) => setReviewerEmail(e.target.value)}
                           placeholder="your.email@example.com"
-                          className="w-full h-10 px-3 rounded-xl border border-[hsl(214,13%,90%)] text-sm focus:border-[hsl(217,70%,38%)] focus:outline-none"
+                          className="w-full h-10 px-3 rounded-xl border border-[hsl(214,13%,90%)] text-sm focus:border-[hsl(var(--color-accent))] focus:outline-none"
                         />
                       </div>
 
@@ -650,7 +656,7 @@ export function ProductDetailClient({ product }: Props) {
                           value={reviewText}
                           onChange={(e) => setReviewText(e.target.value)}
                           placeholder="What did you like or dislike about this product?"
-                          className="w-full p-3 rounded-xl border border-[hsl(214,13%,90%)] text-sm focus:border-[hsl(217,70%,38%)] focus:outline-none resize-none"
+                          className="w-full p-3 rounded-xl border border-[hsl(214,13%,90%)] text-sm focus:border-[hsl(var(--color-accent))] focus:outline-none resize-none"
                         />
                       </div>
 
@@ -667,7 +673,7 @@ export function ProductDetailClient({ product }: Props) {
 
                   {/* Right Column: List of Reviews */}
                   <div className="lg:col-span-3 space-y-6">
-                    <h3 className="font-display font-bold text-base text-[hsl(222,47%,11%)] flex items-center gap-2 border-b border-[hsl(214,13%,95%)] pb-3">
+                    <h3 className="font-display font-bold text-base text-[hsl(var(--color-primary-light))] flex items-center gap-2 border-b border-[hsl(214,13%,95%)] pb-3">
                       Reviews <span className="text-sm font-normal text-[hsl(215,16%,47%)]">({reviews.length})</span>
                     </h3>
 
@@ -676,7 +682,7 @@ export function ProductDetailClient({ product }: Props) {
                         <motion.div
                           animate={{ rotate: 360 }}
                           transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-                          className="h-6 w-6 border-2 border-[hsl(217,70%,38%)] border-t-transparent rounded-full mx-auto mb-3"
+                          className="h-6 w-6 border-2 border-[hsl(var(--color-accent))] border-t-transparent rounded-full mx-auto mb-3"
                         />
                         <p className="text-xs text-[hsl(215,16%,47%)]">Loading customer reviews...</p>
                       </div>
@@ -692,11 +698,11 @@ export function ProductDetailClient({ product }: Props) {
                           <div key={rev.id} className="pt-4 first:pt-0">
                             <div className="flex items-center justify-between mb-2">
                               <div className="flex items-center gap-3">
-                                <div className="h-9 w-9 bg-[hsl(210,20%,94%)] text-[hsl(217,70%,38%)] font-bold text-sm rounded-full flex items-center justify-center">
+                                <div className="h-9 w-9 bg-[hsl(210,20%,94%)] text-[hsl(var(--color-accent))] font-bold text-sm rounded-full flex items-center justify-center">
                                   {rev.reviewer ? rev.reviewer.charAt(0).toUpperCase() : "?"}
                                 </div>
                                 <div>
-                                  <h4 className="font-bold text-sm text-[hsl(222,47%,11%)] leading-snug">{rev.reviewer}</h4>
+                                  <h4 className="font-bold text-sm text-[hsl(var(--color-primary-light))] leading-snug">{rev.reviewer}</h4>
                                   <span className="text-[10px] text-[hsl(215,16%,47%)] font-medium">
                                     {new Date(rev.date_created).toLocaleDateString("en-IN", {
                                       day: "numeric",

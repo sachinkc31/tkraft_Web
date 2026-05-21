@@ -5,8 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Heart, ShoppingCart, Trash2, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useWishlistStore, useCartStore, useUIStore, useCurrencyStore } from "@/store";
-import { Button } from "@/components/ui/button";
-import { formatPrice } from "@/lib/utils";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { formatPrice, cn } from "@/lib/utils";
 
 export function WishlistClient() {
   const currency = useCurrencyStore((s) => s.currency);
@@ -77,10 +77,14 @@ export function WishlistClient() {
               <p className="text-sm text-[hsl(215,16%,47%)] mb-8">
                 Explore our catalog and click the heart icon on products to save them here.
               </p>
-              <Link href="/shop" passHref legacyBehavior>
-                <Button variant="primary" size="lg" className="w-full justify-center gap-2">
-                  Continue Shopping <ArrowRight className="h-4 w-4" />
-                </Button>
+              <Link 
+                href="/shop"
+                className={cn(
+                  buttonVariants({ variant: "primary", size: "lg" }),
+                  "w-full text-center flex items-center justify-center gap-2"
+                )}
+              >
+                Continue Shopping <ArrowRight className="h-4 w-4" />
               </Link>
             </motion.div>
           ) : (
@@ -123,11 +127,11 @@ export function WishlistClient() {
                     <div className="flex-1 flex flex-col justify-between min-w-0">
                       <div>
                         {product.categories?.[0] && (
-                          <span className="text-[10px] font-bold text-[hsl(217,70%,38%)] uppercase tracking-wider block mb-1">
+                          <span className="text-[10px] font-bold text-[hsl(var(--color-accent))] uppercase tracking-wider block mb-1">
                             {product.categories[0].name}
                           </span>
                         )}
-                        <Link href={`/products/${product.slug}`} className="font-semibold text-sm text-[hsl(222,47%,11%)] hover:text-[hsl(217,70%,38%)] transition-colors line-clamp-1">
+                        <Link href={`/products/${product.slug}`} className="font-semibold text-sm text-[hsl(222,47%,11%)] hover:text-[hsl(var(--color-accent))] transition-colors line-clamp-1">
                           {product.name}
                         </Link>
                         

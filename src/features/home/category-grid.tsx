@@ -52,7 +52,7 @@ export function CategoryGrid({ categories }: CategoryGridProps) {
           >
             <Link
               href={href}
-              className="group block rounded-2xl overflow-hidden bg-white border border-[hsl(214,13%,90%)] hover:border-[hsl(217,70%,38%)] hover:shadow-lg transition-all duration-300 p-5 text-center card-lift"
+              className="group block rounded-2xl overflow-hidden bg-white border border-[hsl(214,13%,90%)] hover:border-[hsl(var(--color-accent))] hover:shadow-lg transition-all duration-300 p-5 text-center card-lift"
             >
               {/* Image or Emoji */}
               <div className="relative h-28 mb-4 rounded-xl overflow-hidden bg-[hsl(210,20%,98%)] flex items-center justify-center">
@@ -69,7 +69,7 @@ export function CategoryGrid({ categories }: CategoryGridProps) {
                 )}
               </div>
 
-              <h3 className="font-semibold text-sm text-[hsl(222,47%,11%)] group-hover:text-[hsl(217,70%,38%)] transition-colors mb-1 leading-snug">
+              <h3 className="font-semibold text-sm text-[hsl(222,47%,11%)] group-hover:text-[hsl(var(--color-accent))] transition-colors mb-1 leading-snug">
                 {cat.name}
               </h3>
 
@@ -77,7 +77,7 @@ export function CategoryGrid({ categories }: CategoryGridProps) {
                 <p className="text-xs text-[hsl(215,14%,70%)]">{cat.count} products</p>
               )}
 
-              <div className="flex items-center justify-center gap-1 mt-3 text-xs font-semibold text-[hsl(217,70%,38%)] opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="flex items-center justify-center gap-1 mt-3 text-xs font-semibold text-[hsl(var(--color-accent))] opacity-0 group-hover:opacity-100 transition-opacity">
                 Shop <ArrowRight className="h-3 w-3" />
               </div>
             </Link>

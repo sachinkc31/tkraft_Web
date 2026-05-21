@@ -73,7 +73,7 @@ const DEFAULT_HOMEPAGE_LAYOUT: HomepageLayout = {
             subtitle: "Organize your kitchen & living rooms effortlessly",
             image: "https://images.unsplash.com/photo-1595428774223-ef52624120d2?auto=format&fit=crop&w=1600&q=80",
             cta_text: "Explore Organizers",
-            cta_link: "/category/storage-organization",
+            cta_link: "/category/storage-and-organization",
           }
         ]
       }

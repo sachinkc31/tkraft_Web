@@ -165,7 +165,7 @@ export function CheckoutPayClient() {
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-            className="h-8 w-8 border-2 border-[hsl(217,70%,38%)] border-t-transparent rounded-full mx-auto mb-4"
+            className="h-8 w-8 border-2 border-[hsl(var(--color-accent))] border-t-transparent rounded-full mx-auto mb-4"
           />
           <p className="text-sm text-[hsl(215,16%,47%)]">Retrieving pending checkout details...</p>
         </div>
@@ -232,11 +232,11 @@ export function CheckoutPayClient() {
     <div className="section min-h-[calc(100vh-200px)] bg-[hsl(210,20%,98%)] py-12">
       <div className="container max-w-3xl">
         <div className="mb-8">
-          <Link href="/account" className="inline-flex items-center gap-1.5 text-sm font-semibold text-[hsl(217,70%,38%)] hover:underline mb-4">
+          <Link href="/account" className="inline-flex items-center gap-1.5 text-sm font-semibold text-[hsl(var(--color-accent))] hover:underline mb-4">
             <ArrowLeft className="h-4 w-4" /> Back to Account
           </Link>
           <h1 className="font-display font-extrabold text-2xl md:text-3xl text-[hsl(222,47%,11%)] flex items-center gap-2.5">
-            <CreditCard className="h-7 w-7 text-[hsl(217,70%,38%)]" /> Complete Payment
+            <CreditCard className="h-7 w-7 text-[hsl(var(--color-accent))]" /> Complete Payment
           </h1>
           <p className="text-sm text-[hsl(215,16%,47%)] mt-2">
             Finish checkout for your pending Order <strong>#{order.id}</strong>.
@@ -296,7 +296,7 @@ export function CheckoutPayClient() {
                 </div>
                 <div className="border-t border-[hsl(214,13%,90%)] pt-3 flex justify-between items-baseline">
                   <span className="text-base font-bold text-[hsl(222,47%,11%)]">Total Amount</span>
-                  <span className="text-2xl font-display font-extrabold text-[hsl(217,70%,38%)]">
+                  <span className="text-2xl font-display font-extrabold text-[hsl(var(--color-accent))]">
                     {formatPrice(parseFloat(order.total), false)}
                   </span>
                 </div>

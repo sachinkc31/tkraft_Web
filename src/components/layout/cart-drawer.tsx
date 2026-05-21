@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ShoppingCart, Trash2, Plus, Minus, ArrowRight } from "lucide-react";
 import { useCartStore, useCurrencyStore } from "@/store";
@@ -13,7 +14,7 @@ export function CartDrawer() {
   const currency = useCurrencyStore((s) => s.currency);
   const { items, isOpen, closeCart, removeItem, updateQuantity, getTotalPrice, getTotalItems } =
     useCartStore();
-  const overlayRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   // Close on Escape
   useEffect(() => {
@@ -39,7 +40,6 @@ export function CartDrawer() {
         <>
           {/* Backdrop */}
           <motion.div
-            ref={overlayRef}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -58,7 +58,7 @@ export function CartDrawer() {
             {/* Header */}
             <div className="flex items-center justify-between p-5 border-b border-[hsl(214,13%,90%)]">
               <div className="flex items-center gap-2">
-                <ShoppingCart className="h-5 w-5 text-[hsl(217,70%,38%)]" />
+                <ShoppingCart className="h-5 w-5 text-[hsl(var(--color-accent))]" />
                 <h2 className="font-display font-bold text-lg">
                   Shopping Cart
                 </h2>
@@ -140,11 +140,11 @@ export function CartDrawer() {
                           <Link
                             href={`/products/${item.product.slug}`}
                             onClick={closeCart}
-                            className="text-sm font-semibold text-[hsl(222,47%,11%)] line-clamp-2 hover:text-[hsl(217,70%,38%)] transition-colors"
+                            className="text-sm font-semibold text-[hsl(222,47%,11%)] line-clamp-2 hover:text-[hsl(var(--color-accent))] transition-colors"
                           >
                             {item.product.name}
                           </Link>
-                          <p className="text-sm font-bold text-[hsl(217,70%,38%)] mt-1">
+                          <p className="text-sm font-bold text-[hsl(var(--color-accent))] mt-1">
                             {formatPrice(item.product.price)}
                           </p>
 
@@ -153,7 +153,7 @@ export function CartDrawer() {
                             <div className="flex items-center gap-1">
                               <button
                                 onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                                className="h-7 w-7 rounded-lg border border-[hsl(214,13%,90%)] flex items-center justify-center text-[hsl(215,16%,47%)] hover:border-[hsl(217,70%,38%)] hover:text-[hsl(217,70%,38%)] transition-colors"
+                                className="h-7 w-7 rounded-lg border border-[hsl(214,13%,90%)] flex items-center justify-center text-[hsl(215,16%,47%)] hover:border-[hsl(var(--color-accent))] hover:text-[hsl(var(--color-accent))] transition-colors"
                               >
                                 <Minus className="h-3 w-3" />
                               </button>
@@ -162,7 +162,7 @@ export function CartDrawer() {
                               </span>
                               <button
                                 onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                                className="h-7 w-7 rounded-lg border border-[hsl(214,13%,90%)] flex items-center justify-center text-[hsl(215,16%,47%)] hover:border-[hsl(217,70%,38%)] hover:text-[hsl(217,70%,38%)] transition-colors"
+                                className="h-7 w-7 rounded-lg border border-[hsl(214,13%,90%)] flex items-center justify-center text-[hsl(215,16%,47%)] hover:border-[hsl(var(--color-accent))] hover:text-[hsl(var(--color-accent))] transition-colors"
                               >
                                 <Plus className="h-3 w-3" />
                               </button>
@@ -201,21 +201,17 @@ export function CartDrawer() {
                     size="lg"
                     className="w-full"
                     rightIcon={<ArrowRight className="h-4 w-4" />}
-                    onClick={closeCart}
+                    onClick={() => { closeCart(); router.push("/checkout"); }}
                   >
-                    <Link href="/checkout" className="w-full flex items-center justify-center gap-2">
-                      Proceed to Checkout
-                    </Link>
+                    Proceed to Checkout
                   </Button>
                   <Button
                     variant="outline"
                     size="lg"
                     className="w-full"
-                    onClick={closeCart}
+                    onClick={() => { closeCart(); router.push("/cart"); }}
                   >
-                    <Link href="/cart" className="w-full flex items-center justify-center gap-2">
-                      View Cart
-                    </Link>
+                    View Cart
                   </Button>
                   <Button
                     variant="ghost"

@@ -79,7 +79,11 @@ const nextConfig: NextConfig = {
   // Redirects for SEO
   async redirects() {
     return [
-      // Example: redirect old WP URLs if needed
+      {
+        source: "/category/storage-organization",
+        destination: "/category/storage-and-organization",
+        permanent: true,
+      },
     ];
   },
 };

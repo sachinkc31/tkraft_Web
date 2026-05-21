@@ -6,6 +6,7 @@ import { Footer } from "@/components/layout/footer";
 import { CartDrawer } from "@/components/layout/cart-drawer";
 import { SearchOverlay } from "@/components/layout/search-overlay";
 import { Toast } from "@/components/ui/toast";
+import { ScrollToTop } from "@/components/ui/scroll-to-top";
 import { QueryProvider } from "@/lib/query-provider";
 import { SITE_CONFIG } from "@/lib/constants";
 import { ThemeProvider } from "@/components/layout/theme-provider";
@@ -67,7 +68,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${outfit.variable}`}>
+    <html lang="en" className={`${inter.variable} ${outfit.variable}`} data-scroll-behavior="smooth">
       <body className="min-h-screen flex flex-col">
         <ThemeProvider />
         <StoreHydration />
@@ -78,6 +79,7 @@ export default function RootLayout({
           <CartDrawer />
           <SearchOverlay />
           <Toast />
+          <ScrollToTop />
         </QueryProvider>
       </body>
     </html>

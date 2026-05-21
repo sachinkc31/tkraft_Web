@@ -29,6 +29,7 @@ export function ProductCarousel({
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   // Check scroll positions to show/hide arrow buttons
   const checkScroll = () => {
@@ -55,6 +56,31 @@ export function ProductCarousel({
     };
   }, [products]);
 
+  // Autoplay animation
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el || isHovered || products.length <= 1) return;
+
+    const interval = setInterval(() => {
+      const isAtEnd = el.scrollLeft >= el.scrollWidth - el.clientWidth - 10;
+      const scrollAmount = el.clientWidth * 0.75;
+
+      if (isAtEnd) {
+        el.scrollTo({
+          left: 0,
+          behavior: "smooth",
+        });
+      } else {
+        el.scrollBy({
+          left: scrollAmount,
+          behavior: "smooth",
+        });
+      }
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [isHovered, products]);
+
   const scroll = (direction: "left" | "right") => {
     const el = scrollRef.current;
     if (el) {
@@ -70,20 +96,24 @@ export function ProductCarousel({
 
   return (
     <div
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onTouchStart={() => setIsHovered(true)}
+      onTouchEnd={() => setIsHovered(false)}
       className={cn(
-        "relative py-[var(--spacing-lg)]",
-        variant === "boxed" && "bg-[hsl(var(--color-surface2))] p-[var(--spacing-lg)] rounded-[var(--radius-lg)] border border-[hsl(var(--color-border))]",
-        variant === "accent" && "bg-[hsl(var(--color-primary))] text-[hsl(var(--color-surface))] p-[var(--spacing-lg)] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)]",
+        "relative py-[6]",
+        variant === "boxed" && "bg-[hsl(var(--color-surface-2))] p-[6] rounded-[var(--radius-lg)] border border-[hsl(var(--color-border))]",
+        variant === "accent" && "bg-[hsl(var(--color-primary))] text-[hsl(var(--color-surface))] p-[6] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)]",
         className
       )}
     >
       {/* Header */}
-      <div className="flex items-end justify-between mb-6 px-[var(--spacing-sm)] md:px-0">
+      <div className="flex items-end justify-between mb-6 px-2 md:px-0">
         <div>
           <h2
             className={cn(
               "text-xl md:text-2xl font-display font-extrabold tracking-tight",
-              variant === "accent" ? "text-[hsl(var(--color-surface))]" : "text-[hsl(var(--color-text))]"
+              variant === "accent" ? "text-[hsl(var(--color-accent))]" : "text-[hsl(var(--color-accent))]"
             )}
           >
             {title}
@@ -114,7 +144,7 @@ export function ProductCarousel({
                 "h-8 w-8 rounded-full flex items-center justify-center transition-all disabled:opacity-30 disabled:pointer-events-none active:scale-95 border",
                 variant === "accent"
                   ? "bg-white/10 hover:bg-white/20 border-white/20 text-white"
-                  : "bg-[hsl(var(--color-surface))] hover:bg-[hsl(var(--color-surface3))] border-[hsl(var(--color-border))] text-[hsl(var(--color-text))]"
+                  : "bg-[hsl(var(--color-surface))] hover:bg-[hsl(var(--color-surface-3))] border-[hsl(var(--color-border))] text-[hsl(var(--color-text))]"
               )}
               aria-label="Scroll left"
             >
@@ -127,7 +157,7 @@ export function ProductCarousel({
                 "h-8 w-8 rounded-full flex items-center justify-center transition-all disabled:opacity-30 disabled:pointer-events-none active:scale-95 border",
                 variant === "accent"
                   ? "bg-white/10 hover:bg-white/20 border-white/20 text-white"
-                  : "bg-[hsl(var(--color-surface))] hover:bg-[hsl(var(--color-surface3))] border-[hsl(var(--color-border))] text-[hsl(var(--color-text))]"
+                  : "bg-[hsl(var(--color-surface))] hover:bg-[hsl(var(--color-surface-3))] border-[hsl(var(--color-border))] text-[hsl(var(--color-text))]"
               )}
               aria-label="Scroll right"
             >
@@ -140,7 +170,7 @@ export function ProductCarousel({
       {/* Slider Container */}
       <div
         ref={scrollRef}
-        className="flex gap-4 overflow-x-auto scrollbar-none snap-x snap-mandatory scroll-smooth pb-4 px-[var(--spacing-sm)] md:px-0"
+        className="flex gap-4 overflow-x-auto scrollbar-none snap-x snap-mandatory scroll-smooth pb-4 px-2 md:px-0"
         style={{
           scrollbarWidth: "none",
           WebkitOverflowScrolling: "touch",
