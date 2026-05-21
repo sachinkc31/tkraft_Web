@@ -4,20 +4,38 @@
 
 import { API_CONFIG } from "@/lib/constants";
 
+export interface CampaignConfig {
+  id: string;
+  name: string;
+  theme: "summer" | "monsoon" | "diwali" | "blackfriday" | "christmas" | "newyear" | "default";
+  colors?: {
+    light?: Record<string, string>;
+    dark?: Record<string, string>;
+  };
+  bannerUrl?: string;
+  promoText?: string;
+}
+
 export interface HomepageSection {
   id: string;
   type:
     | "heroBanner"
     | "promoBanner"
+    | "ctaBanner"
+    | "productCarousel"
     | "categoryGrid"
+    | "featureIcons"
+    | "trustSection"
+    | "testimonials"
+    | "newsletter"
+    | "blogSection"
+    // Keep Phase 1 types for backwards compatibility
     | "trendingProducts"
     | "bestSellerProducts"
     | "flashSale"
     | "featuredProducts"
-    | "ctaBanner"
     | "brandHighlights"
     | "customerBenefits"
-    | "testimonials"
     | "newsletterSignup"
     | "blogHighlights";
   title?: string;
@@ -30,6 +48,7 @@ export interface HomepageSection {
 
 export interface HomepageLayout {
   sections: HomepageSection[];
+  activeCampaign?: CampaignConfig;
 }
 
 // Fallback layout when WordPress returns empty layout or fails

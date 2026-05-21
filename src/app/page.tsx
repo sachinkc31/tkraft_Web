@@ -1,15 +1,12 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { HeroSection } from "@/features/home/hero-section";
-import { TrustBadges } from "@/features/home/trust-badges";
-import { CategoryGrid } from "@/features/home/category-grid";
-import { NewArrivalsSection } from "@/features/home/new-arrivals-section";
-import { TrendingSection } from "@/features/home/trending-section";
-import { ProductCardSkeleton } from "@/components/ui/product-card";
 import { SITE_CONFIG } from "@/lib/constants";
+import { SectionRenderer } from "@/components/sections/section-renderer";
+import { getHomepageLayout, type HomepageLayout } from "@/services/cms";
 import {
   getNewArrivals,
   getOnSaleProducts,
+  getFeaturedProducts,
   getTopCategories,
 } from "@/services/woocommerce";
 
@@ -23,108 +20,86 @@ export const revalidate = 3600;
 
 export default async function HomePage() {
   // Parallel server-side data fetching
-  const [newArrivals, trendingProducts, categories] = await Promise.all([
+  const [
+    layout,
+    newArrivals,
+    trendingProducts,
+    featuredProducts,
+    categories
+  ] = await Promise.all([
+    getHomepageLayout().catch(() => ({ sections: [] } as HomepageLayout)),
     getNewArrivals(8).catch(() => []),
     getOnSaleProducts(8).catch(() => []),
+    getFeaturedProducts(8).catch(() => []),
     getTopCategories().catch(() => []),
   ]);
 
+  // Aggregate fetched products for renderer mapping
+  const aggregatedProducts = {
+    trending: trendingProducts,
+    bestsellers: newArrivals, // fallback/mapping
+    featured: featuredProducts,
+    flashSale: trendingProducts.filter((p) => p.on_sale),
+  };
+
+  const campaign = layout.activeCampaign;
+  let campaignCss = "";
+
+  // Dynamic CMS Campaign Style Override Compiler
+  if (campaign?.colors) {
+    const toKebab = (str: string) => str.replace(/([A-Z])/g, "-$1").toLowerCase();
+    
+    const lightColorVars = Object.entries(campaign.colors.light || {})
+      .map(([key, value]) => `  --color-${toKebab(key)}: ${value} !important;`)
+      .join("\n");
+
+    const darkColorVars = Object.entries(campaign.colors.dark || {})
+      .map(([key, value]) => `  --color-${toKebab(key)}: ${value} !important;`)
+      .join("\n");
+
+    campaignCss = `
+:root {
+${lightColorVars}
+}
+
+.dark {
+${darkColorVars}
+}
+    `;
+  }
+
   return (
     <>
-      {/* Hero */}
-      <HeroSection />
-
-      {/* Trust Badges */}
-      <TrustBadges />
-
-      {/* Category Grid */}
-      <section className="section bg-[hsl(210,20%,98%)]">
-        <div className="container">
-          <SectionHeading
-            label="Shop by Category"
-            title="Everything Your Home Needs"
-            subtitle="Explore our curated categories for home, kitchen, and personal care"
-          />
-          <CategoryGrid categories={categories} />
-        </div>
-      </section>
-
-      {/* New Arrivals */}
-      <section className="section">
-        <div className="container">
-          <SectionHeading
-            label="Fresh In"
-            title="New Arrivals"
-            subtitle="The latest additions to our collection"
-            cta={{ label: "View All", href: "/shop?sort=date" }}
-          />
-          <Suspense fallback={<ProductGridSkeleton />}>
-            <NewArrivalsSection products={newArrivals} />
-          </Suspense>
-        </div>
-      </section>
-
-      {/* Trending / On Sale */}
-      <section className="section bg-[hsl(210,20%,98%)]">
-        <div className="container">
-          <SectionHeading
-            label="Hot Deals"
-            title="Trending Now"
-            subtitle="Best sellers and biggest discounts this week"
-            cta={{ label: "View All Deals", href: "/shop?sort=popularity" }}
-          />
-          <Suspense fallback={<ProductGridSkeleton />}>
-            <TrendingSection products={trendingProducts} />
-          </Suspense>
-        </div>
-      </section>
-    </>
-  );
-}
-
-// ---- Shared sub-components ----
-function SectionHeading({
-  label,
-  title,
-  subtitle,
-  cta,
-}: {
-  label: string;
-  title: string;
-  subtitle?: string;
-  cta?: { label: string; href: string };
-}) {
-  return (
-    <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
-      <div>
-        <span className="text-xs font-bold uppercase tracking-widest text-[hsl(27,96%,55%)] mb-2 block">
-          {label}
-        </span>
-        <h2 className="text-2xl md:text-3xl font-display font-bold text-[hsl(222,47%,11%)]">
-          {title}
-        </h2>
-        {subtitle && (
-          <p className="text-[hsl(215,16%,47%)] mt-2 text-sm">{subtitle}</p>
-        )}
-      </div>
-      {cta && (
-        <a
-          href={cta.href}
-          className="flex-shrink-0 inline-flex items-center gap-1.5 text-sm font-semibold text-[hsl(217,70%,38%)] hover:text-[hsl(217,70%,28%)] transition-colors"
-        >
-          {cta.label} →
-        </a>
+      {/* Campaign specific CSS variable override injected server-side to prevent Cumulative Layout Shifts (CLS) */}
+      {campaignCss && (
+        <style 
+          id="tkraft-campaign-tokens" 
+          dangerouslySetInnerHTML={{ __html: campaignCss }} 
+        />
       )}
-    </div>
-  );
-}
 
-function ProductGridSkeleton() {
-  return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-      {Array.from({ length: 8 }).map((_, i) => (
-        <ProductCardSkeleton key={i} />
-      ))}
-    </div>
+      {/* Dynamic Campaign Banner Bar */}
+      {campaign?.promoText && (
+        <div className="bg-[hsl(var(--color-primary))] text-[hsl(var(--color-surface))] text-xs font-bold text-center py-2 px-4 border-b border-white/10 transition-colors duration-300">
+          {campaign.promoText}
+        </div>
+      )}
+
+      {/* Dynamically Render Layout Blocks */}
+      {layout.sections && layout.sections.length > 0 ? (
+        layout.sections.map((section) => (
+          <SectionRenderer
+            key={section.id}
+            section={section}
+            products={aggregatedProducts}
+            categories={categories}
+          />
+        ))
+      ) : (
+        <div className="container py-24 text-center">
+          <p className="text-[hsl(var(--color-textMuted))]">No homepage layout sections configured.</p>
+        </div>
+      )}
+    </>
   );
 }

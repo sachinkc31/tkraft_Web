@@ -22,19 +22,35 @@ export const theme = {
 
 export type Theme = typeof theme;
 
+export type CampaignColors = {
+  light?: Partial<typeof colors.light>;
+  dark?: Partial<typeof colors.dark>;
+};
+
 /**
  * Generate CSS Custom Properties string to dynamically style the website
  * and allow single-file style adjustments that update Tailwind v4 immediately.
+ * Supports dynamic campaign color overrides passed from CMS layout configurations.
  */
-export function generateThemeCss(): string {
+export function generateThemeCss(campaignColors?: CampaignColors): string {
   // Translate camelCase key to kebab-case (e.g. primaryLight -> primary-light)
   const toKebab = (str: string) => str.replace(/([A-Z])/g, "-$1").toLowerCase();
 
-  const lightColorVars = Object.entries(colors.light)
+  const lightColors = {
+    ...colors.light,
+    ...(campaignColors?.light || {}),
+  };
+
+  const darkColors = {
+    ...colors.dark,
+    ...(campaignColors?.dark || {}),
+  };
+
+  const lightColorVars = Object.entries(lightColors)
     .map(([key, value]) => `  --color-${toKebab(key)}: ${value};`)
     .join("\n");
 
-  const darkColorVars = Object.entries(colors.dark)
+  const darkColorVars = Object.entries(darkColors)
     .map(([key, value]) => `  --color-${toKebab(key)}: ${value};`)
     .join("\n");
 
