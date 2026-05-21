@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -91,7 +92,8 @@ export function Navbar() {
               href="/"
               className="flex-shrink-0 font-display font-800 text-2xl text-[hsl(217,70%,38%)] tracking-tight"
             >
-              T<span className="text-[hsl(27,96%,55%)]">kraft</span>
+              <Image src={SITE_CONFIG.logo} alt={SITE_CONFIG.name} width={120} height={40} className="inline-block mr-2 align-middle object-contain" />
+              {SITE_CONFIG.name}
             </Link>
 
             {/* Desktop Nav */}
@@ -216,7 +218,7 @@ export function Navbar() {
                     {cat.label}
                   </Link>
                 ))}
-                 <div className="border-t border-[hsl(214,13%,90%)] mt-2 pt-2 flex flex-col gap-1">
+                <div className="border-t border-[hsl(214,13%,90%)] mt-2 pt-2 flex flex-col gap-1">
                   {mounted && (
                     <div className="px-4 py-3 flex items-center justify-between border-b border-[hsl(214,13%,95%)] mb-1">
                       <span className="text-sm font-semibold text-[hsl(215,16%,47%)]">Select Currency</span>

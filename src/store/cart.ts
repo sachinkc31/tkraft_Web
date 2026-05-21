@@ -93,8 +93,8 @@ export const useCartStore = create<CartState>()(
     }),
     {
       name: "tkraft-cart",
-      // Only persist items, not UI state
       partialize: (state) => ({ items: state.items }),
+      skipHydration: true,
     }
   )
 );

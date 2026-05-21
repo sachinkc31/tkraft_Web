@@ -23,7 +23,6 @@ export function ProductCard({ product, className, priority = false }: ProductCar
   const toggleItem = useWishlistStore((s) => s.toggleItem);
   const isInWishlist = useWishlistStore((s) => s.hasItem(product.id));
 
-
   const image = product.images[0];
   const discount = getDiscountPercent(product.regular_price, product.sale_price);
   const isOutOfStock = product.stock_status === "outofstock";

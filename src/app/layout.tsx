@@ -8,6 +8,8 @@ import { SearchOverlay } from "@/components/layout/search-overlay";
 import { Toast } from "@/components/ui/toast";
 import { QueryProvider } from "@/lib/query-provider";
 import { SITE_CONFIG } from "@/lib/constants";
+import { ThemeProvider } from "@/components/layout/theme-provider";
+import { StoreHydration } from "@/components/layout/store-hydration";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -67,6 +69,8 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${outfit.variable}`}>
       <body className="min-h-screen flex flex-col">
+        <ThemeProvider />
+        <StoreHydration />
         <QueryProvider>
           <Navbar />
           <main className="flex-1">{children}</main>

@@ -40,6 +40,7 @@ export const useWishlistStore = create<WishlistState>()(
     }),
     {
       name: "tkraft-wishlist",
+      skipHydration: true,
     }
   )
 );

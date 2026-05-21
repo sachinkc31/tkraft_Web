@@ -8,6 +8,7 @@ export const SITE_CONFIG = {
   description:
     "Shop premium home essentials, kitchen products, storage solutions, and personal care items at the best prices. Free shipping on orders above ₹499.",
   url: process.env.NEXT_PUBLIC_SITE_URL || "https://www.tkraft.in",
+  logo: "https://tkraft.in/wp-content/uploads/2025/12/Edited.png",
   ogImage: "/images/og-default.jpg",
   locale: "en_IN",
   currency: "INR",

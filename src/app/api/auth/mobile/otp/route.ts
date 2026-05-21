@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getAuthService } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,20 +12,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log(`[Mobile Auth OTP] Generating OTP for mobile: ${phone}`);
+    const authService = getAuthService();
+    const result = await authService.sendMobileOtp(phone);
 
-    // Sandbox / Test Mode: Return success with a mock warning or instruction
-    // In production: Connect to Twilio, MSG91, or Fast2SMS here
-    const mockOtp = "123456"; 
-
-    return NextResponse.json({
-      success: true,
-      message: `OTP sent successfully. (Use code: ${mockOtp} for sandbox verification)`,
-    });
-  } catch (error) {
-    console.error("[Mobile Auth OTP API] Error:", error);
+    return NextResponse.json(result);
+  } catch (error: any) {
+    console.error("[Mobile Auth OTP Router] Error:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: error.message || "Failed to send OTP" },
       { status: 500 }
     );
   }

@@ -120,6 +120,7 @@ export const useCurrencyStore = create<CurrencyState>()(
     }),
     {
       name: "tkraft-currency-store",
+      skipHydration: true,
     }
   )
 );
