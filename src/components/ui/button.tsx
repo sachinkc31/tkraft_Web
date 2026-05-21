@@ -6,27 +6,27 @@ import { Loader2 } from "lucide-react";
 import type { ButtonHTMLAttributes } from "react";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 font-semibold rounded-xl transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none select-none",
+  "inline-flex items-center justify-center gap-2 font-semibold rounded-[var(--radius-md)] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none select-none",
   {
     variants: {
       variant: {
         primary:
-          "bg-[hsl(217,70%,38%)] text-white hover:bg-[hsl(217,70%,32%)] active:scale-[0.98] focus-visible:ring-[hsl(217,70%,38%)] shadow-md hover:shadow-lg",
+          "bg-[hsl(var(--color-primary))] text-[hsl(var(--color-surface))] hover:bg-[hsl(var(--color-primary-dark))] active:scale-[0.98] focus-visible:ring-[hsl(var(--color-primary))] shadow-[var(--shadow-md)] hover:shadow-[var(--shadow-lg)]",
         secondary:
-          "bg-[hsl(27,96%,55%)] text-white hover:bg-[hsl(27,96%,47%)] active:scale-[0.98] focus-visible:ring-[hsl(27,96%,55%)] shadow-md hover:shadow-lg",
+          "bg-[hsl(var(--color-accent))] text-[hsl(var(--color-surface))] hover:bg-[hsl(var(--color-accent-dark))] active:scale-[0.98] focus-visible:ring-[hsl(var(--color-accent))] shadow-[var(--shadow-md)] hover:shadow-[var(--shadow-lg)]",
         outline:
-          "border-2 border-[hsl(217,70%,38%)] text-[hsl(217,70%,38%)] hover:bg-[hsl(217,70%,38%)] hover:text-white active:scale-[0.98]",
+          "border-2 border-[hsl(var(--color-primary))] text-[hsl(var(--color-primary))] hover:bg-[hsl(var(--color-primary))] hover:text-[hsl(var(--color-surface))] active:scale-[0.98]",
         ghost:
-          "text-[hsl(215,16%,47%)] hover:bg-[hsl(210,16%,96%)] hover:text-[hsl(222,47%,11%)] active:scale-[0.98]",
+          "text-[hsl(var(--color-text-muted))] hover:bg-[hsl(var(--color-surface3))] hover:text-[hsl(var(--color-text))] active:scale-[0.98]",
         danger:
-          "bg-[hsl(0,72%,51%)] text-white hover:bg-[hsl(0,72%,44%)] active:scale-[0.98] focus-visible:ring-[hsl(0,72%,51%)]",
-        link: "text-[hsl(217,70%,38%)] underline-offset-4 hover:underline p-0 h-auto",
+          "bg-[hsl(var(--color-error))] text-[hsl(var(--color-surface))] hover:bg-[hsl(var(--color-error))] active:scale-[0.98] focus-visible:ring-[hsl(var(--color-error))]",
+        link: "text-[hsl(var(--color-primary))] underline-offset-4 hover:underline p-0 h-auto",
       },
       size: {
-        sm:  "h-8  px-3  text-sm",
-        md:  "h-10 px-5  text-sm",
-        lg:  "h-12 px-7  text-base",
-        xl:  "h-14 px-9  text-lg",
+        sm:  "h-8  px-3  text-[var(--font-size-sm)]",
+        md:  "h-10 px-5  text-[var(--font-size-base)]",
+        lg:  "h-12 px-7  text-[var(--font-size-base)]",
+        xl:  "h-14 px-9  text-[var(--font-size-lg)]",
         icon: "h-10 w-10 p-0",
       },
     },
