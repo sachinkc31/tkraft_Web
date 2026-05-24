@@ -17,6 +17,8 @@ interface ProductCarouselProps {
   viewAllUrl?: string;
   variant?: "default" | "minimal" | "compact" | "featured" | "boxed" | "accent";
   className?: string;
+  autoplayInterval?: number;
+  limitMobile?: number;
 }
 
 export function ProductCarousel({
@@ -25,11 +27,28 @@ export function ProductCarousel({
   viewAllUrl,
   variant = "default",
   className,
+  autoplayInterval = 4000,
+  limitMobile,
 }: ProductCarouselProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Check mobile viewport on client side
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 640px)");
+    setIsMobile(media.matches);
+    const listener = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    media.addEventListener("change", listener);
+    return () => media.removeEventListener("change", listener);
+  }, []);
+
+  // Compute active products (slice if mobile limit is set)
+  const targetProducts = (isMobile && limitMobile && products.length > limitMobile)
+    ? products.slice(0, limitMobile)
+    : products;
 
   // Check scroll positions to show/hide arrow buttons
   const checkScroll = () => {
@@ -54,12 +73,12 @@ export function ProductCarousel({
       if (el) el.removeEventListener("scroll", checkScroll);
       window.removeEventListener("resize", checkScroll);
     };
-  }, [products]);
+  }, [targetProducts]);
 
   // Autoplay animation
   useEffect(() => {
     const el = scrollRef.current;
-    if (!el || isHovered || products.length <= 1) return;
+    if (!el || isHovered || targetProducts.length <= 1 || autoplayInterval === 0) return;
 
     const interval = setInterval(() => {
       const isAtEnd = el.scrollLeft >= el.scrollWidth - el.clientWidth - 10;
@@ -76,10 +95,10 @@ export function ProductCarousel({
           behavior: "smooth",
         });
       }
-    }, 4000);
+    }, autoplayInterval);
 
     return () => clearInterval(interval);
-  }, [isHovered, products]);
+  }, [isHovered, targetProducts, autoplayInterval]);
 
   const scroll = (direction: "left" | "right") => {
     const el = scrollRef.current;
@@ -92,7 +111,7 @@ export function ProductCarousel({
     }
   };
 
-  if (!products || products.length === 0) return null;
+  if (!targetProducts || targetProducts.length === 0) return null;
 
   return (
     <div
@@ -176,7 +195,7 @@ export function ProductCarousel({
           WebkitOverflowScrolling: "touch",
         }}
       >
-        {products.map((product) => (
+        {targetProducts.map((product) => (
           <div
             key={product.id}
             className={cn(

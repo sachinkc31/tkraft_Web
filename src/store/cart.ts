@@ -11,9 +11,9 @@ interface CartState {
   isOpen: boolean;
 
   // Actions
-  addItem: (product: WooProduct, quantity?: number) => void;
-  removeItem: (productId: number) => void;
-  updateQuantity: (productId: number, quantity: number) => void;
+  addItem: (product: WooProduct, quantity?: number, variationId?: number, variation?: Record<string, string>) => void;
+  removeItem: (productId: number, variationId?: number) => void;
+  updateQuantity: (productId: number, quantity: number, variationId?: number) => void;
   clearCart: () => void;
   toggleCart: () => void;
   openCart: () => void;
@@ -22,7 +22,7 @@ interface CartState {
   // Computed
   getTotalItems: () => number;
   getTotalPrice: () => number;
-  getItemQuantity: (productId: number) => number;
+  getItemQuantity: (productId: number, variationId?: number) => number;
 }
 
 export const useCartStore = create<CartState>()(
@@ -31,10 +31,10 @@ export const useCartStore = create<CartState>()(
       items: [],
       isOpen: false,
 
-      addItem: (product: WooProduct, quantity = 1) => {
+      addItem: (product: WooProduct, quantity = 1, variationId?: number, variation?: Record<string, string>) => {
         set((state) => {
           const existingIndex = state.items.findIndex(
-            (item) => item.id === product.id
+            (item) => item.id === product.id && item.variation_id === variationId
           );
 
           if (existingIndex > -1) {
@@ -47,25 +47,25 @@ export const useCartStore = create<CartState>()(
           }
 
           return {
-            items: [...state.items, { id: product.id, product, quantity }],
+            items: [...state.items, { id: product.id, product, quantity, variation_id: variationId, variation }],
           };
         });
       },
 
-      removeItem: (productId: number) => {
+      removeItem: (productId: number, variationId?: number) => {
         set((state) => ({
-          items: state.items.filter((item) => item.id !== productId),
+          items: state.items.filter((item) => !(item.id === productId && item.variation_id === variationId)),
         }));
       },
 
-      updateQuantity: (productId: number, quantity: number) => {
+      updateQuantity: (productId: number, quantity: number, variationId?: number) => {
         if (quantity <= 0) {
-          get().removeItem(productId);
+          get().removeItem(productId, variationId);
           return;
         }
         set((state) => ({
           items: state.items.map((item) =>
-            item.id === productId ? { ...item, quantity } : item
+            item.id === productId && item.variation_id === variationId ? { ...item, quantity } : item
           ),
         }));
       },
@@ -86,8 +86,8 @@ export const useCartStore = create<CartState>()(
         }, 0);
       },
 
-      getItemQuantity: (productId: number) => {
-        const item = get().items.find((i) => i.id === productId);
+      getItemQuantity: (productId: number, variationId?: number) => {
+        const item = get().items.find((i) => i.id === productId && i.variation_id === variationId);
         return item?.quantity || 0;
       },
     }),

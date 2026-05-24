@@ -179,6 +179,15 @@ export async function getProductById(id: number): Promise<WooProduct> {
   return wooFetch<WooProduct>(`/products/${id}`);
 }
 
+export async function getProductVariations(productId: number): Promise<any[]> {
+  try {
+    return await wooFetch<any[]>(`/products/${productId}/variations`);
+  } catch (error) {
+    console.error(`Error fetching variations for product ${productId}:`, error);
+    return [];
+  }
+}
+
 export async function getRelatedProducts(
   productId: number,
   limit = 4

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getProductBySlug, getAllProductSlugs, getRelatedProducts } from "@/services/woocommerce";
+import { getProductBySlug, getAllProductSlugs, getRelatedProducts, getProductVariations } from "@/services/woocommerce";
 import { ProductDetailClient } from "@/features/product/product-detail-client";
 import { ProductCard } from "@/components/ui/product-card";
 import { SITE_CONFIG } from "@/lib/constants";
@@ -49,6 +49,11 @@ export default async function ProductDetailPage({ params }: Props) {
   const product = await getProductBySlug(slug);
   if (!product) notFound();
 
+  let variations: any[] = [];
+  if (product.type === "variable") {
+    variations = await getProductVariations(product.id).catch(() => []);
+  }
+
   const relatedProducts = await getRelatedProducts(product.id, 4).catch(() => []);
 
   // JSON-LD for SEO
@@ -86,7 +91,7 @@ export default async function ProductDetailPage({ params }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <ProductDetailClient product={product} />
+      <ProductDetailClient product={product} initialVariations={variations} />
 
       {/* Related Products */}
       {relatedProducts.length > 0 && (
