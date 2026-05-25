@@ -19,6 +19,64 @@ export interface CampaignConfig {
   promoText?: string;
 }
 
+export interface CampaignPreset {
+  name: string;
+  promoText: string;
+  colors: {
+    primary: string;
+    accent: string;
+    surface: string;
+  };
+}
+
+export const CAMPAIGN_PRESETS: Record<string, CampaignPreset> = {
+  summer: {
+    name: "Summer Sale",
+    promoText: "☀️ Summer Clearance: Cool deals on home & kitchen essentials! ☀️",
+    colors: {
+      primary: "hsl(24, 95%, 45%)", // Warm Orange
+      accent: "hsl(45, 100%, 50%)",  // Yellow Gold
+      surface: "hsl(30, 100%, 98%)", // Warm Cream
+    }
+  },
+  monsoon: {
+    name: "Monsoon Sale",
+    promoText: "🌧️ Monsoon Fresh: Smart storage & home organizing deals! 🌧️",
+    colors: {
+      primary: "hsl(174, 90%, 30%)", // Deep Teal
+      accent: "hsl(150, 80%, 40%)",  // Emerald Accent
+      surface: "hsl(180, 50%, 98%)", // Ice Blue/Mint
+    }
+  },
+  diwali: {
+    name: "Diwali Sale",
+    promoText: "🪔 Festive Diwali Dhamaka: Bring prosperity home with gold class storage! 🪔",
+    colors: {
+      primary: "hsl(12, 85%, 40%)",  // Deep Terracotta Red
+      accent: "hsl(43, 90%, 50%)",   // Royal Gold
+      surface: "hsl(20, 70%, 98%)",  // Warm Peach
+    }
+  },
+  blackfriday: {
+    name: "Black Friday Sale",
+    promoText: "🛍️ Black Friday Sale: The lowest prices of the entire year! 🛍️",
+    colors: {
+      primary: "hsl(0, 0%, 9%)",     // Jet Black
+      accent: "hsl(0, 85%, 55%)",    // Neon Red
+      surface: "hsl(0, 0%, 98%)",    // Clean White
+    }
+  },
+  christmas: {
+    name: "Christmas Sale",
+    promoText: "❄️ Christmas Joy: Gift smart organizers and kitchen decors! 🎄",
+    colors: {
+      primary: "hsl(355, 80%, 40%)", // Holiday Red
+      accent: "hsl(140, 70%, 30%)",  // Pine Green
+      surface: "hsl(0, 0%, 97%)",    // Snowy White
+    }
+  }
+};
+
 export interface HomepageSection {
   id: string;
   type:
@@ -72,6 +130,12 @@ export interface HomepageContent {
   campaign_color_primary?: string;
   campaign_color_accent?: string;
   campaign_color_surface?: string;
+  campaign_headline?: string;
+  campaign_cta_text?: string;
+  campaign_cta_link?: string;
+  campaign_banner_image?: string;
+  campaign_banner_image_mobile?: string;
+  campaign_product_collection?: string;
   hero_scroll_interval_seconds?: number;
 
   // Category Grid overrides
@@ -197,7 +261,7 @@ export const DEFAULT_HOMEPAGE_LAYOUT: HomepageLayout = {
             subtitle: "Up to 30% Off culinary tools",
             image: "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=800&q=80",
             cta_text: "Shop Cooking",
-            cta_link: "/category/kitchen-products",
+            cta_link: "/category/kitchen",
             className: "md:col-span-2",
           },
           {
@@ -206,7 +270,7 @@ export const DEFAULT_HOMEPAGE_LAYOUT: HomepageLayout = {
             subtitle: "Safe & non-toxic",
             image: "https://images.unsplash.com/photo-1583947215259-38e31be8751f?auto=format&fit=crop&w=800&q=80",
             cta_text: "Browse Cleaners",
-            cta_link: "/category/cleaning-essentials",
+            cta_link: "/category/cleaning-essential",
             className: "md:col-span-1",
           }
         ]
@@ -433,6 +497,12 @@ export async function getHomepageContent(): Promise<HomepageContent | null> {
             campaign_color_primary: acf.campaign_color_primary || undefined,
             campaign_color_accent: acf.campaign_color_accent || undefined,
             campaign_color_surface: acf.campaign_color_surface || undefined,
+            campaign_headline: acf.campaign_headline || undefined,
+            campaign_cta_text: acf.campaign_cta_text || undefined,
+            campaign_cta_link: cleanLink(acf.campaign_cta_link) || undefined,
+            campaign_banner_image: extractImg(acf.campaign_banner_image) || undefined,
+            campaign_banner_image_mobile: extractImg(acf.campaign_banner_image_mobile) || undefined,
+            campaign_product_collection: acf.campaign_product_collection || undefined,
             hero_scroll_interval_seconds: acf.hero_scroll_interval_seconds ? Number(acf.hero_scroll_interval_seconds) : undefined,
 
             // Category Grid

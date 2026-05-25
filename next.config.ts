@@ -84,6 +84,16 @@ const nextConfig: NextConfig = {
         destination: "/category/storage-and-organization",
         permanent: true,
       },
+      {
+        source: "/category/kitchen-products",
+        destination: "/category/kitchen",
+        permanent: true,
+      },
+      {
+        source: "/category/cleaning-essentials",
+        destination: "/category/cleaning-essential",
+        permanent: true,
+      },
     ];
   },
 };

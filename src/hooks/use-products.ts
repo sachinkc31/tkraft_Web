@@ -39,6 +39,13 @@ export function useProducts(
         per_page: String(PRODUCTS_PER_PAGE),
         ...(category && { category }),
         ...(filters?.sortBy && filters.sortBy !== "default" && { sort: filters.sortBy }),
+        ...(filters?.priceRange && {
+          min_price: String(filters.priceRange[0]),
+          max_price: String(filters.priceRange[1]),
+        }),
+        ...(filters?.inStock !== undefined && {
+          stock_status: filters.inStock ? "instock" : "outofstock",
+        }),
       });
       const res = await fetch(`/api/products?${params}`);
       if (!res.ok) throw new Error("Failed to fetch products");
@@ -49,7 +56,8 @@ export function useProducts(
 
 export function useInfiniteProducts(
   filters?: Partial<FilterOptions>,
-  category?: string
+  category?: string,
+  initialData?: any
 ) {
   return useInfiniteQuery({
     queryKey: queryKeys.products.list({ ...filters, ...(category ? { categories: [category] } : {}) }),
@@ -58,7 +66,14 @@ export function useInfiniteProducts(
         page: String(pageParam),
         per_page: String(PRODUCTS_PER_PAGE),
         ...(category && { category }),
-        ...(filters?.sortBy && { sort: filters.sortBy }),
+        ...(filters?.sortBy && filters.sortBy !== "default" && { sort: filters.sortBy }),
+        ...(filters?.priceRange && {
+          min_price: String(filters.priceRange[0]),
+          max_price: String(filters.priceRange[1]),
+        }),
+        ...(filters?.inStock !== undefined && {
+          stock_status: filters.inStock ? "instock" : "outofstock",
+        }),
       });
       const res = await fetch(`/api/products?${params}`);
       if (!res.ok) throw new Error("Failed to fetch products");
@@ -71,6 +86,7 @@ export function useInfiniteProducts(
       }
       return undefined;
     },
+    ...(initialData && { initialData }),
   });
 }
 

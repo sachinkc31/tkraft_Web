@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getProductBySlug, getAllProductSlugs, getRelatedProducts, getProductVariations } from "@/services/woocommerce";
+import { getProductBySlug, getAllProductSlugs, getRelatedProducts, getProductVariations, getProductsByIds } from "@/services/woocommerce";
 import { ProductDetailClient } from "@/features/product/product-detail-client";
 import { ProductCard } from "@/components/ui/product-card";
 import { SITE_CONFIG } from "@/lib/constants";
@@ -56,6 +56,22 @@ export default async function ProductDetailPage({ params }: Props) {
 
   const relatedProducts = await getRelatedProducts(product.id, 4).catch(() => []);
 
+  // Fetch bundle products (upsells / cross-sells)
+  let bundleProducts: any[] = [];
+  const bundleIds = [
+    ...(product.upsell_ids || []),
+    ...(product.cross_sell_ids || [])
+  ].slice(0, 2);
+
+  if (bundleIds.length > 0) {
+    bundleProducts = await getProductsByIds(bundleIds).catch(() => []);
+  }
+
+  // Fallback to related products if no manual upsells/cross-sells
+  if (bundleProducts.length === 0 && relatedProducts.length > 0) {
+    bundleProducts = relatedProducts.slice(0, 2);
+  }
+
   // JSON-LD for SEO
   const jsonLd = {
     "@context": "https://schema.org",
@@ -91,7 +107,7 @@ export default async function ProductDetailPage({ params }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <ProductDetailClient product={product} initialVariations={variations} />
+      <ProductDetailClient product={product} initialVariations={variations} bundleProducts={bundleProducts} />
 
       {/* Related Products */}
       {relatedProducts.length > 0 && (

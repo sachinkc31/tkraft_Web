@@ -179,6 +179,16 @@ export async function getProductById(id: number): Promise<WooProduct> {
   return wooFetch<WooProduct>(`/products/${id}`);
 }
 
+export async function getProductsByIds(ids: number[]): Promise<WooProduct[]> {
+  if (!ids || ids.length === 0) return [];
+  try {
+    return await wooFetch<WooProduct[]>(`/products?include=${ids.join(",")}&status=publish`);
+  } catch (error) {
+    console.error(`Error fetching products by ids ${ids}:`, error);
+    return [];
+  }
+}
+
 export async function getProductVariations(productId: number): Promise<any[]> {
   try {
     return await wooFetch<any[]>(`/products/${productId}/variations`);
@@ -236,7 +246,11 @@ export async function getCategories(): Promise<WooCategory[]> {
 export async function getCategoryBySlug(
   slug: string
 ): Promise<WooCategory | null> {
-  const targetSlug = slug === "storage-organization" ? "storage-and-organization" : slug;
+  const targetSlug = 
+    slug === "storage-organization" ? "storage-and-organization" : 
+    slug === "kitchen-products" ? "kitchen" : 
+    slug === "cleaning-essentials" ? "cleaning-essential" : 
+    slug;
   const categories = await wooFetch<WooCategory[]>(
     `/products/categories?slug=${targetSlug}`
   );

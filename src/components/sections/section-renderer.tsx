@@ -37,6 +37,8 @@ export function getThemeMotif(theme?: string): { prefix?: string; suffix?: strin
       return { prefix: "🌧️", suffix: "🌧️", classNames: "border-teal-200/50 bg-gradient-to-b from-teal-50/10 to-transparent" };
     case "diwali":
       return { prefix: "🪔", suffix: "🪔", classNames: "border-yellow-600/30 bg-gradient-to-b from-yellow-50/10 to-transparent" };
+    case "blackfriday":
+      return { prefix: "⚡", suffix: "⚡", classNames: "border-slate-800/30 bg-gradient-to-b from-slate-100/10 to-transparent" };
     case "christmas":
       return { prefix: "❄️", suffix: "🎄", classNames: "border-red-600/30 bg-gradient-to-b from-red-50/10 to-transparent" };
     default:

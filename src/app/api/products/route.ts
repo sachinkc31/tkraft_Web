@@ -28,9 +28,10 @@ export async function GET(request: NextRequest) {
     const minPrice = searchParams.get("min_price")
       ? Number(searchParams.get("min_price"))
       : undefined;
-    const maxPrice = searchParams.get("max_price")
+        const maxPrice = searchParams.get("max_price")
       ? Number(searchParams.get("max_price"))
       : undefined;
+    const stockStatus = searchParams.get("stock_status") || undefined;
     const includeStr = searchParams.get("include");
     const include = includeStr ? includeStr.split(",").map(Number) : undefined;
 
@@ -58,6 +59,7 @@ export async function GET(request: NextRequest) {
       sortBy: sort,
       minPrice,
       maxPrice,
+      stockStatus,
       include,
     });
 

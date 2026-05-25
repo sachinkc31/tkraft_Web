@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { SITE_CONFIG, API_CONFIG } from "@/lib/constants";
 import { SectionRenderer } from "@/components/sections/section-renderer";
-import { getHomepageLayout, getHomepageContent, DEFAULT_HOMEPAGE_LAYOUT, type HomepageLayout } from "@/services/cms";
+import { getHomepageLayout, getHomepageContent, DEFAULT_HOMEPAGE_LAYOUT, CAMPAIGN_PRESETS, type HomepageLayout } from "@/services/cms";
 import {
   getNewArrivals,
   getOnSaleProducts,
@@ -65,17 +65,26 @@ export default async function HomePage() {
         // Hero Banner WordPress SCF resolution
         if (sec.type === "heroBanner" && wpContent) {
           const defaultSlide = sec.data?.slides?.[0] || {};
+          const isCampaignActive = wpContent.campaign_theme && wpContent.campaign_theme !== "default";
+          
+          // Campaign overrides
+          const headline = isCampaignActive ? (wpContent.campaign_headline || wpContent.hero_title) : wpContent.hero_title;
+          const ctaText = isCampaignActive ? (wpContent.campaign_cta_text || wpContent.hero_cta_text) : wpContent.hero_cta_text;
+          const ctaLink = isCampaignActive ? (wpContent.campaign_cta_link || wpContent.hero_cta_url) : wpContent.hero_cta_url;
+          const bannerImage = isCampaignActive ? (wpContent.campaign_banner_image || wpContent.hero_image) : wpContent.hero_image;
+          const bannerImageMobile = isCampaignActive ? (wpContent.campaign_banner_image_mobile || wpContent.hero_image_mobile) : wpContent.hero_image_mobile;
+
           sec.data = {
             ...sec.data,
             slides: [
               {
                 id: "wp_hero_1",
-                title: wpContent.hero_title || defaultSlide.title || "Premium Home Essentials",
+                title: headline || defaultSlide.title || "Premium Home Essentials",
                 subtitle: wpContent.hero_subtitle || defaultSlide.subtitle || "Curated collections crafted for modern spaces",
-                image: wpContent.hero_image || defaultSlide.image || "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1600&q=80",
-                imageMobile: wpContent.hero_image_mobile || undefined,
-                cta_text: wpContent.hero_cta_text || defaultSlide.cta_text || "Shop Collection",
-                cta_link: wpContent.hero_cta_url || defaultSlide.cta_link || "/shop",
+                image: bannerImage || defaultSlide.image || "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1600&q=80",
+                imageMobile: bannerImageMobile || undefined,
+                cta_text: ctaText || defaultSlide.cta_text || "Shop Collection",
+                cta_link: ctaLink || defaultSlide.cta_link || "/shop",
                 scroll_interval_seconds: wpContent.hero_scroll_interval_seconds || sec.data?.scroll_interval_seconds || 6,
               }
             ]
@@ -155,33 +164,57 @@ export default async function HomePage() {
             ? wpContent.new_arrivals_limit
             : sec.limit || 8;
 
-          const collection = sec.data?.collection || "";
-          const category = sec.data?.category;
+          let collectionQuery = sec.data?.collection || "";
+          let categoryQuery = sec.data?.category;
+          let isCampaignCollection = false;
+
+          if (sec.type === "trendingProducts" && wpContent?.campaign_product_collection) {
+            const activeTheme = wpContent?.campaign_theme || "default";
+            const preset = CAMPAIGN_PRESETS[activeTheme];
+            const presetName = preset?.name || "Campaign";
+            sec.title = wpContent.campaign_headline || `${presetName} Specials`;
+            
+            const rawCol = wpContent.campaign_product_collection.trim();
+            if (rawCol.includes(",") || !isNaN(Number(rawCol))) {
+              collectionQuery = "ids";
+            } else {
+              categoryQuery = rawCol;
+            }
+            isCampaignCollection = true;
+          }
 
           try {
-            if (category) {
+            if (isCampaignCollection && collectionQuery === "ids" && wpContent?.campaign_product_collection) {
+              const ids = wpContent.campaign_product_collection.split(",").map(Number).filter(Boolean);
+              if (ids.length > 0) {
+                const res = await getProducts({ include: ids, perPage: limit }).catch(() => ({ data: [] }));
+                sec.fetchedProducts = res.data;
+              } else {
+                sec.fetchedProducts = [];
+              }
+            } else if (categoryQuery) {
               // Query products in specific category by slug or ID
-              const catObj = await getCategoryBySlug(String(category)).catch(() => null);
+              const catObj = await getCategoryBySlug(String(categoryQuery)).catch(() => null);
               if (catObj) {
                 const res = await getProducts({ category: String(catObj.id), perPage: limit }).catch(() => ({ data: [] }));
                 sec.fetchedProducts = res.data;
               } else {
                 // Try fetching directly as an ID
-                const res = await getProducts({ category: String(category), perPage: limit }).catch(() => ({ data: [] }));
+                const res = await getProducts({ category: String(categoryQuery), perPage: limit }).catch(() => ({ data: [] }));
                 sec.fetchedProducts = res.data;
               }
-            } else if (sec.type === "trendingProducts" || collection === "trending") {
+            } else if (sec.type === "trendingProducts" || collectionQuery === "trending") {
               const res = await getProducts({ sortBy: "popularity", perPage: limit }).catch(() => ({ data: [] }));
               sec.fetchedProducts = res.data;
-            } else if (sec.type === "bestSellerProducts" || collection === "bestsellers") {
+            } else if (sec.type === "bestSellerProducts" || collectionQuery === "bestsellers") {
               const res = await getProducts({ sortBy: "rating", perPage: limit }).catch(() => ({ data: [] }));
               sec.fetchedProducts = res.data;
-            } else if (sec.type === "recentlyAdded" || collection === "recentlyAdded" || collection === "new") {
+            } else if (sec.type === "recentlyAdded" || collectionQuery === "recentlyAdded" || collectionQuery === "new") {
               const res = await getProducts({ sortBy: "date", perPage: limit }).catch(() => ({ data: [] }));
               sec.fetchedProducts = res.data;
-            } else if (sec.type === "flashSale" || collection === "flash") {
+            } else if (sec.type === "flashSale" || collectionQuery === "flash") {
               sec.fetchedProducts = await getOnSaleProducts(limit).catch(() => []);
-            } else if (sec.type === "featuredProducts" || collection === "featured") {
+            } else if (sec.type === "featuredProducts" || collectionQuery === "featured") {
               sec.fetchedProducts = await getFeaturedProducts(limit).catch(() => []);
             } else {
               sec.fetchedProducts = await getFeaturedProducts(limit).catch(() => []);
@@ -305,18 +338,22 @@ export default async function HomePage() {
     )
   ).filter((sec) => !(sec as any).disabled);
 
-  // Merge campaign settings from WordPress SCF if campaign_id is active
-  const campaign = wpContent?.campaign_id
+  // Merge campaign settings from WordPress SCF if campaign_id or theme is active, falling back to reusable presets
+  const activeTheme = wpContent?.campaign_theme || "default";
+  const preset = CAMPAIGN_PRESETS[activeTheme];
+
+  const campaign = wpContent?.campaign_id || (wpContent?.campaign_theme && wpContent?.campaign_theme !== "default")
     ? {
-        id: wpContent.campaign_id,
-        name: wpContent.campaign_name || "",
-        theme: (wpContent.campaign_theme || "default") as any,
-        promoText: wpContent.campaign_promo_text,
+        id: wpContent.campaign_id || `campaign_${activeTheme}`,
+        name: wpContent.campaign_name || preset?.name || "Active Sale",
+        theme: activeTheme as any,
+        promoText: wpContent.campaign_promo_text || preset?.promoText || "",
         colors: {
-          primary: wpContent.campaign_color_primary,
-          accent: wpContent.campaign_color_accent,
-          surface: wpContent.campaign_color_surface,
+          primary: wpContent.campaign_color_primary || preset?.colors?.primary || undefined,
+          accent: wpContent.campaign_color_accent || preset?.colors?.accent || undefined,
+          surface: wpContent.campaign_color_surface || preset?.colors?.surface || undefined,
         },
+        productCollection: wpContent.campaign_product_collection,
       }
     : layout.activeCampaign;
 

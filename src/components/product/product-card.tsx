@@ -13,6 +13,32 @@ import { cn, formatPrice, getDiscountPercent } from "@/lib/utils";
 import { useCartStore, useUIStore, useWishlistStore, useCurrencyStore } from "@/store";
 import type { WooProduct } from "@/types";
 
+const COLOR_MAP: Record<string, string> = {
+  red: "#EF4444",
+  blue: "#3B82F6",
+  green: "#10B981",
+  yellow: "#FBBF24",
+  orange: "#F97316",
+  purple: "#8B5CF6",
+  pink: "#EC4899",
+  white: "#FFFFFF",
+  black: "#111827",
+  gray: "#9CA3AF",
+  grey: "#9CA3AF",
+  brown: "#78350F",
+  beige: "#F5F5DC",
+  cream: "#FFFDD0",
+  silver: "#C0C0C0",
+  gold: "#D4AF37",
+  teal: "#14B8A6",
+  lavender: "#E6E6FA",
+  maroon: "#800000",
+  navy: "#1E3A8A",
+  peach: "#FFDAB9",
+  mint: "#A7F3D0",
+  rose: "#FDA4AF",
+};
+
 export interface ProductCardProps {
   product: WooProduct;
   className?: string;
@@ -156,6 +182,35 @@ export function ProductCard({ product, className, priority = false }: ProductCar
               {product.name}
             </Link>
           </h3>
+
+          {/* Color Swatches */}
+          {(() => {
+            const colorAttr = product.attributes?.find(
+              (attr) => attr.name.toLowerCase() === "color" || attr.name.toLowerCase() === "colour"
+            );
+            if (!colorAttr || !colorAttr.options || colorAttr.options.length === 0) return null;
+            return (
+              <div className="flex items-center gap-1.5 mb-2 relative z-20">
+                {colorAttr.options.slice(0, 5).map((colorOption) => {
+                  const colorKey = colorOption.toLowerCase().trim();
+                  const colorHex = COLOR_MAP[colorKey] || colorKey;
+                  return (
+                    <span
+                      key={colorOption}
+                      className="w-3.5 h-3.5 rounded-full border border-[hsl(var(--color-border))] shadow-sm block"
+                      style={{ backgroundColor: colorHex }}
+                      title={colorOption}
+                    />
+                  );
+                })}
+                {colorAttr.options.length > 5 && (
+                  <span className="text-[10px] text-[hsl(var(--color-text-muted))] font-medium">
+                    +{colorAttr.options.length - 5}
+                  </span>
+                )}
+              </div>
+            );
+          })()}
 
           {/* Rating */}
           <div className="flex items-center gap-1 mb-2 relative z-20">

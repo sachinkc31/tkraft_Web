@@ -179,7 +179,7 @@ export function CartClient() {
                 {/* Qty + Remove */}
                 <div className="flex flex-col items-end justify-between">
                   <button
-                    onClick={() => removeItem(item.id)}
+                    onClick={() => removeItem(item.id, item.variation_id)}
                     className="text-[hsl(215,14%,70%)] hover:text-[hsl(0,72%,51%)] transition-colors"
                     aria-label="Remove"
                   >
@@ -190,14 +190,14 @@ export function CartClient() {
                     <p className="font-bold text-[hsl(222,47%,11%)]">{formatPrice(itemTotal)}</p>
                     <div className="flex items-center gap-2">
                       <button
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                        onClick={() => updateQuantity(item.id, item.quantity - 1, item.variation_id)}
                         className="h-7 w-7 rounded-lg border border-[hsl(214,13%,90%)] flex items-center justify-center text-[hsl(215,16%,47%)] hover:border-[hsl(var(--color-accent))] hover:text-[hsl(var(--color-accent))] transition-colors"
                       >
                         <Minus className="h-3 w-3" />
                       </button>
                       <span className="w-7 text-center text-sm font-semibold">{item.quantity}</span>
                       <button
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                        onClick={() => updateQuantity(item.id, item.quantity + 1, item.variation_id)}
                         className="h-7 w-7 rounded-lg border border-[hsl(214,13%,90%)] flex items-center justify-center text-[hsl(215,16%,47%)] hover:border-[hsl(var(--color-accent))] hover:text-[hsl(var(--color-accent))] transition-colors"
                       >
                         <Plus className="h-3 w-3" />

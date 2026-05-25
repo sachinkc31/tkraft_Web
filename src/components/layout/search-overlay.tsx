@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Search, ArrowRight, Loader2, Tag, ShoppingBag } from "lucide-react";
+import { X, Search, ArrowRight, Loader2, Tag, ShoppingBag, History, TrendingUp } from "lucide-react";
 import { useUIStore, useCurrencyStore } from "@/store";
 import { useRouter } from "next/navigation";
 import { NAVIGATION } from "@/lib/constants";
@@ -30,6 +30,15 @@ function HighlightText({ text, highlight }: { text: string; highlight: string })
   );
 }
 
+const POPULAR_SEARCHES = [
+  "Water Bottle",
+  "Organizer",
+  "Mop",
+  "Lunch Box",
+  "Storage Box",
+  "Kitchen Rack"
+];
+
 export function SearchOverlay() {
   const currency = useCurrencyStore((s) => s.currency);
   const { isSearchOpen, closeSearch, searchQuery, setSearchQuery } = useUIStore();
@@ -40,6 +49,19 @@ export function SearchOverlay() {
   const [loading, setLoading] = useState(false);
   const [products, setProducts] = useState<SearchProductResult[]>([]);
   const [categories, setCategories] = useState<{ name: string; slug: string }[]>([]);
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+
+  // Load recent searches from localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("recent_searches");
+      if (saved) {
+        setRecentSearches(JSON.parse(saved));
+      }
+    } catch (e) {
+      console.error("Failed to load recent searches", e);
+    }
+  }, [isSearchOpen]);
 
   // Focus input when overlay opens
   useEffect(() => {
@@ -83,9 +105,42 @@ export function SearchOverlay() {
     return () => document.removeEventListener("keydown", handler);
   }, [closeSearch]);
 
+  const addRecentSearch = (term: string) => {
+    const trimmed = term.trim();
+    if (!trimmed) return;
+    setRecentSearches((prev) => {
+      const filtered = prev.filter((item) => item.toLowerCase() !== trimmed.toLowerCase());
+      const updated = [trimmed, ...filtered].slice(0, 5);
+      localStorage.setItem("recent_searches", JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const removeRecentSearch = (term: string) => {
+    setRecentSearches((prev) => {
+      const updated = prev.filter((item) => item !== term);
+      localStorage.setItem("recent_searches", JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const clearRecentSearches = () => {
+    setRecentSearches([]);
+    localStorage.removeItem("recent_searches");
+  };
+
+  const handleSearchTermClick = (term: string) => {
+    setQuery(term);
+    addRecentSearch(term);
+    setSearchQuery(term);
+    router.push(`/shop?search=${encodeURIComponent(term)}`);
+    closeSearch();
+  };
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!query.trim()) return;
+    addRecentSearch(query);
     setSearchQuery(query);
     router.push(`/shop?search=${encodeURIComponent(query.trim())}`);
     closeSearch();
@@ -126,37 +181,105 @@ export function SearchOverlay() {
                 <button
                   type="button"
                   onClick={() => setQuery("")}
-                  className="p-1 rounded-full hover:bg-[hsl(210,16%,96%)] text-[hsl(215,14%,70%)] hover:text-[hsl(215,16%,47%)]"
+                  className="p-1 rounded-full hover:bg-[hsl(210,16%,96%)] text-[hsl(215,14%,70%)] hover:text-[hsl(215,16%,47%)] cursor-pointer"
                 >
                   <X className="h-4 w-4" />
                 </button>
               )}
               <button
                 type="submit"
-                className="flex items-center gap-1.5 px-4 py-2 bg-[hsl(var(--color-accent))] hover:bg-[hsl(217,70%,32%)] text-white rounded-xl text-xs font-semibold shadow-sm transition-colors active:scale-95"
+                className="flex items-center gap-1.5 px-4 py-2 bg-[hsl(var(--color-accent))] hover:bg-[hsl(217,70%,32%)] text-white rounded-xl text-xs font-semibold shadow-sm transition-colors active:scale-95 cursor-pointer"
               >
                 Search <ArrowRight className="h-3.5 w-3.5" />
               </button>
             </form>
 
             <div className="max-h-[420px] overflow-y-auto divide-y divide-[hsl(214,13%,90%)]">
-              {/* State 1: Empty Query - Show Static Quick Links */}
+              {/* State 1: Empty Query - Show Recent, Popular, and Categories */}
               {!query.trim() && (
-                <div className="p-5">
-                  <p className="text-xs font-bold uppercase tracking-wider text-[hsl(215,16%,47%)] mb-3 flex items-center gap-1.5">
-                    <Tag className="h-3.5 w-3.5" /> Browse Hot Categories
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {NAVIGATION.categories.map((cat) => (
-                      <Link
-                        key={cat.slug}
-                        href={cat.href}
-                        onClick={closeSearch}
-                        className="px-3.5 py-2 rounded-xl bg-[hsl(210,20%,98%)] border border-[hsl(214,13%,90%)] text-xs font-semibold text-[hsl(215,16%,47%)] hover:border-[hsl(var(--color-accent))] hover:text-[hsl(var(--color-accent))] transition-colors active:scale-95"
-                      >
-                        {cat.label}
-                      </Link>
-                    ))}
+                <div className="p-5 space-y-6">
+                  {recentSearches.length > 0 && (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs font-bold uppercase tracking-wider text-[hsl(215,16%,47%)] flex items-center gap-1.5">
+                          <History className="h-3.5 w-3.5 text-blue-500" /> Recent Searches
+                        </p>
+                        <button
+                          type="button"
+                          onClick={clearRecentSearches}
+                          className="text-[10px] font-bold text-red-500 hover:text-red-600 transition-colors uppercase tracking-wider cursor-pointer"
+                        >
+                          Clear All
+                        </button>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {recentSearches.map((term) => (
+                          <div
+                            key={term}
+                            className="flex items-center gap-1.5 pl-3 pr-2 py-1.5 rounded-xl bg-[hsl(210,20%,98%)] border border-[hsl(214,13%,90%)] text-xs font-semibold text-[hsl(215,16%,47%)] hover:border-[hsl(var(--color-accent))] hover:text-[hsl(var(--color-accent))] group transition-all"
+                          >
+                            <button
+                              type="button"
+                              onClick={() => handleSearchTermClick(term)}
+                              className="cursor-pointer hover:text-[hsl(var(--color-accent))]"
+                            >
+                              {term}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => removeRecentSearch(term)}
+                              className="p-0.5 rounded-full hover:bg-[hsl(214,13%,90%)] text-[hsl(215,14%,70%)] hover:text-red-500 transition-colors cursor-pointer"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="border-t border-[hsl(214,13%,95%)] pt-3" />
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Popular Searches */}
+                    <div className="space-y-3">
+                      <p className="text-xs font-bold uppercase tracking-wider text-[hsl(215,16%,47%)] flex items-center gap-1.5">
+                        <TrendingUp className="h-3.5 w-3.5 text-amber-500" /> Popular Searches
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {POPULAR_SEARCHES.map((term) => (
+                          <button
+                            key={term}
+                            type="button"
+                            onClick={() => handleSearchTermClick(term)}
+                            className="px-3.5 py-2 rounded-xl bg-[hsl(210,20%,98%)] border border-[hsl(214,13%,90%)] text-xs font-semibold text-[hsl(215,16%,47%)] hover:border-[hsl(var(--color-accent))] hover:text-[hsl(var(--color-accent))] hover:bg-white transition-all active:scale-95 cursor-pointer"
+                          >
+                            {term}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Browse Categories */}
+                    <div className="space-y-3">
+                      <p className="text-xs font-bold uppercase tracking-wider text-[hsl(215,16%,47%)] flex items-center gap-1.5">
+                        <Tag className="h-3.5 w-3.5 text-emerald-500" /> Browse Hot Categories
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {NAVIGATION.categories.map((cat) => (
+                          <Link
+                            key={cat.slug}
+                            href={cat.href}
+                            onClick={() => {
+                              addRecentSearch(cat.label);
+                              closeSearch();
+                            }}
+                            className="px-3.5 py-2 rounded-xl bg-[hsl(210,20%,98%)] border border-[hsl(214,13%,90%)] text-xs font-semibold text-[hsl(215,16%,47%)] hover:border-[hsl(var(--color-accent))] hover:text-[hsl(var(--color-accent))] hover:bg-white transition-all active:scale-95"
+                          >
+                            {cat.label}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
@@ -175,7 +298,10 @@ export function SearchOverlay() {
                         <Link
                           key={prod.id}
                           href={`/products/${prod.slug}`}
-                          onClick={closeSearch}
+                          onClick={() => {
+                            addRecentSearch(query);
+                            closeSearch();
+                          }}
                           className="flex items-center gap-3 p-2 rounded-2xl hover:bg-[hsl(210,16%,96%)] transition-colors group"
                         >
                           {/* Product Thumbnail */}
@@ -220,7 +346,10 @@ export function SearchOverlay() {
                           <Link
                             key={cat.slug}
                             href={`/category/${cat.slug}`}
-                            onClick={closeSearch}
+                            onClick={() => {
+                              addRecentSearch(cat.name);
+                              closeSearch();
+                            }}
                             className="flex items-center justify-between p-2 rounded-xl hover:bg-[hsl(210,16%,96%)] text-xs font-semibold text-[hsl(215,16%,47%)] hover:text-[hsl(222,47%,11%)] group transition-colors"
                           >
                             <span className="truncate">
@@ -254,3 +383,4 @@ export function SearchOverlay() {
     </AnimatePresence>
   );
 }
+

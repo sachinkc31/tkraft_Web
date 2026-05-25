@@ -152,7 +152,7 @@ export function CartDrawer() {
                           <div className="flex items-center justify-between mt-2">
                             <div className="flex items-center gap-1">
                               <button
-                                onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                onClick={() => updateQuantity(item.id, item.quantity - 1, item.variation_id)}
                                 className="h-7 w-7 rounded-lg border border-[hsl(214,13%,90%)] flex items-center justify-center text-[hsl(215,16%,47%)] hover:border-[hsl(var(--color-accent))] hover:text-[hsl(var(--color-accent))] transition-colors"
                               >
                                 <Minus className="h-3 w-3" />
@@ -161,14 +161,14 @@ export function CartDrawer() {
                                 {item.quantity}
                               </span>
                               <button
-                                onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                onClick={() => updateQuantity(item.id, item.quantity + 1, item.variation_id)}
                                 className="h-7 w-7 rounded-lg border border-[hsl(214,13%,90%)] flex items-center justify-center text-[hsl(215,16%,47%)] hover:border-[hsl(var(--color-accent))] hover:text-[hsl(var(--color-accent))] transition-colors"
                               >
                                 <Plus className="h-3 w-3" />
                               </button>
                             </div>
                             <button
-                              onClick={() => removeItem(item.id)}
+                              onClick={() => removeItem(item.id, item.variation_id)}
                               className="h-7 w-7 rounded-lg flex items-center justify-center text-[hsl(215,14%,70%)] hover:text-red-500 hover:bg-red-50 transition-colors"
                               aria-label="Remove item"
                             >
