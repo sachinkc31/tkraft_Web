@@ -12,6 +12,7 @@ import { ShoppingCart, Heart, Star, Eye } from "lucide-react";
 import { cn, formatPrice, getDiscountPercent } from "@/lib/utils";
 import { useCartStore, useUIStore, useWishlistStore, useCurrencyStore } from "@/store";
 import type { WooProduct } from "@/types";
+import { QuickViewModal } from "./quick-view-modal";
 
 const COLOR_MAP: Record<string, string> = {
   red: "#EF4444",
@@ -55,6 +56,7 @@ export function ProductCard({ product, className, priority = false }: ProductCar
   const isInWishlist = useWishlistStore((s) => s.hasItem(product.id));
 
   const [mounted, setMounted] = useState(false);
+  const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -85,7 +87,8 @@ export function ProductCard({ product, className, priority = false }: ProductCar
   }
 
   return (
-    <motion.div
+    <>
+      <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: "easeOut" }}
@@ -144,14 +147,17 @@ export function ProductCard({ product, className, priority = false }: ProductCar
             >
               <Heart className={cn("h-4 w-4", mounted && isInWishlist && "fill-current")} />
             </button>
-            <Link
-              href={`/products/${product.slug}`}
+            <button
               title="Quick View"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setIsQuickViewOpen(true);
+              }}
               className="h-9 w-9 rounded-full bg-[hsl(var(--color-surface))] shadow-[var(--shadow-md)] flex items-center justify-center text-[hsl(var(--color-text-muted))] hover:text-[hsl(var(--color-primary))] hover:bg-blue-50 transition-colors border border-[hsl(var(--color-border))]"
-              onClick={(e) => e.stopPropagation()}
             >
               <Eye className="h-4 w-4" />
-            </Link>
+            </button>
           </div>
 
           {/* Add to Cart — bottom slide-up on hover */}
@@ -245,7 +251,13 @@ export function ProductCard({ product, className, priority = false }: ProductCar
           </div>
         </div>
       </div>
-    </motion.div>
+      </motion.div>
+      <QuickViewModal
+        product={product}
+        isOpen={isQuickViewOpen}
+        onClose={() => setIsQuickViewOpen(false)}
+      />
+    </>
   );
 }
 

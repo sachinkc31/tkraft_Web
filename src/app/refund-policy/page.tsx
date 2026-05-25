@@ -1,8 +1,18 @@
 import type { Metadata } from "next";
+import { SITE_CONFIG } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "Refund and Cancellation Policy",
   description: "Read about our 30-day money-back guarantee, return process, and refund timelines.",
+  alternates: {
+    canonical: "/refund-policy",
+  },
+  openGraph: {
+    title: `Refund and Cancellation Policy | ${SITE_CONFIG.name}`,
+    description: "Read about our 30-day money-back guarantee, return process, and refund timelines.",
+    url: "/refund-policy",
+    images: [{ url: SITE_CONFIG.ogImage, width: 1200, height: 630 }],
+  },
 };
 
 export default function RefundPolicyPage() {

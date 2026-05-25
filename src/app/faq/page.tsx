@@ -1,8 +1,18 @@
 import type { Metadata } from "next";
+import { SITE_CONFIG } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "Frequently Asked Questions (FAQ)",
   description: "Find answers to common questions about shipping, tracking, payments, and returns.",
+  alternates: {
+    canonical: "/faq",
+  },
+  openGraph: {
+    title: `Frequently Asked Questions (FAQ) | ${SITE_CONFIG.name}`,
+    description: "Find answers to common questions about shipping, tracking, payments, and returns.",
+    url: "/faq",
+    images: [{ url: SITE_CONFIG.ogImage, width: 1200, height: 630 }],
+  },
 };
 
 const FAQS = [
@@ -56,8 +66,27 @@ const FAQS = [
 ];
 
 export default function FAQPage() {
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": FAQS.flatMap((cat) =>
+      cat.items.map((item) => ({
+        "@type": "Question",
+        "name": item.q,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": item.a,
+        },
+      }))
+    ),
+  };
+
   return (
     <div className="section">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
       <div className="container max-w-3xl">
         <h1 className="text-3xl md:text-4xl font-display font-bold text-[hsl(222,47%,11%)] mb-3">
           Frequently Asked Questions

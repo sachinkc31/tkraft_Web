@@ -1,0 +1,204 @@
+{
+  "name": "Daily Sales KPI Report",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "5 0 * * *"
+            }
+          ]
+        }
+      },
+      "id": "cron-trigger",
+      "name": "Daily Schedule (00:05)",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [
+        100,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.WOOCOMMERCE_STORE_URL}}/wp-json/wc/v3/orders",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendQueryParameters": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "after",
+              "value": "={{new Date(Date.now() - 86400000).toISOString()}}"
+            },
+            {
+              "name": "per_page",
+              "value": "100"
+            }
+          ]
+        }
+      },
+      "id": "fetch-orders",
+      "name": "Fetch WooCommerce Orders",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        300,
+        300
+      ],
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "woocommerce-basic-auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const orders = items[0].json || [];\nlet totalRevenue = 0;\nlet ordersCount = 0;\nlet refundsCount = 0;\nlet refundsAmount = 0;\nlet codCount = 0;\nlet codAmount = 0;\nlet pendingCount = 0;\nlet productsMap = {};\nlet categoriesMap = {};\n\norders.forEach(order => {\n  const status = order.status;\n  if (status === 'refunded') {\n    refundsCount++;\n    refundsAmount += parseFloat(order.total);\n  } else if (status === 'pending') {\n    pendingCount++;\n  } else if (status === 'completed' || status === 'processing') {\n    ordersCount++;\n    totalRevenue += parseFloat(order.total);\n    \n    if (order.payment_method === 'cod') {\n      codCount++;\n      codAmount += parseFloat(order.total);\n    }\n    \n    order.line_items.forEach(item => {\n      productsMap[item.name] = (productsMap[item.name] || 0) + item.quantity;\n    });\n  }\n});\n\nconst topProducts = Object.entries(productsMap)\n  .sort((a,b) => b[1] - a[1])\n  .slice(0, 3)\n  .map(e => `${e[0]} (x${e[1]})`)\n  .join(', ') || 'None';\n\nconst averageOrderValue = ordersCount > 0 ? (totalRevenue / ordersCount).toFixed(2) : 0;\n\nreturn [{\n  json: {\n    reportDate: new Date(Date.now() - 86400000).toISOString().split('T')[0],\n    revenue: totalRevenue.toFixed(2),\n    ordersCount,\n    averageOrderValue,\n    topProducts,\n    refundsCount,\n    refundsAmount: refundsAmount.toFixed(2),\n    codCount,\n    codAmount: codAmount.toFixed(2),\n    pendingCount\n  }\n}];"
+      },
+      "id": "calculate-metrics",
+      "name": "Calculate Metrics",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        500,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "your-google-sheet-id-here"
+        },
+        "sheetName": "Tkraft Daily KPI Logs",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Report Date": "={{$json.reportDate}}",
+            "Total Revenue (INR)": "={{$json.revenue}}",
+            "Orders Count": "={{$json.ordersCount}}",
+            "Average Order Value (AOV)": "={{$json.averageOrderValue}}",
+            "Top Products": "={{$json.topProducts}}",
+            "Refunds Count": "={{$json.refundsCount}}",
+            "Refund Amount": "={{$json.refundsAmount}}",
+            "COD Count": "={{$json.codCount}}",
+            "COD Amount": "={{$json.codAmount}}",
+            "Pending Orders": "={{$json.pendingCount}}"
+          }
+        }
+      },
+      "id": "update-google-sheet",
+      "name": "Update Google Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        700,
+        300
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "google-sheets-oauth2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{$env.TELEGRAM_CHAT_ID}}",
+        "text": "=📊 *Tkraft Daily E-commerce Report*\n📅 Date: {{$json.reportDate}}\n-----------------------------------\n💰 Revenue: ₹{{$json.revenue}}\n🛒 Orders: {{$json.ordersCount}}\n📈 Avg. Order Value (AOV): ₹{{$json.averageOrderValue}}\n📦 COD Orders: {{$json.codCount}} (₹{{$json.codAmount}})\n⏳ Pending: {{$json.pendingCount}}\n❌ Refunds: {{$json.refundsCount}} (₹{{$json.refundsAmount}})\n-----------------------------------\n🏆 Top Products: {{$json.topProducts}}\n",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "send-tg-report",
+      "name": "Send Telegram Report",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        900,
+        200
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "telegram-creds"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "notify@tkraft.in",
+        "toEmail": "admin@tkraft.in",
+        "subject": "=Tkraft Daily Sales Performance Report - {{$json.reportDate}}",
+        "html": "=<h2>Daily Sales Performance Dashboard</h2><p><strong>Report Date:</strong> {{$json.reportDate}}</p><table border='1' cellpadding='8' style='border-collapse: collapse; min-width: 300px;'><tr><th>Metric</th><th>Value</th></tr><tr><td>Total Revenue</td><td>₹{{$json.revenue}}</td></tr><tr><td>Orders Processed</td><td>{{$json.ordersCount}}</td></tr><tr><td>Average Order Value</td><td>₹{{$json.averageOrderValue}}</td></tr><tr><td>COD Share</td><td>{{$json.codCount}} orders (₹{{$json.codAmount}})</td></tr><tr><td>Refunded Orders</td><td>{{$json.refundsCount}} (₹{{$json.refundsAmount}})</td></tr><tr><td>Pending Orders</td><td>{{$json.pendingCount}}</td></tr></table><p><strong>Top Products:</strong> {{$json.topProducts}}</p>"
+      },
+      "id": "send-email-report",
+      "name": "Send Email Report",
+      "type": "n8n-nodes-base.email",
+      "typeVersion": 1,
+      "position": [
+        900,
+        400
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-creds"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "cron-trigger": {
+      "main": [
+        [
+          {
+            "node": "fetch-orders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "fetch-orders": {
+      "main": [
+        [
+          {
+            "node": "calculate-metrics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "calculate-metrics": {
+      "main": [
+        [
+          {
+            "node": "update-google-sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "update-google-sheet": {
+      "main": [
+        [
+          {
+            "node": "send-tg-report",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "send-email-report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

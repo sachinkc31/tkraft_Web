@@ -1,0 +1,247 @@
+{
+  "name": "WooCommerce New Order Notification Flow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "woocommerce-new-order-webhook",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "webhook-woo",
+      "name": "WooCommerce Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        100,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT COUNT(*) as duplicate_count FROM audit_logs WHERE workflow_name = 'New Order Notification' AND entity_id = :order_id",
+        "additionalFields": {
+          "queryParams": "=order_id={{$json.body.id}}"
+        }
+      },
+      "id": "check-duplicate",
+      "name": "Check Duplicate Order",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2,
+      "position": [
+        300,
+        300
+      ],
+      "credentials": {
+        "postgresDb": {
+          "id": "postgres-creds"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{$json.duplicate_count}}",
+              "value2": 0
+            }
+          ]
+        }
+      },
+      "id": "is-new-order",
+      "name": "Is New Order?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        500,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO audit_logs (workflow_name, trigger_event, entity_id, execution_id, status, payload) VALUES ('New Order Notification', 'order_created', :order_id, :exec_id, 'processing', :payload)",
+        "additionalFields": {
+          "queryParams": "=order_id={{$node['WooCommerce Webhook'].json.body.id}}&exec_id={{$executionId}}&payload={{JSON.stringify($node['WooCommerce Webhook'].json.body)}}"
+        }
+      },
+      "id": "insert-audit-log",
+      "name": "Store Processing Audit",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2,
+      "position": [
+        700,
+        200
+      ],
+      "credentials": {
+        "postgresDb": {
+          "id": "postgres-creds"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = items[0].json.body;\nconst itemsList = body.line_items.map(item => `${item.name} x ${item.quantity} (₹${item.total})`).join('\\n');\nreturn [{\n  json: {\n    orderId: body.id,\n    customerName: `${body.billing.first_name} ${body.billing.last_name}`,\n    email: body.billing.email,\n    phone: body.billing.phone,\n    total: body.total,\n    paymentMethod: body.payment_method_title,\n    itemsSummary: itemsList,\n    isCOD: body.payment_method === 'cod'\n  }\n}];"
+      },
+      "id": "generate-summary",
+      "name": "Generate Summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        900,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "notify@tkraft.in",
+        "toEmail": "={{$json.email}}",
+        "subject": "=Order Confirmation #{{$json.orderId}} - Tkraft",
+        "html": "=<h2>Thank you for your order, {{$json.customerName}}!</h2><p>We are processing order #{{$json.orderId}}.</p><p><strong>Items Ordered:</strong></p><pre>{{$json.itemsSummary}}</pre><p><strong>Total Amount:</strong> ₹{{$json.total}} ({{$json.paymentMethod}})</p><p>If you have any questions, feel free to reply to this email.</p>"
+      },
+      "id": "send-email",
+      "name": "Send Email Notification",
+      "type": "n8n-nodes-base.email",
+      "typeVersion": 1,
+      "position": [
+        1100,
+        100
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-creds"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{$env.TELEGRAM_CHAT_ID}}",
+        "text": "=🛍️ *New Order Received #{{$json.orderId}}*\n👤 *Customer:* {{$json.customerName}}\n📞 *Contact:* {{$json.phone}}\n💰 *Total:* ₹{{$json.total}} ({{$json.paymentMethod}})\n📦 *Items:*\n{{$json.itemsSummary}}\n\n🚨 *Action Required:* Verify COD status if applicable.",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "send-telegram",
+      "name": "Send Telegram Notification",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        1100,
+        300
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "telegram-creds"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE audit_logs SET status = 'success', created_at = NOW() WHERE workflow_name = 'New Order Notification' AND entity_id = :order_id",
+        "additionalFields": {
+          "queryParams": "=order_id={{$node['Generate Summary'].json.orderId}}"
+        }
+      },
+      "id": "update-audit-success",
+      "name": "Update Audit Success",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2,
+      "position": [
+        1350,
+        200
+      ],
+      "credentials": {
+        "postgresDb": {
+          "id": "postgres-creds"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "webhook-woo": {
+      "main": [
+        [
+          {
+            "node": "check-duplicate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "check-duplicate": {
+      "main": [
+        [
+          {
+            "node": "is-new-order",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "is-new-order": {
+      "main": [
+        [
+          {
+            "node": "insert-audit-log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "insert-audit-log": {
+      "main": [
+        [
+          {
+            "node": "generate-summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "generate-summary": {
+      "main": [
+        [
+          {
+            "node": "send-email",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "send-telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "send-email": {
+      "main": [
+        [
+          {
+            "node": "update-audit-success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "send-telegram": {
+      "main": [
+        [
+          {
+            "node": "update-audit-success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

@@ -28,6 +28,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: product.name,
     description,
+    alternates: {
+      canonical: `/products/${slug}`,
+    },
     openGraph: {
       title: product.name,
       description,
@@ -101,11 +104,88 @@ export default async function ProductDetailPage({ params }: Props) {
         : undefined,
   };
 
+  const breadcrumbElements: any[] = [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": SITE_CONFIG.url,
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Shop",
+      "item": `${SITE_CONFIG.url}/shop`,
+    },
+  ];
+
+  if (product.categories && product.categories.length > 0) {
+    const primaryCategory = product.categories[0];
+    breadcrumbElements.push({
+      "@type": "ListItem",
+      "position": 3,
+      "name": primaryCategory.name,
+      "item": `${SITE_CONFIG.url}/category/${primaryCategory.slug}`,
+    });
+  }
+
+  breadcrumbElements.push({
+    "@type": "ListItem",
+    "position": breadcrumbElements.length + 1,
+    "name": product.name,
+    "item": `${SITE_CONFIG.url}/products/${product.slug}`,
+  });
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": breadcrumbElements,
+  };
+
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "When will my order be shipped?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "We typically ship orders within 24-48 hours. Orders above ₹499 qualify for free shipping, with delivery times ranging between 3 to 7 business days across India."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is your return policy?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "We offer a 30-day return/replacement period. If you are not completely satisfied with your purchase, you can initiate a return or replacement from your account dashboard."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What payment methods are accepted?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "We accept all major credit/debit cards, UPI payments (Paytm, Google Pay, PhonePe), Net Banking, and Cash on Delivery (COD) for most locations in India."
+        }
+      }
+    ]
+  };
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
       <ProductDetailClient product={product} initialVariations={variations} bundleProducts={bundleProducts} />
 

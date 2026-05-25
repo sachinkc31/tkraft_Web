@@ -302,6 +302,15 @@ export async function getCustomerOrders(
   });
 }
 
+export async function getOrders(params: Record<string, string> = {}): Promise<WooOrder[]> {
+  const queryStr = Object.entries(params)
+    .map(([key, val]) => `${key}=${encodeURIComponent(val)}`)
+    .join("&");
+  return wooFetch<WooOrder[]>(`/orders?${queryStr}`, {
+    next: { revalidate: 0 },
+  });
+}
+
 export async function updateCustomer(
   customerId: number,
   customerData: any

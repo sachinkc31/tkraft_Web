@@ -1,0 +1,267 @@
+{
+  "name": "Review Request Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "woocommerce-order-completed-webhook",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "webhook-completed",
+      "name": "WooCommerce Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        100,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT COUNT(*) as unsubscribed_count FROM review_campaigns WHERE customer_email = :email AND status = 'unsubscribed'",
+        "additionalFields": {
+          "queryParams": "=email={{$json.body.billing.email}}"
+        }
+      },
+      "id": "check-unsubscribed",
+      "name": "Check Opt-out",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2,
+      "position": [
+        300,
+        300
+      ],
+      "credentials": {
+        "postgresDb": {
+          "id": "postgres-creds"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{$json.unsubscribed_count}}",
+              "value2": 0
+            }
+          ]
+        }
+      },
+      "id": "is-subscribed",
+      "name": "Is Subscribed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        500,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO review_campaigns (order_id, customer_email, status) VALUES (:order_id, :email, 'delivered') ON CONFLICT (order_id) DO NOTHING",
+        "additionalFields": {
+          "queryParams": "=order_id={{$node['WooCommerce Webhook'].json.body.id}}&email={{$node['WooCommerce Webhook'].json.body.billing.email}}"
+        }
+      },
+      "id": "insert-review-log",
+      "name": "Log delivered check",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2,
+      "position": [
+        700,
+        200
+      ],
+      "credentials": {
+        "postgresDb": {
+          "id": "postgres-creds"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 7,
+        "unit": "days"
+      },
+      "id": "wait-7-days",
+      "name": "Wait 7 Days",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        900,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "notify@tkraft.in",
+        "toEmail": "={{$node['WooCommerce Webhook'].json.body.billing.email}}",
+        "subject": "=How are you liking your Tkraft items?",
+        "html": "=<h2>Hi {{$node['WooCommerce Webhook'].json.body.billing.first_name}},</h2><p>We hope you are loving your purchase from Tkraft!</p><p>Please take 60 seconds to review the items and tell us your experience. Your reviews help others choose the right home & kitchen items!</p><p><a href='https://www.tkraft.in/products/{{$node[\"WooCommerce Webhook\"].json.body.line_items[0].product_id}}#reviews' style='padding: 10px 20px; background-color: #0070f3; color: white; text-decoration: none; border-radius: 5px; display: inline-block;'>Write a Review</a></p><p>If you'd like to unsubscribe from review requests, <a href='https://www.tkraft.in/api/reviews/unsubscribe?email={{$node[\"WooCommerce Webhook\"].json.body.billing.email}}'>click here</a>.</p>"
+      },
+      "id": "send-review-email",
+      "name": "Send Review Email",
+      "type": "n8n-nodes-base.email",
+      "typeVersion": 1,
+      "position": [
+        1100,
+        200
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-creds"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 3,
+        "unit": "days"
+      },
+      "id": "wait-3-days",
+      "name": "Wait 3 Days",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        1300,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "notify@tkraft.in",
+        "toEmail": "={{$node['WooCommerce Webhook'].json.body.billing.email}}",
+        "subject": "=Help others choose & get 10% off your next purchase!",
+        "html": "=<h2>Hi {{$node['WooCommerce Webhook'].json.body.billing.first_name}},</h2><p>Just a quick reminder to share your thoughts about your Tkraft order.</p><p>Submit a review, and we will email you a **10% coupon code** for your next order!</p><p><a href='https://www.tkraft.in/products/{{$node[\"WooCommerce Webhook\"].json.body.line_items[0].product_id}}#reviews' style='padding: 10px 20px; background-color: #e00073; color: white; text-decoration: none; border-radius: 5px; display: inline-block;'>Review & Get Coupon</a></p>"
+      },
+      "id": "send-reminder-email",
+      "name": "Send Reminder Email",
+      "type": "n8n-nodes-base.email",
+      "typeVersion": 1,
+      "position": [
+        1500,
+        200
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-creds"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE review_campaigns SET status = 'completed', last_action_at = NOW() WHERE order_id = :order_id",
+        "additionalFields": {
+          "queryParams": "=order_id={{$node['WooCommerce Webhook'].json.body.id}}"
+        }
+      },
+      "id": "mark-completed",
+      "name": "Mark Log Completed",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2,
+      "position": [
+        1700,
+        200
+      ],
+      "credentials": {
+        "postgresDb": {
+          "id": "postgres-creds"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "webhook-completed": {
+      "main": [
+        [
+          {
+            "node": "check-unsubscribed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "check-unsubscribed": {
+      "main": [
+        [
+          {
+            "node": "is-subscribed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "is-subscribed": {
+      "main": [
+        [
+          {
+            "node": "insert-review-log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "insert-review-log": {
+      "main": [
+        [
+          {
+            "node": "wait-7-days",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "wait-7-days": {
+      "main": [
+        [
+          {
+            "node": "send-review-email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "send-review-email": {
+      "main": [
+        [
+          {
+            "node": "wait-3-days",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "wait-3-days": {
+      "main": [
+        [
+          {
+            "node": "send-reminder-email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "send-reminder-email": {
+      "main": [
+        [
+          {
+            "node": "mark-completed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

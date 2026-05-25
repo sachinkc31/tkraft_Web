@@ -1,8 +1,18 @@
 import type { Metadata } from "next";
+import { SITE_CONFIG } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "Terms and Conditions",
   description: "Read the terms of service governing the use of the Tkraft e-commerce store.",
+  alternates: {
+    canonical: "/terms",
+  },
+  openGraph: {
+    title: `Terms and Conditions | ${SITE_CONFIG.name}`,
+    description: "Read the terms of service governing the use of the Tkraft e-commerce store.",
+    url: "/terms",
+    images: [{ url: SITE_CONFIG.ogImage, width: 1200, height: 630 }],
+  },
 };
 
 export default function TermsPage() {

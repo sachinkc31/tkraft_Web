@@ -1,0 +1,113 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: n8n-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: n8n_db
+      POSTGRES_USER: n8n_admin
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - ./data/pgsql:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - n8n-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U n8n_admin -d n8n_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: n8n-redis
+    restart: always
+    command: redis-server --appendonly yes
+    volumes:
+      - ./data/redis:/data
+    networks:
+      - n8n-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  n8n-main:
+    image: docker.n8n.io/n8nio/n8n:1.20.0
+    container_name: n8n-main
+    restart: always
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_HOST=${N8N_HOST}
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=https
+      - N8N_METADATA_DATABASE_TYPE=postgresdb
+      - DB_POSTGRES_HOST=postgres
+      - DB_POSTGRES_PORT=5432
+      - DB_POSTGRES_DATABASE=n8n_db
+      - DB_POSTGRES_USER=n8n_admin
+      - DB_POSTGRES_PASSWORD=${DB_PASSWORD}
+      - EXECUTIONS_MODE=queue
+      - QUEUE_BULL_REDIS_HOST=redis
+      - QUEUE_BULL_REDIS_PORT=6379
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
+      - WEBHOOK_URL=https://${N8N_HOST}/
+      - N8N_LOG_LEVEL=info
+      - N8N_LOG_OUTPUT=console
+      - EXECUTIONS_DATA_PRUNE=true
+      - EXECUTIONS_DATA_MAX_AGE=168
+    volumes:
+      - ./data/n8n:/home/node/.n8n
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - n8n-network
+
+  n8n-worker:
+    image: docker.n8n.io/n8nio/n8n:1.20.0
+    container_name: n8n-worker
+    restart: always
+    command: worker
+    environment:
+      - N8N_METADATA_DATABASE_TYPE=postgresdb
+      - DB_POSTGRES_HOST=postgres
+      - DB_POSTGRES_PORT=5432
+      - DB_POSTGRES_DATABASE=n8n_db
+      - DB_POSTGRES_USER=n8n_admin
+      - DB_POSTGRES_PASSWORD=${DB_PASSWORD}
+      - EXECUTIONS_MODE=queue
+      - QUEUE_BULL_REDIS_HOST=redis
+      - QUEUE_BULL_REDIS_PORT=6379
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
+      - N8N_LOG_LEVEL=info
+    volumes:
+      - ./data/n8n:/home/node/.n8n
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - n8n-network
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama-dev
+    restart: always
+    ports:
+      - "11434:11434"
+    volumes:
+      - ./data/ollama:/root/.ollama
+    networks:
+      - n8n-network
+
+networks:
+  n8n-network:
+    driver: bridge

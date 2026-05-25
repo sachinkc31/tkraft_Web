@@ -1,0 +1,179 @@
+{
+  "name": "AI Product Description Generator",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "woocommerce-product-created-webhook",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "webhook-product",
+      "name": "Product Created Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        100,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$env.NODE_ENV}}",
+              "value2": "production"
+            }
+          ]
+        }
+      },
+      "id": "check-env",
+      "name": "Is Production Env?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        300,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o",
+        "prompt": "You are a professional copywriter for Tkraft. Generate product marketing content.\n\nProduct: {{$node['Product Created Webhook'].json.body.name}}\nCategory: {{$node['Product Created Webhook'].json.body.categories[0].name}}\nDescription: {{$node['Product Created Webhook'].json.body.description}}\n\nProvide the response as JSON with fields:\n- seoTitle (max 60 chars)\n- metaDescription (max 155 chars)\n- description (rich HTML format)\n- shortDescription (2 sentences)\n- features (array)\n- benefits (array)\n- tags (array)\n- pinterestCaption (hashtags included)\n- socialMediaCaption (emojis included)\n",
+        "jsonSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"seoTitle\": { \"type\": \"string\" },\n    \"metaDescription\": { \"type\": \"string\" },\n    \"description\": { \"type\": \"string\" },\n    \"shortDescription\": { \"type\": \"string\" },\n    \"features\": { \"type\": \"array\", \"items\": { \"type\": \"string\" } },\n    \"benefits\": { \"type\": \"array\", \"items\": { \"type\": \"string\" } },\n    \"tags\": { \"type\": \"array\", \"items\": { \"type\": \"string\" } },\n    \"pinterestCaption\": { \"type\": \"string\" },\n    \"socialMediaCaption\": { \"type\": \"string\" }\n  },\n  \"required\": [\"seoTitle\", \"metaDescription\", \"description\", \"shortDescription\"]\n}"
+      },
+      "id": "openai-completion",
+      "name": "OpenAI Product Content",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1,
+      "position": [
+        550,
+        200
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "openai-creds"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{$env.OLLAMA_HOST || 'http://ollama:11434'}}/api/generate",
+        "method": "POST",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"model\": \"llama3\", \"prompt\": \"Generate JSON product marketing content. Title: {{$node['Product Created Webhook'].json.body.name}} Category: {{$node['Product Created Webhook'].json.body.categories[0].name}} Description: {{$node['Product Created Webhook'].json.body.description}} Output format: JSON with seoTitle, metaDescription, description, shortDescription, features, benefits, tags, pinterestCaption, socialMediaCaption.\", \"stream\": false, \"format\": \"json\"}"
+      },
+      "id": "ollama-completion",
+      "name": "Ollama Local Content",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        550,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = items[0].json;\nlet parsed;\n\ntry {\n  if (input.response) {\n    // From Ollama\n    parsed = JSON.parse(input.response);\n  } else if (input.choices) {\n    // From OpenAI\n    parsed = JSON.parse(input.choices[0].message.content);\n  } else {\n    parsed = input;\n  }\n} catch (e) {\n  throw new Error(\"AI response was not valid JSON: \" + e.message);\n}\n\nconst errors = [];\nif (parsed.seoTitle && parsed.seoTitle.length > 70) errors.push(\"SEO Title too long\");\nif (parsed.metaDescription && parsed.metaDescription.length > 165) errors.push(\"Meta Description too long\");\nif (!parsed.description || parsed.description.length < 50) errors.push(\"Description too short\");\n\nreturn [{\n  json: {\n    isValid: errors.length === 0,\n    errors,\n    content: parsed\n  }\n}];"
+      },
+      "id": "validate-content",
+      "name": "Validate Content",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        800,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.WOOCOMMERCE_STORE_URL}}/wp-json/wc/v3/products/{{$node['Product Created Webhook'].json.body.id}}",
+        "method": "PUT",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"description\": \"{{$json.content.description}}\", \"short_description\": \"{{$json.content.shortDescription}}\", \"meta_data\": [{\"key\": \"_yoast_wpseo_title\", \"value\": \"{{$json.content.seoTitle}}\"}, {\"key\": \"_yoast_wpseo_metadesc\", \"value\": \"{{$json.content.metaDescription}}\"}]}"
+      },
+      "id": "update-woocommerce-product",
+      "name": "Update WooCommerce Product",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1050,
+        300
+      ],
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "woocommerce-basic-auth"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "webhook-product": {
+      "main": [
+        [
+          {
+            "node": "check-env",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "check-env": {
+      "main": [
+        [
+          {
+            "node": "openai-completion",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ollama-completion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "openai-completion": {
+      "main": [
+        [
+          {
+            "node": "validate-content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ollama-completion": {
+      "main": [
+        [
+          {
+            "node": "validate-content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "validate-content": {
+      "main": [
+        [
+          {
+            "node": "update-woocommerce-product",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

@@ -15,6 +15,15 @@ import {
 export const metadata: Metadata = {
   title: `${SITE_CONFIG.name} – ${SITE_CONFIG.tagline}`,
   description: SITE_CONFIG.description,
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: `${SITE_CONFIG.name} – ${SITE_CONFIG.tagline}`,
+    description: SITE_CONFIG.description,
+    url: "/",
+    images: [{ url: SITE_CONFIG.ogImage, width: 1200, height: 630 }],
+  },
 };
 
 // ISR — regenerate homepage every 60 seconds in production

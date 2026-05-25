@@ -1,8 +1,18 @@
 import type { Metadata } from "next";
+import { SITE_CONFIG } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
   description: "Learn how Tkraft collects, uses, and protects your personal information.",
+  alternates: {
+    canonical: "/privacy-policy",
+  },
+  openGraph: {
+    title: `Privacy Policy | ${SITE_CONFIG.name}`,
+    description: "Learn how Tkraft collects, uses, and protects your personal information.",
+    url: "/privacy-policy",
+    images: [{ url: SITE_CONFIG.ogImage, width: 1200, height: 630 }],
+  },
 };
 
 export default function PrivacyPolicyPage() {
