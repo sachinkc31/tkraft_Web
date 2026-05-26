@@ -152,6 +152,7 @@ export function ProductDetailClient({ product, initialVariations = [], bundlePro
   const [deliveryCountry, setDeliveryCountry] = useState(storeCountry);
   const [pincode, setPincode] = useState("");
   const [pincodeMsg, setPincodeMsg] = useState("");
+  const [isCheckingPincode, setIsCheckingPincode] = useState(false);
 
   useEffect(() => {
     if (storeCountry) {
@@ -490,7 +491,7 @@ export function ProductDetailClient({ product, initialVariations = [], bundlePro
     }
   }
 
-  function checkPincode() {
+  async function checkPincode() {
     if (!pincode || pincode.trim().length === 0) {
       setPincodeMsg("Please enter a postal code.");
       return;
@@ -504,49 +505,64 @@ export function ProductDetailClient({ product, initialVariations = [], bundlePro
         setPincodeMsg("Please enter a valid 6-digit Indian PIN code.");
         return;
       }
-      setPincodeMsg("✅ Delivery available! Expected in 2-4 business days.");
     } else if (deliveryCountry === "US") {
       const zipRegex = /^\d{5}(-\d{4})?$/;
       if (!zipRegex.test(trimmed)) {
         setPincodeMsg("Please enter a valid 5 or 9-digit US ZIP code.");
         return;
       }
-      setPincodeMsg("✅ Delivery available! Expected in 5-10 business days.");
     } else if (deliveryCountry === "GB") {
       const ukRegex = /^[A-Z]{1,2}[0-9R][0-9A-Z]? ?[0-9][A-Z]{2}$/;
       if (!ukRegex.test(trimmed)) {
         setPincodeMsg("Please enter a valid UK postcode.");
         return;
       }
-      setPincodeMsg("✅ Delivery available! Expected in 5-10 business days.");
     } else if (deliveryCountry === "DE") {
       const deRegex = /^\d{5}$/;
       if (!deRegex.test(trimmed)) {
         setPincodeMsg("Please enter a valid 5-digit Germany postal code.");
         return;
       }
-      setPincodeMsg("✅ Delivery available! Expected in 5-10 business days.");
     } else if (deliveryCountry === "AU") {
       const auRegex = /^\d{4}$/;
       if (!auRegex.test(trimmed)) {
         setPincodeMsg("Please enter a valid 4-digit Australia postal code.");
         return;
       }
-      setPincodeMsg("✅ Delivery available! Expected in 5-10 business days.");
     } else if (deliveryCountry === "CA") {
       const caRegex = /^[A-Z][0-9][A-Z] ?[0-9][A-Z][0-9]$/;
       if (!caRegex.test(trimmed)) {
         setPincodeMsg("Please enter a valid Canadian postal code (e.g. K1A 0B1).");
         return;
       }
-      setPincodeMsg("✅ Delivery available! Expected in 5-10 business days.");
     } else {
       const generalRegex = /^[A-Z0-9 -]{3,10}$/;
       if (!generalRegex.test(trimmed)) {
         setPincodeMsg("Please enter a valid postal code.");
         return;
       }
-      setPincodeMsg("✅ Delivery available! Expected in 5-12 business days.");
+    }
+
+    setIsCheckingPincode(true);
+    setPincodeMsg("Checking delivery options...");
+
+    try {
+      const res = await fetch(`/api/shipping/estimate?pincode=${trimmed}`);
+      if (!res.ok) {
+        throw new Error("Pincode check failed");
+      }
+      const data = await res.json();
+      setPincodeMsg(data.message || "✅ Delivery available!");
+    } catch (err) {
+      console.error("Failed to check delivery estimate:", err);
+      // Fallback
+      if (deliveryCountry === "IN") {
+        setPincodeMsg("✅ Delivery available! Expected in 2-4 business days.");
+      } else {
+        setPincodeMsg("✅ Delivery available! Expected in 5-10 business days.");
+      }
+    } finally {
+      setIsCheckingPincode(false);
     }
   }
 
@@ -970,7 +986,7 @@ export function ProductDetailClient({ product, initialVariations = [], bundlePro
                   }}
                   className="flex-1 h-9 px-3 rounded-lg border border-[hsl(214,13%,90%)] text-xs focus:border-[hsl(var(--color-accent))] focus:outline-none"
                 />
-                <Button variant="primary" size="sm" onClick={checkPincode} className="h-9">
+                <Button variant="primary" size="sm" onClick={checkPincode} className="h-9" loading={isCheckingPincode}>
                   Check
                 </Button>
               </div>
