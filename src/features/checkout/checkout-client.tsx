@@ -3,12 +3,13 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { motion } from "framer-motion";
 import { ShieldCheck, ArrowLeft, CreditCard, Truck, CheckCircle } from "lucide-react";
-import { useCartStore, useUIStore, useCurrencyStore } from "@/store";
+import { useCartStore, useUIStore, useCurrencyStore, useAuthStore } from "@/store";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { formatPrice, cn } from "@/lib/utils";
 import { getPriceMultiplier, COUNTRY_RULES } from "@/lib/geo-config";
@@ -30,6 +31,7 @@ const checkoutSchema = z.object({
 type CheckoutFormData = z.infer<typeof checkoutSchema>;
 
 export function CheckoutClient() {
+  const router = useRouter();
   const currency = useCurrencyStore((s) => s.currency);
   const { items, getTotalPrice, getTotalItems, clearCart } = useCartStore();
   const showToast = useUIStore((s) => s.showToast);
@@ -49,13 +51,32 @@ export function CheckoutClient() {
     register,
     handleSubmit,
     watch,
+    reset,
     formState: { errors },
   } = useForm<CheckoutFormData>({
     resolver: zodResolver(checkoutSchema),
     defaultValues: { payment_method: "razorpay", country: storeCountry },
   });
 
+  const { user, clearSession } = useAuthStore();
   const selectedCountry = watch("country") || "IN";
+
+  useEffect(() => {
+    if (user) {
+      reset({
+        first_name: user.first_name || user.billing?.first_name || "",
+        last_name: user.last_name || user.billing?.last_name || "",
+        email: user.email || user.billing?.email || "",
+        phone: user.billing?.phone || "",
+        address_1: user.billing?.address_1 || "",
+        city: user.billing?.city || "",
+        state: user.billing?.state || "",
+        postcode: user.billing?.postcode || "",
+        country: user.billing?.country || storeCountry || "IN",
+        payment_method: "razorpay"
+      });
+    }
+  }, [user, reset, storeCountry]);
 
   useEffect(() => {
     setCountryCode(selectedCountry);
@@ -320,9 +341,27 @@ export function CheckoutClient() {
           <div className="lg:col-span-3 space-y-6">
             {/* Contact */}
             <div className="bg-white rounded-2xl border border-[hsl(214,13%,90%)] p-6">
-              <h2 className="font-display font-bold text-lg text-[hsl(222,47%,11%)] mb-5">
-                Contact Information
-              </h2>
+              <div className="flex items-center justify-between mb-5 flex-wrap gap-2">
+                <h2 className="font-display font-bold text-lg text-[hsl(222,47%,11%)]">
+                  Contact Information
+                </h2>
+                {user && (
+                  <div className="flex items-center gap-2 text-xs">
+                    <span className="text-[hsl(215,16%,47%)]">Logged in as <strong>{user.email}</strong></span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        clearSession();
+                        showToast("Logged out successfully.", "info");
+                        router.push("/login?redirect=/checkout");
+                      }}
+                      className="font-semibold text-red-500 hover:text-red-700 hover:underline transition-colors"
+                    >
+                      Log Out
+                    </button>
+                  </div>
+                )}
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className={labelClass}>First Name *</label>

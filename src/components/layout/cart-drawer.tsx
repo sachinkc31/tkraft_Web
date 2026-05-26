@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ShoppingCart, Trash2, Plus, Minus, ArrowRight } from "lucide-react";
-import { useCartStore, useCurrencyStore } from "@/store";
+import { useCartStore, useCurrencyStore, useAuthStore } from "@/store";
 import { formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -14,6 +14,7 @@ export function CartDrawer() {
   const currency = useCurrencyStore((s) => s.currency);
   const { items, isOpen, closeCart, removeItem, updateQuantity, getTotalPrice, getTotalItems } =
     useCartStore();
+  const { isAuthenticated } = useAuthStore();
   const router = useRouter();
 
   // Close on Escape
@@ -201,7 +202,14 @@ export function CartDrawer() {
                     size="lg"
                     className="w-full"
                     rightIcon={<ArrowRight className="h-4 w-4" />}
-                    onClick={() => { closeCart(); router.push("/checkout"); }}
+                    onClick={() => {
+                      closeCart();
+                      if (isAuthenticated) {
+                        router.push("/checkout");
+                      } else {
+                        router.push("/login?redirect=/checkout");
+                      }
+                    }}
                   >
                     Proceed to Checkout
                   </Button>

@@ -3,9 +3,10 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useCartStore, useCurrencyStore } from "@/store";
+import { useCartStore, useCurrencyStore, useAuthStore } from "@/store";
 import { formatPrice, cn } from "@/lib/utils";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { getPriceMultiplier, COUNTRY_RULES } from "@/lib/geo-config";
@@ -16,6 +17,8 @@ export function CartClient() {
   const currency = useCurrencyStore((s) => s.currency);
   const { items, removeItem, updateQuantity, clearCart, getTotalPrice, getTotalItems } =
     useCartStore();
+  const { isAuthenticated } = useAuthStore();
+  const router = useRouter();
 
   const { countryCode, setCountryCode } = useCurrencyStore();
   const estCountry = countryCode || "IN";
@@ -274,15 +277,21 @@ export function CartClient() {
             <span className="text-xl">{formatPrice(multipliedTotalPrice + shippingCost + taxCost, false)}</span>
           </div>
 
-          <Link 
-            href="/checkout" 
+          <button 
+            onClick={() => {
+              if (isAuthenticated) {
+                router.push("/checkout");
+              } else {
+                router.push("/login?redirect=/checkout");
+              }
+            }}
             className={cn(
               buttonVariants({ variant: "primary", size: "lg" }),
-              "block w-full text-center shadow-md shadow-blue-500/20 mt-5"
+              "block w-full text-center shadow-md shadow-blue-500/20 mt-5 w-full"
             )}
           >
             Proceed to Checkout
-          </Link>
+          </button>
 
           <div className="mt-4 flex items-center justify-center gap-4 text-xs text-[hsl(215,16%,47%)]">
             {["Razorpay", "UPI", "COD"].map((method) => (

@@ -138,6 +138,8 @@ export interface HomepageContent {
   campaign_product_collection?: string;
   hero_scroll_interval_seconds?: number;
 
+
+
   // Category Grid overrides
   categories_title?: string;
   categories_subtitle?: string;
@@ -202,6 +204,15 @@ export interface HomepageContent {
   newsletter_subtitle?: string;
   newsletter_placeholder?: string;
   newsletter_cta_text?: string;
+}
+
+export interface LoginContent {
+  login_promo_title?: string;
+  login_promo_subtitle?: string;
+  login_promo_image?: string;
+  login_promo_image_mobile?: string;
+  login_promo_cta_text?: string;
+  login_promo_cta_url?: string;
 }
 
 // Fallback layout when WordPress returns empty layout or fails
@@ -576,6 +587,62 @@ export async function getHomepageContent(): Promise<HomepageContent | null> {
     }
   } catch (error) {
     console.warn("Error fetching homepage-content from WP REST API:", error instanceof Error ? error.message : String(error));
+  }
+  return null;
+}
+
+/**
+ * Fetch login page promotion fields from WordPress
+ */
+export async function getLoginContent(): Promise<LoginContent | null> {
+  try {
+    const wpPostsUrl = `${API_CONFIG.wpRestUrl}/posts?slug=login-content`;
+    const res = await fetch(wpPostsUrl, {
+      headers: getAuthHeaders(),
+      ...getFetchOptions(),
+    });
+
+    if (res.ok) {
+      const posts = await res.json();
+      if (Array.isArray(posts) && posts.length > 0) {
+        const post = posts[0];
+        const acf = post.acf;
+        if (acf) {
+          const extractImg = (imgField: any) => {
+            if (!imgField) return undefined;
+            if (typeof imgField === "string") return imgField;
+            if (typeof imgField === "object" && imgField.url) return imgField.url;
+            return undefined;
+          };
+
+          const cleanLink = (urlStr?: string) => {
+            if (!urlStr) return undefined;
+            const str = String(urlStr).trim();
+            if (str.includes("tkraft.in")) {
+              try {
+                const absoluteUrl = str.startsWith("http") ? str : `https://${str}`;
+                const parsed = new URL(absoluteUrl);
+                return parsed.pathname;
+              } catch {
+                return "/shop";
+              }
+            }
+            return str;
+          };
+
+          return {
+            login_promo_title: acf.login_promo_title || undefined,
+            login_promo_subtitle: acf.login_promo_subtitle || undefined,
+            login_promo_image: extractImg(acf.login_promo_image),
+            login_promo_image_mobile: extractImg(acf.login_promo_image_mobile),
+            login_promo_cta_text: acf.login_promo_cta_text || undefined,
+            login_promo_cta_url: cleanLink(acf.login_promo_cta_url),
+          };
+        }
+      }
+    }
+  } catch (error) {
+    console.warn("Error fetching login-content from WP REST API:", error instanceof Error ? error.message : String(error));
   }
   return null;
 }

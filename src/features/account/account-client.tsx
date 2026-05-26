@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   User,
@@ -24,9 +25,17 @@ import { formatPrice, cn } from "@/lib/utils";
 import type { WooOrder } from "@/types";
 
 export function AccountClient() {
+  const router = useRouter();
   const currency = useCurrencyStore((s) => s.currency);
   const { user, token, isAuthenticated, setSession, clearSession } = useAuthStore();
   const showToast = useUIStore((s) => s.showToast);
+
+  // Redirect to unified premium login if not logged in
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push("/login?redirect=/account");
+    }
+  }, [isAuthenticated, router]);
 
   // Auth Tabs & States
   const [authTab, setAuthTab] = useState<"mobile" | "jwt">("mobile");
@@ -231,222 +240,18 @@ export function AccountClient() {
   };
 
   // ============================================
-  // RENDER: UNAUTHENTICATED
+  // RENDER: REROUTING LOGINS
   // ============================================
   if (!isAuthenticated) {
     return (
-      <div className="section min-h-[calc(100vh-200px)] flex items-center justify-center bg-[hsl(210,20%,98%)] px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="w-full max-w-md bg-white rounded-3xl border border-[hsl(214,13%,90%)] shadow-xl overflow-hidden p-6 md:p-8"
-        >
-          {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="font-display font-bold text-3xl text-[hsl(222,47%,11%)]">
-              Welcome to T<span className="text-[hsl(27,96%,55%)]">kraft</span>
-            </h1>
-            <p className="text-sm text-[hsl(215,16%,47%)] mt-2">
-              Sign in to manage orders, addresses, and view your profile details.
-            </p>
-          </div>
-
-          {/* Auth Tab Buttons */}
-          <div className="flex gap-2 p-1.5 bg-[hsl(210,16%,96%)] rounded-2xl mb-6">
-            <button
-              onClick={() => {
-                setAuthTab("mobile");
-                setOtpSent(false);
-              }}
-              className={cn(
-                "flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold transition-all",
-                authTab === "mobile"
-                  ? "bg-white text-[hsl(var(--color-accent))] shadow-sm"
-                  : "text-[hsl(215,16%,47%)] hover:text-[hsl(222,47%,11%)]"
-              )}
-            >
-              <Smartphone className="h-4 w-4" /> Mobile OTP
-            </button>
-            <button
-              onClick={() => setAuthTab("jwt")}
-              className={cn(
-                "flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold transition-all",
-                authTab === "jwt"
-                  ? "bg-white text-[hsl(var(--color-accent))] shadow-sm"
-                  : "text-[hsl(215,16%,47%)] hover:text-[hsl(222,47%,11%)]"
-              )}
-            >
-              <KeyRound className="h-4 w-4" /> Password Login
-            </button>
-          </div>
-
-          {/* TAB 1: Mobile Auth */}
-          {authTab === "mobile" && (
-            <AnimatePresence mode="wait">
-              {!otpSent ? (
-                <motion.form
-                  key="send-phone"
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 10 }}
-                  onSubmit={handleSendOtp}
-                  className="space-y-5"
-                >
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-[hsl(222,47%,11%)] mb-2">
-                      Mobile Number
-                    </label>
-                    <div className="relative">
-                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-semibold text-[hsl(215,16%,47%)]">
-                        +91
-                      </span>
-                      <input
-                        type="tel"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
-                        placeholder="98765 43210"
-                        className="w-full h-11 pl-14 pr-4 rounded-xl border-2 border-[hsl(214,13%,90%)] text-sm font-medium focus:outline-none focus:border-[hsl(var(--color-accent))] transition-colors"
-                        required
-                        disabled={isLoading}
-                      />
-                    </div>
-                    <p className="text-xs text-[hsl(215,16%,47%)] mt-2">
-                      We will send a 6-digit verification code to this mobile number.
-                    </p>
-                  </div>
-
-                  <Button
-                    type="submit"
-                    variant="primary"
-                    size="lg"
-                    className="w-full h-11"
-                    loading={isLoading}
-                  >
-                    Send OTP Code
-                  </Button>
-                </motion.form>
-              ) : (
-                <motion.form
-                  key="verify-otp"
-                  initial={{ opacity: 0, x: 10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -10 }}
-                  onSubmit={handleVerifyOtp}
-                  className="space-y-5"
-                >
-                  <div>
-                    <div className="flex justify-between items-center mb-2">
-                      <label className="block text-xs font-bold uppercase tracking-wider text-[hsl(222,47%,11%)]">
-                        Enter 6-Digit OTP
-                      </label>
-                      <button
-                        type="button"
-                        onClick={() => setOtpSent(false)}
-                        className="text-xs font-semibold text-[hsl(var(--color-accent))] hover:underline"
-                      >
-                        Change Number
-                      </button>
-                    </div>
-                    <input
-                      type="text"
-                      maxLength={6}
-                      value={otp}
-                      onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                      placeholder="Enter 6-digit code"
-                      className="w-full h-11 px-4 tracking-[0.4em] text-center font-mono font-bold text-lg rounded-xl border-2 border-[hsl(214,13%,90%)] focus:outline-none focus:border-[hsl(var(--color-accent))] transition-colors"
-                      required
-                      disabled={isLoading}
-                    />
-                    <div className="flex justify-between items-center mt-2.5">
-                      <p className="text-xs text-[hsl(215,16%,47%)]">
-                        Sent to +91 {phone}
-                      </p>
-                      {countdown > 0 ? (
-                        <span className="text-xs text-[hsl(215,16%,47%)]">
-                          Resend in {countdown}s
-                        </span>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={handleSendOtp}
-                          className="text-xs font-semibold text-[hsl(var(--color-accent))] hover:underline"
-                        >
-                          Resend OTP
-                        </button>
-                      )}
-                    </div>
-                  </div>
-
-                  <Button
-                    type="submit"
-                    variant="primary"
-                    size="lg"
-                    className="w-full h-11"
-                    loading={isLoading}
-                  >
-                    Verify & Login
-                  </Button>
-                </motion.form>
-              )}
-            </AnimatePresence>
-          )}
-
-          {/* TAB 2: JWT Auth */}
-          {authTab === "jwt" && (
-            <motion.form
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              onSubmit={handleJwtLogin}
-              className="space-y-4"
-            >
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[hsl(222,47%,11%)] mb-1.5">
-                  Username or Email
-                </label>
-                <input
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="name@example.com"
-                  className="w-full h-11 px-4 rounded-xl border-2 border-[hsl(214,13%,90%)] text-sm focus:outline-none focus:border-[hsl(var(--color-accent))] transition-colors"
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[hsl(222,47%,11%)] mb-1.5">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full h-11 px-4 rounded-xl border-2 border-[hsl(214,13%,90%)] text-sm focus:outline-none focus:border-[hsl(var(--color-accent))] transition-colors"
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-
-              <Button
-                type="submit"
-                variant="primary"
-                size="lg"
-                className="w-full h-11 mt-2"
-                loading={isLoading}
-              >
-                Sign In
-              </Button>
-            </motion.form>
-          )}
-
-          <div className="flex items-center gap-1.5 justify-center mt-6 text-xs text-[hsl(215,16%,47%)]">
-            <ShieldCheck className="h-4 w-4 text-[hsl(142,71%,45%)]" />
-            Secure connection via SSL.
-          </div>
-        </motion.div>
+      <div className="section min-h-[calc(100vh-200px)] flex flex-col items-center justify-center bg-[hsl(210,20%,98%)] px-4">
+        <Loader2 className="h-10 w-10 animate-spin text-[hsl(var(--color-accent))] mb-4" />
+        <h2 className="font-display font-bold text-xl text-[hsl(222,47%,11%)] mb-1">
+          Secure Authorization
+        </h2>
+        <p className="text-sm text-[hsl(215,16%,47%)]">
+          Redirecting to secure member login panel...
+        </p>
       </div>
     );
   }
