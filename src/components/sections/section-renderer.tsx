@@ -28,6 +28,10 @@ import { ProductCarousel } from "@/components/carousel/product-carousel";
 import { CategoryGrid } from "@/features/home/category-grid";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useUIStore } from "@/store";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 
 export function getThemeMotif(theme?: string): { prefix?: string; suffix?: string; classNames?: string } {
   if (!theme) return {};
@@ -814,21 +818,54 @@ function TestimonialsBlock({ section, theme }: { section: HomepageSection; theme
   );
 }
 
+// Zod schema for newsletter
+const newsletterSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+  bot_field: z.string().max(0, "Bot detected"), // Honeypot field must remain empty
+});
+
+type NewsletterFormInput = z.infer<typeof newsletterSchema>;
+
 // 7. NEWSLETTER
 function NewsletterBlock({ data, theme }: { data?: any; theme?: string }) {
-  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [subscribed, setSubscribed] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubscribe = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email) return;
+  const showToast = useUIStore((s) => s.showToast);
+
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<NewsletterFormInput>({
+    resolver: zodResolver(newsletterSchema),
+    defaultValues: { email: "", bot_field: "" }
+  });
+
+  const onSubscribeSubmit = async (values: NewsletterFormInput) => {
     setLoading(true);
-    setTimeout(() => {
+    setError(null);
+
+    try {
+      const res = await fetch("/api/newsletter/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(values),
+      });
+
+      const resData = await res.json();
+
+      if (res.ok) {
+        setSubscribed(true);
+        reset();
+        showToast("Successfully subscribed! Check your inbox for the discount code.", "success");
+      } else {
+        setError(resData.error || "Failed to subscribe. Please try again.");
+        showToast(resData.error || "Failed to subscribe.", "error");
+      }
+    } catch (err: any) {
+      setError("An unexpected error occurred. Please try again.");
+      showToast("An unexpected error occurred.", "error");
+    } finally {
       setLoading(false);
-      setSubscribed(true);
-      setEmail("");
-    }, 1200);
+    }
   };
 
   const motif = getThemeMotif(theme);
@@ -855,23 +892,45 @@ function NewsletterBlock({ data, theme }: { data?: any; theme?: string }) {
             <p className="text-xs text-white/60 mt-1">Check your inbox for your 15% discount code.</p>
           </motion.div>
         ) : (
-          <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-            <input
-              type="email"
-              placeholder={data?.placeholder || "Your email address"}
-              required
-              disabled={loading}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="flex-1 h-11 px-4 rounded-lg bg-white/10 border border-white/20 text-sm placeholder:text-white/45 focus:outline-none focus:border-[hsl(var(--color-primary-light))] transition-all text-white disabled:opacity-50"
-            />
-            <Button
-              type="submit"
-              disabled={loading || !email}
-              className="h-11 bg-[hsl(var(--color-primary))] text-white hover:bg-[hsl(var(--color-primary-dark))] font-bold whitespace-nowrap"
-            >
-              {loading ? "Joining..." : (data?.cta_text || "Subscribe")}
-            </Button>
+          <form onSubmit={handleSubmit(onSubscribeSubmit)} className="flex flex-col gap-2 max-w-md mx-auto">
+            {/* Honeypot Field */}
+            <div className="absolute overflow-hidden -z-10 w-0 h-0 opacity-0 select-none pointer-events-none" aria-hidden="true">
+              <input
+                type="text"
+                tabIndex={-1}
+                autoComplete="off"
+                {...register("bot_field")}
+              />
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex-1 flex flex-col items-start gap-1">
+                <input
+                  type="email"
+                  placeholder={data?.placeholder || "Your email address"}
+                  disabled={loading}
+                  {...register("email")}
+                  className={cn(
+                    "w-full h-11 px-4 rounded-lg bg-white/10 border border-white/20 text-sm placeholder:text-white/45 focus:outline-none focus:border-[hsl(var(--color-primary-light))] transition-all text-white disabled:opacity-50",
+                    errors.email && "border-red-400 focus:border-red-400"
+                  )}
+                  aria-invalid={errors.email ? "true" : "false"}
+                />
+              </div>
+              <Button
+                type="submit"
+                disabled={loading}
+                className="h-11 bg-[hsl(var(--color-primary))] text-white hover:bg-[hsl(var(--color-primary-dark))] font-bold whitespace-nowrap"
+              >
+                {loading ? "Joining..." : (data?.cta_text || "Subscribe")}
+              </Button>
+            </div>
+            {errors.email && (
+              <p className="text-xs text-red-300 text-left font-semibold mt-1">⚠️ {errors.email.message}</p>
+            )}
+            {error && !errors.email && (
+              <p className="text-xs text-red-300 text-left font-semibold mt-1">⚠️ {error}</p>
+            )}
           </form>
         )}
       </div>

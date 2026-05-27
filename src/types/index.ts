@@ -176,7 +176,23 @@ export interface Customer {
   avatar_url: string;
   billing: BillingAddress;
   shipping: ShippingAddress;
+  meta_data?: Array<{ id?: number; key: string; value: any }>;
 }
+
+export interface SavedAddress {
+  id: string;
+  first_name: string;
+  last_name: string;
+  address_1: string;
+  city: string;
+  state: string;
+  postcode: string;
+  country: string;
+  phone: string;
+  email?: string;
+  isDefault?: boolean;
+}
+
 
 export interface AuthTokens {
   token: string;

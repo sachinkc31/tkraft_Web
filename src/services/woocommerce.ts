@@ -322,6 +322,16 @@ export async function updateCustomer(
   });
 }
 
+export async function createCustomer(
+  customerData: any
+): Promise<any> {
+  return wooFetch<any>("/customers", {
+    method: "POST",
+    body: JSON.stringify(customerData),
+    next: { revalidate: 0 },
+  });
+}
+
 
 
 // ============================================
@@ -370,4 +380,29 @@ export async function createProductReview(reviewData: {
     body: JSON.stringify(reviewData),
     next: { revalidate: 0 },
   });
+}
+
+export async function createNewsletterCoupon(email: string): Promise<string> {
+  const randomSuffix = Math.random().toString(36).substring(2, 8).toUpperCase();
+  const couponCode = `WELCOME15-${randomSuffix}`;
+
+  const payload = {
+    code: couponCode,
+    amount: "15.00",
+    discount_type: "percent",
+    description: `15% off coupon for newsletter subscriber: ${email}`,
+    individual_use: true,
+    usage_limit: 1,
+    usage_limit_per_user: 1,
+    email_restrictions: [email.toLowerCase()],
+    expiry_date: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString().split('T')[0], // 30 days expiry
+  };
+
+  await wooFetch<any>("/coupons", {
+    method: "POST",
+    body: JSON.stringify(payload),
+    next: { revalidate: 0 },
+  });
+
+  return couponCode;
 }

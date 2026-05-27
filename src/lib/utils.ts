@@ -85,6 +85,34 @@ export function stripHtml(html: string): string {
 }
 
 /**
+ * Clean up and format WordPress HTML error messages
+ */
+export function cleanErrorMessage(msg: string): { text: string; html: string } {
+  if (!msg) return { text: "", html: "" };
+  
+  let cleaned = msg.trim();
+  
+  // Keep stripping common error prefixes
+  let lastCleaned = "";
+  while (cleaned !== lastCleaned) {
+    lastCleaned = cleaned;
+    cleaned = cleaned
+      .replace(/^(error|exception)\s*:\s*/i, "")
+      .replace(/^error\s+/i, "")
+      .replace(/^<strong>(error|exception):?<\/strong>\s*/i, "")
+      .replace(/^<strong>(error|exception)<\/strong>:?\s*/i, "")
+      .trim();
+  }
+  
+  const text = cleaned.replace(/<[^>]*>/g, "").trim();
+  
+  return {
+    text: text || "An unexpected error occurred",
+    html: cleaned || "An unexpected error occurred"
+  };
+}
+
+/**
  * Generate a slug-friendly string
  */
 export function slugify(text: string): string {

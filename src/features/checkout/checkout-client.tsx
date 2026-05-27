@@ -8,11 +8,12 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { motion } from "framer-motion";
-import { ShieldCheck, ArrowLeft, CreditCard, Truck, CheckCircle } from "lucide-react";
+import { ShieldCheck, ArrowLeft, CreditCard, Truck, CheckCircle, MapPin, Check } from "lucide-react";
 import { useCartStore, useUIStore, useCurrencyStore, useAuthStore } from "@/store";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { formatPrice, cn } from "@/lib/utils";
 import { getPriceMultiplier, COUNTRY_RULES } from "@/lib/geo-config";
+import type { SavedAddress } from "@/types";
 
 const checkoutSchema = z.object({
   first_name: z.string().min(2, "First name must be at least 2 characters"),
@@ -33,6 +34,11 @@ type CheckoutFormData = z.infer<typeof checkoutSchema>;
 export function CheckoutClient() {
   const router = useRouter();
   const currency = useCurrencyStore((s) => s.currency);
+  
+  // Saved Address states
+  const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<string>("");
+  const [saveToProfile, setSaveToProfile] = useState(false);
   const { items, getTotalPrice, getTotalItems, clearCart } = useCartStore();
   const showToast = useUIStore((s) => s.showToast);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -75,8 +81,54 @@ export function CheckoutClient() {
         country: user.billing?.country || storeCountry || "IN",
         payment_method: "razorpay"
       });
+
+      if (user.meta_data) {
+        const meta = user.meta_data.find((m: any) => m.key === "saved_addresses");
+        if (meta?.value) {
+          try {
+            const parsed = typeof meta.value === "string" ? JSON.parse(meta.value) : meta.value;
+            if (Array.isArray(parsed)) {
+              setSavedAddresses(parsed);
+              const defaultAddr = parsed.find((a: any) => a.isDefault);
+              if (defaultAddr) {
+                setSelectedAddressId(defaultAddr.id);
+                reset({
+                  first_name: defaultAddr.first_name,
+                  last_name: defaultAddr.last_name,
+                  email: user.email || defaultAddr.email || "",
+                  phone: defaultAddr.phone,
+                  address_1: defaultAddr.address_1,
+                  city: defaultAddr.city,
+                  state: defaultAddr.state,
+                  postcode: defaultAddr.postcode,
+                  country: defaultAddr.country || "IN",
+                  payment_method: "razorpay"
+                });
+              }
+            }
+          } catch (e) {
+            console.error("Error parsing saved addresses:", e);
+          }
+        }
+      }
     }
   }, [user, reset, storeCountry]);
+
+  const handleSelectAddress = (addr: SavedAddress) => {
+    setSelectedAddressId(addr.id);
+    reset({
+      first_name: addr.first_name,
+      last_name: addr.last_name,
+      email: addr.email || user?.email || "",
+      phone: addr.phone,
+      address_1: addr.address_1,
+      city: addr.city,
+      state: addr.state,
+      postcode: addr.postcode,
+      country: addr.country || "IN",
+      payment_method: watch("payment_method") || "razorpay"
+    });
+  };
 
   useEffect(() => {
     setCountryCode(selectedCountry);
@@ -164,6 +216,67 @@ export function CheckoutClient() {
 
       if (!res.ok) throw new Error("Failed to create order");
       const order = await res.json();
+
+      // If user wants to save this address, update profile
+      if (user && saveToProfile) {
+        try {
+          const isAlreadySaved = savedAddresses.some(
+            (addr) =>
+              addr.address_1.toLowerCase() === data.address_1.toLowerCase() &&
+              addr.city.toLowerCase() === data.city.toLowerCase() &&
+              addr.postcode === data.postcode
+          );
+
+          if (!isAlreadySaved) {
+            const newAddress: SavedAddress = {
+              id: Math.random().toString(36).substring(2, 15),
+              first_name: data.first_name,
+              last_name: data.last_name,
+              address_1: data.address_1,
+              city: data.city,
+              state: data.state,
+              postcode: data.postcode,
+              country: data.country,
+              phone: data.phone,
+              email: data.email,
+              isDefault: savedAddresses.length === 0,
+            };
+
+            const updatedList = [...savedAddresses, newAddress];
+            const userMeta = [...(user.meta_data || [])];
+            const addressIndex = userMeta.findIndex((m: any) => m.key === "saved_addresses");
+            if (addressIndex > -1) {
+              userMeta[addressIndex] = { ...userMeta[addressIndex], value: JSON.stringify(updatedList) };
+            } else {
+              userMeta.push({ key: "saved_addresses", value: JSON.stringify(updatedList) });
+            }
+
+            const updateRes = await fetch("/api/customer/update", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                customerId: user.id,
+                customerData: {
+                  email: user.email,
+                  meta_data: [
+                    { key: "saved_addresses", value: JSON.stringify(updatedList) }
+                  ],
+                },
+              }),
+            });
+
+            if (updateRes.ok) {
+              const updateData = await updateRes.json();
+              if (updateData.success) {
+                const authStore = useAuthStore.getState();
+                authStore.setSession(authStore.token || "", updateData.user);
+              }
+            }
+          }
+        } catch (addrErr) {
+          console.error("Failed to save address to profile:", addrErr);
+        }
+      }
 
       if (data.payment_method === "razorpay") {
         showToast("Initializing payment gateway...", "info");
@@ -339,6 +452,54 @@ export function CheckoutClient() {
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
           {/* ---- LEFT: Form ---- */}
           <div className="lg:col-span-3 space-y-6">
+            {/* Saved Address Selector */}
+            {user && savedAddresses.length > 0 && (
+              <div className="bg-white rounded-2xl border border-[hsl(214,13%,90%)] p-6">
+                <h2 className="font-display font-bold text-lg text-[hsl(222,47%,11%)] mb-4 flex items-center gap-2">
+                  <MapPin className="h-5 w-5 text-[hsl(var(--color-accent))]" />
+                  Select from Saved Addresses
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {savedAddresses.map((addr) => (
+                    <button
+                      key={addr.id}
+                      type="button"
+                      onClick={() => handleSelectAddress(addr)}
+                      className={cn(
+                        "text-left p-4 rounded-xl border-2 transition-all flex flex-col justify-between h-full relative group",
+                        selectedAddressId === addr.id
+                          ? "border-[hsl(var(--color-accent))] bg-[hsl(var(--color-accent))]/[0.02]"
+                          : "border-[hsl(214,13%,90%)] hover:border-[hsl(var(--color-accent))]/50"
+                      )}
+                    >
+                      <div>
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <span className="font-bold text-sm text-[hsl(222,47%,11%)]">
+                            {addr.first_name} {addr.last_name}
+                          </span>
+                          {addr.isDefault && (
+                            <span className="px-1.5 py-0.5 rounded bg-[hsl(142,71%,95%)] text-[hsl(142,71%,45%)] text-[10px] font-bold">
+                              Default
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-[hsl(215,16%,47%)] line-clamp-2 leading-relaxed">
+                          {addr.address_1}, {addr.city}, {addr.state} - {addr.postcode}
+                        </p>
+                        <p className="text-xs text-[hsl(222,47%,11%)] font-semibold mt-2">
+                          📞 {addr.phone}
+                        </p>
+                      </div>
+                      {selectedAddressId === addr.id && (
+                        <div className="absolute top-3 right-3 bg-[hsl(var(--color-accent))] text-white p-0.5 rounded-full">
+                          <Check className="h-3.5 w-3.5" />
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
             {/* Contact */}
             <div className="bg-white rounded-2xl border border-[hsl(214,13%,90%)] p-6">
               <div className="flex items-center justify-between mb-5 flex-wrap gap-2">
@@ -435,6 +596,20 @@ export function CheckoutClient() {
                   <label className={labelClass}>Order Notes (optional)</label>
                   <textarea {...register("order_notes")} rows={3} className={cn(fieldClass(false), "h-auto py-2.5 resize-none")} placeholder="Any special delivery instructions…" />
                 </div>
+                {user && (
+                  <div className="pt-4 border-t border-[hsl(214,13%,90%)] flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="save_to_profile"
+                      checked={saveToProfile}
+                      onChange={(e) => setSaveToProfile(e.target.checked)}
+                      className="h-4 w-4 rounded border-[hsl(214,13%,90%)] text-[hsl(var(--color-accent))] focus:ring-[hsl(var(--color-accent))]"
+                    />
+                    <label htmlFor="save_to_profile" className="text-sm font-semibold text-[hsl(222,47%,11%)] cursor-pointer select-none">
+                      Save this address to my profile
+                    </label>
+                  </div>
+                )}
               </div>
             </div>
 

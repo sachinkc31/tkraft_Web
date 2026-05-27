@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { useAuthStore, useUIStore } from "@/store";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { cn, stripHtml, cleanErrorMessage } from "@/lib/utils";
 import type { LoginContent } from "@/services/cms";
 
 interface LoginClientProps {
@@ -35,6 +35,14 @@ function LoginClientContent({ loginContent }: LoginClientProps) {
   const [authTab, setAuthTab] = useState<"mobile" | "jwt">("mobile");
   const [isLoading, setIsLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState<"google" | "facebook" | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  // Clear error and forgot password state on tab toggle
+  useEffect(() => {
+    setError(null);
+    setIsForgotMode(false);
+    setForgotSuccess(false);
+  }, [authTab]);
 
   // Mobile Auth States
   const [phone, setPhone] = useState("");
@@ -45,6 +53,9 @@ function LoginClientContent({ loginContent }: LoginClientProps) {
   // JWT Auth States
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [isForgotMode, setIsForgotMode] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotSuccess, setForgotSuccess] = useState(false);
 
   // OTP Countdown timer
   useEffect(() => {
@@ -113,6 +124,7 @@ function LoginClientContent({ loginContent }: LoginClientProps) {
   // OTP Send handler
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     if (!/^[6-9]\d{9}$/.test(phone)) {
       showToast("Please enter a valid 10-digit Indian mobile number", "error");
       return;
@@ -146,6 +158,7 @@ function LoginClientContent({ loginContent }: LoginClientProps) {
   // OTP Verify handler
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     if (!/^\d{6}$/.test(otp)) {
       showToast("Please enter a valid 6-digit OTP", "error");
       return;
@@ -205,7 +218,9 @@ function LoginClientContent({ loginContent }: LoginClientProps) {
       showToast("Login successful!", "success");
       router.push(redirectUrl);
     } catch (err: any) {
-      showToast(err.message || "Invalid OTP code", "error");
+      const cleaned = cleanErrorMessage(err.message || "Invalid OTP code");
+      setError(cleaned.html);
+      showToast(cleaned.text, "error");
     } finally {
       setIsLoading(false);
     }
@@ -214,6 +229,7 @@ function LoginClientContent({ loginContent }: LoginClientProps) {
   // JWT / Username-Password Login handler
   const handleJwtLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     if (!username || !password) {
       showToast("Please fill all fields", "error");
       return;
@@ -271,8 +287,41 @@ function LoginClientContent({ loginContent }: LoginClientProps) {
         showToast("Logged in to admin sandbox account successfully!", "success");
         router.push(redirectUrl);
       } else {
-        showToast(err.message || "Invalid username or password", "error");
+        const cleaned = cleanErrorMessage(err.message || "Invalid username or password");
+        setError(cleaned.html);
+        showToast(cleaned.text, "error");
       }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Forgot Password handler
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    if (!forgotEmail) {
+      showToast("Please enter your username or email address", "error");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: forgotEmail }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Request failed");
+
+      setForgotSuccess(true);
+      showToast(data.message || "Reset link sent!", "success");
+    } catch (err: any) {
+      const cleaned = cleanErrorMessage(err.message || "Failed to request password reset");
+      setError(cleaned.html);
+      showToast(cleaned.text, "error");
     } finally {
       setIsLoading(false);
     }
@@ -373,6 +422,23 @@ function LoginClientContent({ loginContent }: LoginClientProps) {
               <KeyRound className="h-4 w-4" /> Password Login
             </button>
           </div>
+
+          {/* Error Alert */}
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-xs font-semibold text-red-700 leading-relaxed mb-6"
+            >
+              <div className="flex gap-2 items-start">
+                <span className="shrink-0 mt-0.5">⚠️</span>
+                <span 
+                  className="[&>a]:text-[hsl(var(--color-accent))] [&>a]:underline [&>a]:hover:opacity-80 [&>strong]:font-bold"
+                  dangerouslySetInnerHTML={{ __html: error }}
+                />
+              </div>
+            </motion.div>
+          )}
 
           {/* Forms */}
           <div className="min-h-[220px]">
@@ -486,7 +552,7 @@ function LoginClientContent({ loginContent }: LoginClientProps) {
               </AnimatePresence>
             )}
 
-            {authTab === "jwt" && (
+            {authTab === "jwt" && !isForgotMode && (
               <motion.form
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -509,9 +575,22 @@ function LoginClientContent({ loginContent }: LoginClientProps) {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[hsl(222,47%,11%)] mb-1.5">
-                    Password
-                  </label>
+                  <div className="flex justify-between items-center mb-1.5">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-[hsl(222,47%,11%)]">
+                      Password
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsForgotMode(true);
+                        setForgotSuccess(false);
+                        setError(null);
+                      }}
+                      className="text-xs font-semibold text-[hsl(var(--color-accent))] hover:underline"
+                    >
+                      Forgot Password?
+                    </button>
+                  </div>
                   <input
                     type="password"
                     value={password}
@@ -532,6 +611,61 @@ function LoginClientContent({ loginContent }: LoginClientProps) {
                 >
                   Sign In
                 </Button>
+              </motion.form>
+            )}
+
+            {authTab === "jwt" && isForgotMode && (
+              <motion.form
+                key="forgot-password"
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                onSubmit={handleForgotPassword}
+                className="space-y-4"
+              >
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-[hsl(222,47%,11%)] mb-1.5">
+                    Username or Email
+                  </label>
+                  <input
+                    type="text"
+                    value={forgotEmail}
+                    onChange={(e) => setForgotEmail(e.target.value)}
+                    placeholder="Enter your username or email"
+                    className="w-full h-11 px-4 rounded-xl border-2 border-[hsl(214,13%,90%)] text-sm focus:outline-none focus:border-[hsl(var(--color-accent))] transition-colors"
+                    required
+                    disabled={isLoading || forgotSuccess}
+                  />
+                </div>
+
+                {forgotSuccess ? (
+                  <div className="p-3.5 rounded-xl bg-green-50 border border-green-200 text-xs font-semibold text-green-700 leading-relaxed">
+                    Check your email inbox for a link to reset your password.
+                  </div>
+                ) : (
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    size="lg"
+                    className="w-full h-11"
+                    loading={isLoading}
+                  >
+                    Send Reset Link
+                  </Button>
+                )}
+
+                <div className="text-center pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsForgotMode(false);
+                      setForgotSuccess(false);
+                      setError(null);
+                    }}
+                    className="text-xs font-semibold text-[hsl(var(--color-accent))] hover:underline"
+                  >
+                    Back to Password Login
+                  </button>
+                </div>
               </motion.form>
             )}
           </div>

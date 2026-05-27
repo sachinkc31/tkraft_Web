@@ -250,3 +250,186 @@ export async function sendPendingPaymentEmail(order: any, paymentLink: string): 
     return { success: true, path: savedPath };
   }
 }
+
+/**
+ * HTML Template for Newsletter Subscription welcome email
+ */
+function generateNewsletterCouponEmailHTML(email: string, couponCode: string): string {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Your 15% Off Discount Code</title>
+      <style>
+        body {
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+          background-color: #f3f4f6;
+          margin: 0;
+          padding: 0;
+        }
+        .container {
+          max-width: 600px;
+          margin: 40px auto;
+          background: #ffffff;
+          border-radius: 20px;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+          overflow: hidden;
+          border: 1px solid #e5e7eb;
+        }
+        .header {
+          background-color: #1e3a8a;
+          padding: 30px;
+          text-align: center;
+        }
+        .header h1 {
+          color: #ffffff;
+          font-size: 24px;
+          margin: 0;
+          font-weight: 800;
+        }
+        .header span {
+          color: #f97316;
+        }
+        .content {
+          padding: 35px;
+          text-align: center;
+        }
+        .title {
+          font-size: 22px;
+          font-weight: 800;
+          color: #111827;
+          margin-bottom: 12px;
+        }
+        .message {
+          font-size: 15px;
+          color: #4b5563;
+          line-height: 1.6;
+          margin-bottom: 30px;
+        }
+        .coupon-box {
+          display: inline-block;
+          background-color: #f9fafb;
+          border: 2px dashed #f97316;
+          border-radius: 12px;
+          padding: 16px 40px;
+          margin: 10px 0 30px 0;
+        }
+        .coupon-code {
+          font-family: monospace;
+          font-size: 28px;
+          font-weight: 800;
+          color: #f97316;
+          letter-spacing: 2px;
+        }
+        .validity {
+          font-size: 12px;
+          color: #9ca3af;
+          margin-top: 6px;
+        }
+        .cta-container {
+          margin: 20px 0 30px 0;
+        }
+        .cta-button {
+          display: inline-block;
+          background-color: #f97316;
+          color: #ffffff !important;
+          text-decoration: none;
+          padding: 14px 35px;
+          border-radius: 12px;
+          font-weight: bold;
+          font-size: 15px;
+          box-shadow: 0 4px 6px rgba(249, 115, 22, 0.2);
+        }
+        .footer {
+          background-color: #f9fafb;
+          padding: 20px 30px;
+          text-align: center;
+          font-size: 12px;
+          color: #9ca3af;
+          border-top: 1px solid #f3f4f6;
+        }
+        .footer a {
+          color: #1e3a8a;
+          text-decoration: none;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>T<span>kraft</span></h1>
+        </div>
+        <div class="content">
+          <h2 class="title">Thanks for subscribing! 🎉</h2>
+          <p class="message">
+            Welcome to the Tkraft family! Use the unique coupon code below at checkout to get <strong>15% off</strong> your first order.
+          </p>
+          
+          <div class="coupon-box">
+            <div class="coupon-code">${couponCode}</div>
+            <div class="validity">Valid for 30 days. Applies to all items.</div>
+          </div>
+          
+          <div class="cta-container">
+            <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.tkraft.in'}/shop" class="cta-button">Shop Tkraft Organizers</a>
+          </div>
+          
+          <p style="font-size: 13px; color: #6b7280; line-height: 1.5;">
+            Explore our curated collections of premium home and kitchen space organizers.
+          </p>
+        </div>
+        <div class="footer">
+          &copy; ${new Date().getFullYear()} Tkraft. All rights reserved. <br>
+          You received this email because you subscribed to Tkraft. <br>
+          For assistance, contact <a href="mailto:support@tkraft.in">support@tkraft.in</a>.
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+/**
+ * Sends a newsletter subscriber welcome email with their unique coupon code.
+ */
+export async function sendNewsletterCouponEmail(email: string, couponCode: string): Promise<{ success: boolean; path?: string }> {
+  const html = generateNewsletterCouponEmailHTML(email, couponCode);
+  const subject = "Your 15% Off Tkraft Discount Code! 🎁";
+
+  let savedPath: string | undefined;
+  try {
+    const logsDir = path.join(process.cwd(), "logs/emails");
+    if (!fs.existsSync(logsDir)) {
+      fs.mkdirSync(logsDir, { recursive: true });
+    }
+    const filename = `newsletter-${email.replace(/[^a-zA-Z0-9]/g, "_")}.html`;
+    const fullPath = path.join(logsDir, filename);
+    fs.writeFileSync(fullPath, html, "utf-8");
+    savedPath = fullPath;
+    console.log(`[Email Service] Newsletter subscription email saved to: ${fullPath}`);
+  } catch (fileErr) {
+    console.error("[Email Service] Failed to save newsletter email draft to disk:", fileErr);
+  }
+
+  if (transporter) {
+    try {
+      console.log(`[Email Service] Sending newsletter coupon email to ${email}...`);
+      await transporter.sendMail({
+        from: smtpFrom,
+        to: email,
+        subject: subject,
+        html: html,
+      });
+      console.log(`[Email Service] Newsletter email sent successfully to ${email}`);
+      return { success: true, path: savedPath };
+    } catch (smtpErr) {
+      console.error(`[Email Service] SMTP failed sending newsletter email to ${email}:`, smtpErr);
+      return { success: false, path: savedPath };
+    }
+  } else {
+    console.log("[Email Service] SMTP missing. Local email file logged instead.");
+    return { success: true, path: savedPath };
+  }
+}

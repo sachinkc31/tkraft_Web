@@ -22,7 +22,7 @@ import {
   Copy,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useCartStore, useUIStore, useWishlistStore, useAuthStore, useCurrencyStore } from "@/store";
+import { useCartStore, useUIStore, useWishlistStore, useAuthStore, useCurrencyStore, useRecentlyViewedStore } from "@/store";
 import { formatPrice, getDiscountPercent, cn, stripHtml } from "@/lib/utils";
 import { COUNTRY_RULES } from "@/lib/geo-config";
 import type { WooProduct } from "@/types";
@@ -173,6 +173,13 @@ export function ProductDetailClient({ product, initialVariations = [], bundlePro
   const isInWishlist = useWishlistStore((s) => s.hasItem(product.id));
 
   const { user, isAuthenticated } = useAuthStore();
+
+  const addRecentlyViewed = useRecentlyViewedStore((s) => s.addProduct);
+  useEffect(() => {
+    if (product) {
+      addRecentlyViewed(product);
+    }
+  }, [product, addRecentlyViewed]);
 
   // Reviews & Ratings State
   const [reviews, setReviews] = useState<any[]>([]);

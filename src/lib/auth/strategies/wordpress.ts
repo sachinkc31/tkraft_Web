@@ -181,7 +181,7 @@ export class WordPressAuthService implements IAuthService {
       exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 30, // 30 days
     });
 
-    const jwtSecret = process.env.RAZORPAY_KEY_SECRET || "default_auth_secret_key";
+    const jwtSecret = process.env.JWT_AUTH_SECRET_KEY || process.env.RAZORPAY_KEY_SECRET || "default_auth_secret_key";
     const hmac = crypto.createHmac("sha256", jwtSecret).update(payload).digest("base64");
     const token = `${Buffer.from(payload).toString("base64")}.${hmac}`;
 
@@ -195,6 +195,7 @@ export class WordPressAuthService implements IAuthService {
         avatar_url: customer.avatar_url || "",
         billing: customer.billing,
         shipping: customer.shipping,
+        meta_data: customer.meta_data,
       },
     };
   }
