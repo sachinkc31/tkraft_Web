@@ -7,8 +7,8 @@ export const metadata: Metadata = {
   description: "Log in to your Tkraft account to track orders, manage addresses, or continue checkout. Guest checkout and social login options available.",
 };
 
-// Revalidate page on every request or periodically to refresh the promo banner
-export const revalidate = 60; // cached for 60 seconds
+// Force dynamic rendering to ensure that changes in WordPress content are reflected immediately on every request
+export const dynamic = "force-dynamic";
 
 export default async function LoginPage() {
   const loginContent = await getLoginContent();

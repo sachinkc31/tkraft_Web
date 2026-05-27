@@ -117,12 +117,79 @@ export interface HomepageLayout {
 }
 
 export interface HomepageContent {
+  // Announcement Bar
+  announcement_enabled?: boolean;
+  announcement_text?: string;
+  announcement_link?: string;
+  announcement_bg_color?: string;
+
+  // Hero Banner
   hero_title?: string;
   hero_subtitle?: string;
-  hero_image?: string;
+  hero_desktop_image?: string;
+  hero_mobile_image?: string;
   hero_cta_text?: string;
   hero_cta_url?: string;
-  // Campaign overrides
+  hero_alignment?: string;
+  hero_theme?: string;
+  hero_image?: string; // backwards compatibility
+
+  // Trust Benefits
+  benefit_1_title?: string;
+  benefit_1_icon?: string;
+  benefit_2_title?: string;
+  benefit_2_icon?: string;
+  benefit_3_title?: string;
+  benefit_3_icon?: string;
+  benefit_4_title?: string;
+  benefit_4_icon?: string;
+
+  // Trending Now
+  trending_title?: string;
+  trending_collection?: string;
+  trending_limit?: number;
+
+  // Promo Banner
+  promo_title?: string;
+  promo_description?: string;
+  promo_image?: string;
+  promo_cta_text?: string;
+  promo_cta_url?: string;
+
+  // Best Sellers
+  bestseller_title?: string;
+  bestseller_limit?: number;
+  bestsellers_title?: string;
+  bestsellers_limit?: number;
+
+  // Featured Collections
+  collection_1_title?: string;
+  collection_1_category?: string;
+  collection_2_title?: string;
+  collection_2_category?: string;
+  collection_3_title?: string;
+  collection_3_category?: string;
+
+  // Flash Deals
+  flash_sale_title?: string;
+  flash_sale_end_date?: string;
+  flash_sale_collection?: string;
+
+  // Why Buy From TKraft
+  why_buy_title?: string;
+  why_buy_item_1?: string;
+  why_buy_item_2?: string;
+  why_buy_item_3?: string;
+  why_buy_item_4?: string;
+
+  // Reviews
+  testimonial_title?: string;
+
+  // Newsletter
+  newsletter_title?: string;
+  newsletter_subtitle?: string;
+
+  // Campaign overrides (Backwards compatibility)
   campaign_id?: string;
   campaign_name?: string;
   campaign_theme?: string;
@@ -137,23 +204,14 @@ export interface HomepageContent {
   campaign_banner_image_mobile?: string;
   campaign_product_collection?: string;
   hero_scroll_interval_seconds?: number;
-
-
-
-  // Category Grid overrides
   categories_title?: string;
   categories_subtitle?: string;
   categories_slugs?: string[];
-
-  // Product Carousels overrides
-  trending_title?: string;
-  trending_limit?: number;
-  bestsellers_title?: string;
-  bestsellers_limit?: number;
   new_arrivals_title?: string;
   new_arrivals_limit?: number;
-
-  // Promo Banners overrides
+  trending_limit_mobile?: number;
+  bestsellers_limit_mobile?: number;
+  new_arrivals_limit_mobile?: number;
   promo_1_title?: string;
   promo_1_subtitle?: string;
   promo_1_image?: string;
@@ -164,15 +222,11 @@ export interface HomepageContent {
   promo_2_image?: string;
   promo_2_cta_text?: string;
   promo_2_cta_link?: string;
-
-  // CTA Banner overrides
   cta_title?: string;
   cta_subtitle?: string;
   cta_image?: string;
   cta_cta_text?: string;
   cta_cta_link?: string;
-
-  // Enable/Disable Section Toggles
   enable_section_hero?: boolean;
   enable_section_benefits?: boolean;
   enable_section_categories?: boolean;
@@ -183,25 +237,17 @@ export interface HomepageContent {
   enable_section_highlights?: boolean;
   enable_section_testimonials?: boolean;
   enable_section_newsletter?: boolean;
-
-  // Mobile Specific Content
   hero_image_mobile?: string;
   categories_hide_on_mobile?: boolean;
-  trending_limit_mobile?: number;
-  bestsellers_limit_mobile?: number;
-  new_arrivals_limit_mobile?: number;
   promo_1_image_mobile?: string;
   promo_2_image_mobile?: string;
   cta_image_mobile?: string;
-  // Extra fields for CMS-driven static blocks
   benefits_title?: string;
   benefits_subtitle?: string;
   highlights_title?: string;
   highlights_subtitle?: string;
   testimonials_title?: string;
   testimonials_subtitle?: string;
-  newsletter_title?: string;
-  newsletter_subtitle?: string;
   newsletter_placeholder?: string;
   newsletter_cta_text?: string;
 }
@@ -260,6 +306,13 @@ export const DEFAULT_HOMEPAGE_LAYOUT: HomepageLayout = {
       viewAllUrl: "/shop?sort=popularity",
       limit: 8,
       variant: "default",
+    },
+    {
+      id: "section_flash",
+      type: "flashSale",
+      title: "Flash Deals",
+      subtitle: "Super saver limited hours deals!",
+      limit: 8,
     },
     {
       id: "section_promo",
@@ -371,6 +424,53 @@ function getFetchOptions(): RequestInit {
     : { next: { revalidate: 60 } }; // cache for 60 seconds in production
 }
 
+// ---- SCF Field Extraction Helpers ----
+function cleanLink(urlStr?: string): string | undefined {
+  if (!urlStr) return undefined;
+  const str = String(urlStr).trim();
+  if (str.includes("tkraft.in")) {
+    try {
+      const absoluteUrl = str.startsWith("http") ? str : `https://${str}`;
+      const parsed = new URL(absoluteUrl);
+      return parsed.pathname;
+    } catch {
+      return "/shop";
+    }
+  }
+  return str;
+}
+
+function extractImg(imgField: any, sourceField?: any): string | undefined {
+  if (imgField) {
+    if (typeof imgField === "string") return imgField;
+    if (typeof imgField === "object" && imgField.url) return imgField.url;
+  }
+  if (sourceField) {
+    if (typeof sourceField === "string") return sourceField;
+    if (typeof sourceField === "object") {
+      if (sourceField.url) return sourceField.url;
+      if (sourceField.formatted_value) {
+        if (typeof sourceField.formatted_value === "string") return sourceField.formatted_value;
+        if (typeof sourceField.formatted_value === "object" && sourceField.formatted_value.url) {
+          return sourceField.formatted_value.url;
+        }
+      }
+    }
+  }
+  return undefined;
+}
+
+function extractText(textField: any, sourceField?: any): string | undefined {
+  if (textField && typeof textField === "string") return textField;
+  if (sourceField) {
+    if (typeof sourceField === "string") return sourceField;
+    if (typeof sourceField === "object") {
+      if (typeof sourceField.formatted_value === "string") return sourceField.formatted_value;
+    }
+  }
+  return undefined;
+}
+
 /**
  * Fetch dynamic homepage section layout configuration from WordPress CMS
  */
@@ -434,153 +534,187 @@ export async function getHomepageContent(): Promise<HomepageContent | null> {
         const page = pages[0];
         const acf = page.acf;
         if (acf) {
-          let hero_image = "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1600&q=80";
-          if (acf.hero_image) {
-            if (typeof acf.hero_image === "string") {
-              hero_image = acf.hero_image;
-            } else if (typeof acf.hero_image === "object" && acf.hero_image.url) {
-              hero_image = acf.hero_image.url;
-            } else if (acf.hero_image_source && acf.hero_image_source.url) {
-              hero_image = acf.hero_image_source.url;
-            }
-          }
-
-          // Clean url to keep it local if it contains tkraft.in
-          let hero_cta_url = "/shop";
-          if (acf.hero_cta_url) {
-            const urlStr = String(acf.hero_cta_url).trim();
-            if (urlStr.includes("tkraft.in")) {
-              try {
-                const absoluteUrl = urlStr.startsWith("http") ? urlStr : `https://${urlStr}`;
-                const parsed = new URL(absoluteUrl);
-                hero_cta_url = parsed.pathname;
-              } catch {
-                hero_cta_url = "/shop";
-              }
-            } else {
-              hero_cta_url = urlStr;
-            }
-          }
-
-          const extractImg = (imgField: any) => {
-            if (!imgField) return undefined;
-            if (typeof imgField === "string") return imgField;
-            if (typeof imgField === "object" && imgField.url) return imgField.url;
-            return undefined;
+          // Dynamic parser helper to search for keys with optional trailing underscores
+          const getVal = (key: string) => {
+            const raw = acf[key] || acf[`${key}_`] || acf[`${key}__`] || acf[`${key}___`] || acf[`${key}____`] || acf[`${key}_____`];
+            const source = acf[`${key}_source`] || acf[`${key}__source`] || acf[`${key}___source`] || acf[`${key}____source`] || acf[`${key}_____source`];
+            return { raw, source };
           };
 
-          const cleanLink = (urlStr?: string) => {
-            if (!urlStr) return undefined;
-            const str = String(urlStr).trim();
-            if (str.includes("tkraft.in")) {
-              try {
-                const absoluteUrl = str.startsWith("http") ? str : `https://${str}`;
-                const parsed = new URL(absoluteUrl);
-                return parsed.pathname;
-              } catch {
-                return "/shop";
-              }
-            }
-            return str;
+          const text = (key: string) => {
+            const { raw, source } = getVal(key);
+            return extractText(raw, source);
+          };
+
+          const img = (key: string) => {
+            const { raw, source } = getVal(key);
+            return extractImg(raw, source);
+          };
+
+          const toggle = (key: string) => {
+            const { raw } = getVal(key);
+            if (raw === undefined || raw === null) return undefined;
+            return raw === true || raw === "1" || raw === "true";
+          };
+
+          const num = (key: string) => {
+            const { raw } = getVal(key);
+            if (raw === undefined || raw === null || raw === "") return undefined;
+            return Number(raw);
+          };
+
+          const link = (key: string) => {
+            const { raw } = getVal(key);
+            return cleanLink(raw);
           };
 
           // Parse categories slugs (could be array or comma-separated string)
+          const categories_slugs_val = acf.categories_slugs || acf.categories_slugs_;
           let categories_slugs: string[] | undefined = undefined;
-          if (acf.categories_slugs) {
-            if (Array.isArray(acf.categories_slugs)) {
-              categories_slugs = acf.categories_slugs.map((s: any) => typeof s === "object" ? s.slug || s.name : String(s));
-            } else if (typeof acf.categories_slugs === "string") {
-              categories_slugs = acf.categories_slugs.split(",").map((s: string) => s.trim()).filter(Boolean);
+          if (categories_slugs_val) {
+            if (Array.isArray(categories_slugs_val)) {
+              categories_slugs = categories_slugs_val.map((s: any) => typeof s === "object" ? s.slug || s.name : String(s));
+            } else if (typeof categories_slugs_val === "string") {
+              categories_slugs = categories_slugs_val.split(",").map((s: string) => s.trim()).filter(Boolean);
             }
           }
 
+          const hero_image_val = img("hero_image") || "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1600&q=80";
+
           return {
-            hero_title: acf.hero_title || undefined,
-            hero_subtitle: acf.hero_subtitle || undefined,
-            hero_image: hero_image,
-            hero_cta_text: acf.hero_cta_text || undefined,
-            hero_cta_url: hero_cta_url,
-            // Campaign fields
-            campaign_id: acf.campaign_id || undefined,
-            campaign_name: acf.campaign_name || undefined,
-            campaign_theme: acf.campaign_theme || undefined,
-            campaign_promo_text: acf.campaign_promo_text || undefined,
-            campaign_color_primary: acf.campaign_color_primary || undefined,
-            campaign_color_accent: acf.campaign_color_accent || undefined,
-            campaign_color_surface: acf.campaign_color_surface || undefined,
-            campaign_headline: acf.campaign_headline || undefined,
-            campaign_cta_text: acf.campaign_cta_text || undefined,
-            campaign_cta_link: cleanLink(acf.campaign_cta_link) || undefined,
-            campaign_banner_image: extractImg(acf.campaign_banner_image) || undefined,
-            campaign_banner_image_mobile: extractImg(acf.campaign_banner_image_mobile) || undefined,
-            campaign_product_collection: acf.campaign_product_collection || undefined,
-            hero_scroll_interval_seconds: acf.hero_scroll_interval_seconds ? Number(acf.hero_scroll_interval_seconds) : undefined,
+            // Announcement Bar
+            announcement_enabled: toggle("announcement_enabled"),
+            announcement_text: text("announcement_text"),
+            announcement_link: link("announcement_link"),
+            announcement_bg_color: text("announcement_bg_color"),
 
-            // Category Grid
-            categories_title: acf.categories_title || undefined,
-            categories_subtitle: acf.categories_subtitle || undefined,
+            // Hero Banner
+            hero_title: text("hero_title"),
+            hero_subtitle: text("hero_subtitle"),
+            hero_desktop_image: img("hero_desktop_image"),
+            hero_mobile_image: img("hero_mobile_image"),
+            hero_cta_text: text("hero_cta_text"),
+            hero_cta_url: link("hero_cta_url"),
+            hero_alignment: text("hero_alignment"),
+            hero_theme: text("hero_theme"),
+            hero_image: img("hero_desktop_image") || img("hero_image"), // compat
+
+            // Trust Benefits
+            benefit_1_title: text("benefit_1_title"),
+            benefit_1_icon: text("benefit_1_icon"),
+            benefit_2_title: text("benefit_2_title"),
+            benefit_2_icon: text("benefit_2_icon"),
+            benefit_3_title: text("benefit_3_title"),
+            benefit_3_icon: text("benefit_3_icon"),
+            benefit_4_title: text("benefit_4_title"),
+            benefit_4_icon: text("benefit_4_icon"),
+
+            // Trending Now
+            trending_title: text("trending_title"),
+            trending_collection: text("trending_collection"),
+            trending_limit: num("trending_limit"),
+
+            // Promo Banner
+            promo_title: text("promo_title"),
+            promo_description: text("promo_description"),
+            promo_image: img("promo_image"),
+            promo_cta_text: text("promo_cta_text"),
+            promo_cta_url: link("promo_cta_url"),
+
+            // Best Sellers
+            bestseller_title: text("bestseller_title") || text("bestsellers_title"),
+            bestseller_limit: num("bestseller_limit") || num("bestsellers_limit"),
+            bestsellers_title: text("bestsellers_title") || text("bestseller_title"),
+            bestsellers_limit: num("bestsellers_limit") || num("bestseller_limit"),
+
+            // Featured Collections
+            collection_1_title: text("collection_1_title"),
+            collection_1_category: text("collection_1_category"),
+            collection_2_title: text("collection_2_title"),
+            collection_2_category: text("collection_2_category"),
+            collection_3_title: text("collection_3_title"),
+            collection_3_category: text("collection_3_category"),
+
+            // Flash Deals
+            flash_sale_title: text("flash_sale_title"),
+            flash_sale_end_date: text("flash_sale_end_date"),
+            flash_sale_collection: text("flash_sale_collection"),
+
+            // Why Buy From TKraft
+            why_buy_title: text("why_buy_title"),
+            why_buy_item_1: text("why_buy_item_1"),
+            why_buy_item_2: text("why_buy_item_2"),
+            why_buy_item_3: text("why_buy_item_3"),
+            why_buy_item_4: text("why_buy_item_4"),
+
+            // Reviews
+            testimonial_title: text("testimonial_title"),
+
+            // Newsletter
+            newsletter_title: text("newsletter_title"),
+            newsletter_subtitle: text("newsletter_subtitle"),
+
+            // Campaign overrides / toggles / limits (Backwards compatibility)
+            campaign_id: text("campaign_id"),
+            campaign_name: text("campaign_name"),
+            campaign_theme: text("campaign_theme"),
+            campaign_promo_text: text("campaign_promo_text"),
+            campaign_color_primary: text("campaign_color_primary"),
+            campaign_color_accent: text("campaign_color_accent"),
+            campaign_color_surface: text("campaign_color_surface"),
+            campaign_headline: text("campaign_headline"),
+            campaign_cta_text: text("campaign_cta_text"),
+            campaign_cta_link: link("campaign_cta_link"),
+            campaign_banner_image: img("campaign_banner_image"),
+            campaign_banner_image_mobile: img("campaign_banner_image_mobile"),
+            campaign_product_collection: text("campaign_product_collection"),
+            hero_scroll_interval_seconds: num("hero_scroll_interval_seconds") || num("hero_scroll_interval_seconds_") || num("hero_scroll_interval_seconds__"),
+            categories_title: text("categories_title"),
+            categories_subtitle: text("categories_subtitle"),
             categories_slugs: categories_slugs,
-
-            // Product Carousels
-            trending_title: acf.trending_title || undefined,
-            trending_limit: acf.trending_limit ? Number(acf.trending_limit) : undefined,
-            bestsellers_title: acf.bestsellers_title || undefined,
-            bestsellers_limit: acf.bestsellers_limit ? Number(acf.bestsellers_limit) : undefined,
-            new_arrivals_title: acf.new_arrivals_title || undefined,
-            new_arrivals_limit: acf.new_arrivals_limit ? Number(acf.new_arrivals_limit) : undefined,
-
-            // Promo Banners
-            promo_1_title: acf.promo_1_title || undefined,
-            promo_1_subtitle: acf.promo_1_subtitle || undefined,
-            promo_1_image: extractImg(acf.promo_1_image),
-            promo_1_cta_text: acf.promo_1_cta_text || undefined,
-            promo_1_cta_link: cleanLink(acf.promo_1_cta_link),
-            promo_2_title: acf.promo_2_title || undefined,
-            promo_2_subtitle: acf.promo_2_subtitle || undefined,
-            promo_2_image: extractImg(acf.promo_2_image),
-            promo_2_cta_text: acf.promo_2_cta_text || undefined,
-            promo_2_cta_link: cleanLink(acf.promo_2_cta_link),
-
-            // CTA Banner
-            cta_title: acf.cta_title || undefined,
-            cta_subtitle: acf.cta_subtitle || undefined,
-            cta_image: extractImg(acf.cta_image),
-            cta_cta_text: acf.cta_cta_text || undefined,
-            cta_cta_link: cleanLink(acf.cta_cta_link),
-
-            // Enable/Disable toggles
-            enable_section_hero: acf.enable_section_hero !== undefined ? (acf.enable_section_hero === true || acf.enable_section_hero === "1" || acf.enable_section_hero === "true") : undefined,
-            enable_section_benefits: acf.enable_section_benefits !== undefined ? (acf.enable_section_benefits === true || acf.enable_section_benefits === "1" || acf.enable_section_benefits === "true") : undefined,
-            enable_section_categories: acf.enable_section_categories !== undefined ? (acf.enable_section_categories === true || acf.enable_section_categories === "1" || acf.enable_section_categories === "true") : undefined,
-            enable_section_trending: acf.enable_section_trending !== undefined ? (acf.enable_section_trending === true || acf.enable_section_trending === "1" || acf.enable_section_trending === "true") : undefined,
-            enable_section_promo: acf.enable_section_promo !== undefined ? (acf.enable_section_promo === true || acf.enable_section_promo === "1" || acf.enable_section_promo === "true") : undefined,
-            enable_section_bestsellers: acf.enable_section_bestsellers !== undefined ? (acf.enable_section_bestsellers === true || acf.enable_section_bestsellers === "1" || acf.enable_section_bestsellers === "true") : undefined,
-            enable_section_cta: acf.enable_section_cta !== undefined ? (acf.enable_section_cta === true || acf.enable_section_cta === "1" || acf.enable_section_cta === "true") : undefined,
-            enable_section_highlights: acf.enable_section_highlights !== undefined ? (acf.enable_section_highlights === true || acf.enable_section_highlights === "1" || acf.enable_section_highlights === "true") : undefined,
-            enable_section_testimonials: acf.enable_section_testimonials !== undefined ? (acf.enable_section_testimonials === true || acf.enable_section_testimonials === "1" || acf.enable_section_testimonials === "true") : undefined,
-            enable_section_newsletter: acf.enable_section_newsletter !== undefined ? (acf.enable_section_newsletter === true || acf.enable_section_newsletter === "1" || acf.enable_section_newsletter === "true") : undefined,
-
-            // Mobile specific configs
-            hero_image_mobile: extractImg(acf.hero_image_mobile),
-            categories_hide_on_mobile: acf.categories_hide_on_mobile !== undefined ? (acf.categories_hide_on_mobile === true || acf.categories_hide_on_mobile === "1" || acf.categories_hide_on_mobile === "true") : undefined,
-            trending_limit_mobile: acf.trending_limit_mobile ? Number(acf.trending_limit_mobile) : undefined,
-            bestsellers_limit_mobile: acf.bestsellers_limit_mobile ? Number(acf.bestsellers_limit_mobile) : undefined,
-            new_arrivals_limit_mobile: acf.new_arrivals_limit_mobile ? Number(acf.new_arrivals_limit_mobile) : undefined,
-            promo_1_image_mobile: extractImg(acf.promo_1_image_mobile),
-            promo_2_image_mobile: extractImg(acf.promo_2_image_mobile),
-            cta_image_mobile: extractImg(acf.cta_image_mobile),
-
-            // Extra CMS-driven block content overrides
-            benefits_title: acf.benefits_title || undefined,
-            benefits_subtitle: acf.benefits_subtitle || undefined,
-            highlights_title: acf.highlights_title || undefined,
-            highlights_subtitle: acf.highlights_subtitle || undefined,
-            testimonials_title: acf.testimonials_title || undefined,
-            testimonials_subtitle: acf.testimonials_subtitle || undefined,
-            newsletter_title: acf.newsletter_title || undefined,
-            newsletter_subtitle: acf.newsletter_subtitle || undefined,
-            newsletter_placeholder: acf.newsletter_placeholder || undefined,
-            newsletter_cta_text: acf.newsletter_cta_text || undefined,
+            trending_limit_mobile: num("trending_limit_mobile"),
+            bestsellers_limit_mobile: num("bestsellers_limit_mobile"),
+            new_arrivals_title: text("new_arrivals_title"),
+            new_arrivals_limit: num("new_arrivals_limit"),
+            new_arrivals_limit_mobile: num("new_arrivals_limit_mobile"),
+            promo_1_title: text("promo_1_title"),
+            promo_1_subtitle: text("promo_1_subtitle"),
+            promo_1_image: img("promo_1_image"),
+            promo_1_cta_text: text("promo_1_cta_text"),
+            promo_1_cta_link: link("promo_1_cta_link"),
+            promo_2_title: text("promo_2_title"),
+            promo_2_subtitle: text("promo_2_subtitle"),
+            promo_2_image: img("promo_2_image"),
+            promo_2_cta_text: text("promo_2_cta_text"),
+            promo_2_cta_link: link("promo_2_cta_link"),
+            cta_title: text("cta_title"),
+            cta_subtitle: text("cta_subtitle"),
+            cta_image: img("cta_image"),
+            cta_cta_text: text("cta_cta_text"),
+            cta_cta_link: link("cta_cta_link"),
+            enable_section_hero: toggle("enable_section_hero"),
+            enable_section_benefits: toggle("enable_section_benefits"),
+            enable_section_categories: toggle("enable_section_categories"),
+            enable_section_trending: toggle("enable_section_trending"),
+            enable_section_promo: toggle("enable_section_promo"),
+            enable_section_bestsellers: toggle("enable_section_bestsellers"),
+            enable_section_cta: toggle("enable_section_cta"),
+            enable_section_highlights: toggle("enable_section_highlights"),
+            enable_section_testimonials: toggle("enable_section_testimonials"),
+            enable_section_newsletter: toggle("enable_section_newsletter"),
+            hero_image_mobile: img("hero_image_mobile"),
+            categories_hide_on_mobile: toggle("categories_hide_on_mobile"),
+            promo_1_image_mobile: img("promo_1_image_mobile"),
+            promo_2_image_mobile: img("promo_2_image_mobile"),
+            cta_image_mobile: img("cta_image_mobile"),
+            benefits_title: text("benefits_title"),
+            benefits_subtitle: text("benefits_subtitle"),
+            highlights_title: text("highlights_title"),
+            highlights_subtitle: text("highlights_subtitle"),
+            testimonials_title: text("testimonials_title"),
+            testimonials_subtitle: text("testimonials_subtitle"),
+            newsletter_placeholder: text("newsletter_placeholder"),
+            newsletter_cta_text: text("newsletter_cta_text"),
           };
         }
       }
@@ -596,10 +730,11 @@ export async function getHomepageContent(): Promise<HomepageContent | null> {
  */
 export async function getLoginContent(): Promise<LoginContent | null> {
   try {
-    const wpPostsUrl = `${API_CONFIG.wpRestUrl}/posts?slug=login-content`;
+    // Add cache buster query parameter to bypass CDN/varnish caching on WordPress host
+    const wpPostsUrl = `${API_CONFIG.wpRestUrl}/posts?slug=login-content&t=${Date.now()}`;
     const res = await fetch(wpPostsUrl, {
       headers: getAuthHeaders(),
-      ...getFetchOptions(),
+      cache: "no-store",
     });
 
     if (res.ok) {
@@ -608,35 +743,31 @@ export async function getLoginContent(): Promise<LoginContent | null> {
         const post = posts[0];
         const acf = post.acf;
         if (acf) {
-          const extractImg = (imgField: any) => {
-            if (!imgField) return undefined;
-            if (typeof imgField === "string") return imgField;
-            if (typeof imgField === "object" && imgField.url) return imgField.url;
-            return undefined;
-          };
+          // Support keys with or without trailing underscores
+          const login_promo_title = acf.login_promo_title || acf.login_promo_title_;
+          const login_promo_title_source = acf.login_promo_title_source || acf.login_promo_title__source;
 
-          const cleanLink = (urlStr?: string) => {
-            if (!urlStr) return undefined;
-            const str = String(urlStr).trim();
-            if (str.includes("tkraft.in")) {
-              try {
-                const absoluteUrl = str.startsWith("http") ? str : `https://${str}`;
-                const parsed = new URL(absoluteUrl);
-                return parsed.pathname;
-              } catch {
-                return "/shop";
-              }
-            }
-            return str;
-          };
+          const login_promo_subtitle = acf.login_promo_subtitle || acf.login_promo_subtitle_;
+          const login_promo_subtitle_source = acf.login_promo_subtitle_source || acf.login_promo_subtitle__source;
+
+          const login_promo_image = acf.login_promo_image || acf.login_promo_image_;
+          const login_promo_image_source = acf.login_promo_image_source || acf.login_promo_image__source;
+
+          const login_promo_image_mobile = acf.login_promo_image_mobile || acf.login_promo_image_mobile_;
+          const login_promo_image_mobile_source = acf.login_promo_image_mobile_source || acf.login_promo_image_mobile__source;
+
+          const login_promo_cta_text = acf.login_promo_cta_text || acf.login_promo_cta_text_;
+          const login_promo_cta_text_source = acf.login_promo_cta_text_source || acf.login_promo_cta_text__source;
+
+          const login_promo_cta_url = acf.login_promo_cta_url || acf.login_promo_cta_url_;
 
           return {
-            login_promo_title: acf.login_promo_title || undefined,
-            login_promo_subtitle: acf.login_promo_subtitle || undefined,
-            login_promo_image: extractImg(acf.login_promo_image),
-            login_promo_image_mobile: extractImg(acf.login_promo_image_mobile),
-            login_promo_cta_text: acf.login_promo_cta_text || undefined,
-            login_promo_cta_url: cleanLink(acf.login_promo_cta_url),
+            login_promo_title: extractText(login_promo_title, login_promo_title_source),
+            login_promo_subtitle: extractText(login_promo_subtitle, login_promo_subtitle_source),
+            login_promo_image: extractImg(login_promo_image, login_promo_image_source),
+            login_promo_image_mobile: extractImg(login_promo_image_mobile, login_promo_image_mobile_source),
+            login_promo_cta_text: extractText(login_promo_cta_text, login_promo_cta_text_source),
+            login_promo_cta_url: cleanLink(login_promo_cta_url),
           };
         }
       }

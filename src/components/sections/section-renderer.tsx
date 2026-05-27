@@ -19,7 +19,8 @@ import {
   ChevronRight, 
   Mail, 
   Calendar, 
-  User 
+  User,
+  Heart 
 } from "lucide-react";
 import type { HomepageSection, CampaignConfig } from "@/services/cms";
 import type { WooProduct, WooCategory } from "@/types";
@@ -97,11 +98,17 @@ export function SectionRenderer({ section, products, categories, activeCampaign 
         </section>
       );
 
+    case "flashSale": {
+      const targetProducts = section.fetchedProducts && section.fetchedProducts.length > 0
+        ? section.fetchedProducts
+        : products.flashSale;
+      return <FlashSaleBlock section={section} products={targetProducts} theme={theme} />;
+    }
+
     case "productCarousel":
     case "trendingProducts":
     case "bestSellerProducts":
     case "featuredProducts":
-    case "flashSale":
     case "recentlyAdded": {
       let targetProducts: WooProduct[] = [];
       let defaultTitle = "Featured Collection";
@@ -120,9 +127,6 @@ export function SectionRenderer({ section, products, categories, activeCampaign 
         } else if (section.type === "featuredProducts") {
           targetProducts = products.featured;
           defaultTitle = "Featured Products";
-        } else if (section.type === "flashSale") {
-          targetProducts = products.flashSale;
-          defaultTitle = "Flash Sale";
         } else if (section.type === "recentlyAdded") {
           targetProducts = products.bestsellers;
           defaultTitle = "New Arrivals";
@@ -142,8 +146,6 @@ export function SectionRenderer({ section, products, categories, activeCampaign 
           defaultTitle = "Best Sellers";
         } else if (section.type === "featuredProducts") {
           defaultTitle = "Featured Products";
-        } else if (section.type === "flashSale") {
-          defaultTitle = "Flash Sale";
         } else if (section.type === "recentlyAdded") {
           defaultTitle = "New Arrivals";
         } else if (section.type === "productCarousel") {
@@ -227,11 +229,15 @@ function HeroBannerBlock({ data, theme }: { data: any; theme?: string }) {
     return () => clearInterval(interval);
   }, [slides.length]);
 
+  const slideTheme = slides[current].theme || theme;
   let tagText = "✨ Featured Offer";
-  if (theme === "summer") tagText = "☀️ Summer Special";
-  else if (theme === "monsoon") tagText = "🌧️ Monsoon Special";
-  else if (theme === "diwali") tagText = "🪔 Diwali Dhamaka";
-  else if (theme === "christmas") tagText = "❄️ Christmas Joy";
+  if (slideTheme === "summer") tagText = "☀️ Summer Special";
+  else if (slideTheme === "monsoon") tagText = "🌧️ Monsoon Special";
+  else if (slideTheme === "diwali") tagText = "🪔 Diwali Dhamaka";
+  else if (slideTheme === "christmas") tagText = "❄️ Christmas Joy";
+  else if (slideTheme === "blackfriday") tagText = "⚡ Black Friday Deals";
+
+  const alignment = slides[current].alignment || "left";
 
   return (
     <section className="relative overflow-hidden w-full h-[500px] md:h-[600px] bg-[hsl(var(--color-surface-2))]">
@@ -274,9 +280,15 @@ function HeroBannerBlock({ data, theme }: { data: any; theme?: string }) {
               className="object-cover"
             />
           )}
-          <div className="absolute inset-0 z-20 flex items-center">
+          <div className={cn("absolute inset-0 z-20 flex items-center",
+            alignment === "center" ? "justify-center text-center" :
+            alignment === "right" ? "justify-end text-right" : "justify-start text-left"
+          )}>
             <div className="container py-12 md:py-24">
-              <div className="max-w-2xl text-white">
+              <div className={cn("max-w-2xl text-white",
+                alignment === "center" ? "mx-auto text-center" :
+                alignment === "right" ? "ml-auto text-right" : "mr-auto text-left"
+              )}>
                 <motion.span
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -297,7 +309,10 @@ function HeroBannerBlock({ data, theme }: { data: any; theme?: string }) {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4 }}
-                  className="text-white/80 text-sm md:text-lg mb-8 max-w-lg leading-relaxed"
+                  className={cn("text-white/80 text-sm md:text-lg mb-8 leading-relaxed",
+                    alignment === "center" ? "max-w-lg mx-auto" : 
+                    alignment === "right" ? "max-w-lg ml-auto" : "max-w-lg mr-auto"
+                  )}
                 >
                   {slides[current].subtitle}
                 </motion.p>
@@ -381,11 +396,12 @@ function PromoBannerBlock({ data, theme }: { data: any; theme?: string }) {
   ];
 
   const motif = getThemeMotif(theme);
+  const isSingle = banners.length === 1;
 
   return (
     <section className={cn("py-8 md:py-10 bg-[hsl(var(--color-surface))] transition-all duration-300", motif.classNames)}>
       <div className="container">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className={cn("grid gap-6", isSingle ? "grid-cols-1" : "grid-cols-1 md:grid-cols-3")}>
           {banners.map((banner: any, idx: number) => (
             <motion.div
               key={banner.id || idx}
@@ -393,9 +409,12 @@ function PromoBannerBlock({ data, theme }: { data: any; theme?: string }) {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: idx * 0.1, duration: 0.4 }}
-              className={`relative overflow-hidden rounded-2xl aspect-[4/3] md:aspect-auto md:h-[280px] bg-[hsl(var(--color-surface-2))] border border-[hsl(var(--color-border))] group ${
-                banner.className || ""
-              }`}
+              className={cn(
+                "relative overflow-hidden rounded-2xl bg-[hsl(var(--color-surface-2))] border border-[hsl(var(--color-border))] group",
+                isSingle 
+                  ? "aspect-[21/9] md:h-[350px] w-full" 
+                  : `aspect-[4/3] md:aspect-auto md:h-[280px] ${banner.className || ""}`
+              )}
             >
               <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-black/25 group-hover:from-black/65 group-hover:to-black/35 transition-colors duration-300 z-10" />
               {banner.imageMobile ? (
@@ -404,14 +423,14 @@ function PromoBannerBlock({ data, theme }: { data: any; theme?: string }) {
                     src={banner.image}
                     alt={banner.title}
                     fill
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    sizes={isSingle ? "100vw" : "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"}
                     className="object-cover transition-transform duration-500 group-hover:scale-105 hidden sm:block"
                   />
                   <Image
                     src={banner.imageMobile}
                     alt={banner.title}
                     fill
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    sizes={isSingle ? "100vw" : "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"}
                     className="object-cover transition-transform duration-500 group-hover:scale-105 block sm:hidden"
                   />
                 </>
@@ -420,7 +439,7 @@ function PromoBannerBlock({ data, theme }: { data: any; theme?: string }) {
                   src={banner.image}
                   alt={banner.title}
                   fill
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  sizes={isSingle ? "100vw" : "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"}
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
                 />
               )}
@@ -428,7 +447,7 @@ function PromoBannerBlock({ data, theme }: { data: any; theme?: string }) {
                 <span className="text-xs font-bold tracking-widest uppercase text-[hsl(var(--color-primary-light))] mb-1.5 block">
                   Limited Offer
                 </span>
-                <h3 className="text-xl md:text-2xl font-display font-extrabold mb-1">
+                <h3 className={cn("font-display font-extrabold mb-1", isSingle ? "text-2xl md:text-3xl" : "text-xl md:text-2xl")}>
                   {banner.title}
                 </h3>
                 <p className="text-sm text-white/80 mb-4 max-w-sm">
@@ -438,7 +457,7 @@ function PromoBannerBlock({ data, theme }: { data: any; theme?: string }) {
                   <Link
                     href={banner.cta_link || "/shop"}
                     className={cn(
-                      buttonVariants({ size: "sm" }),
+                      buttonVariants({ size: isSingle ? "md" : "sm" }),
                       "bg-[hsl(var(--color-primary))] text-white hover:bg-[hsl(var(--color-primary-dark))] font-bold"
                     )}
                   >
@@ -514,14 +533,48 @@ function CtaBannerBlock({ section, theme }: { section: HomepageSection; theme?: 
   );
 }
 
+function getIconComponent(iconName?: string) {
+  const name = iconName?.toLowerCase().trim();
+  if (!name) return <Truck className="h-6 w-6 text-[hsl(var(--color-primary))]" />;
+  if (name.includes("truck") || name.includes("ship") || name.includes("delivery") || name.includes("free")) {
+    return <Truck className="h-6 w-6 text-[hsl(var(--color-primary))]" />;
+  }
+  if (name.includes("shield") || name.includes("secure") || name.includes("safe") || name.includes("pay")) {
+    return <ShieldCheck className="h-6 w-6 text-[hsl(var(--color-primary))]" />;
+  }
+  if (name.includes("card") || name.includes("credit") || name.includes("cod") || name.includes("cash")) {
+    return <CreditCard className="h-6 w-6 text-[hsl(var(--color-primary))]" />;
+  }
+  if (name.includes("clock") || name.includes("support") || name.includes("time") || name.includes("help")) {
+    return <Clock className="h-6 w-6 text-[hsl(var(--color-primary))]" />;
+  }
+  if (name.includes("heart") || name.includes("love") || name.includes("care")) {
+    return <Heart className="h-6 w-6 text-[hsl(var(--color-primary))]" />;
+  }
+  return <Truck className="h-6 w-6 text-[hsl(var(--color-primary))]" />;
+}
+
 // 4. FEATURE ICONS (TRUST BAR)
 function FeatureIconsBlock({ section, theme }: { section?: HomepageSection; theme?: string }) {
-  const items = [
+  let items = [
     { icon: <Truck className="h-6 w-6 text-[hsl(var(--color-primary))]" />, title: "Free Shipping", desc: "On all orders above ₹499" },
     { icon: <ShieldCheck className="h-6 w-6 text-[hsl(var(--color-primary))]" />, title: "Secure Payments", desc: "Razorpay secure gateways" },
     { icon: <CreditCard className="h-6 w-6 text-[hsl(var(--color-primary))]" />, title: "Cash on Delivery", desc: "Pay on arrival options" },
     { icon: <Clock className="h-6 w-6 text-[hsl(var(--color-primary))]" />, title: "24/7 Support", desc: "Always here for help" },
   ];
+
+  if (section?.data?.benefits && Array.isArray(section.data.benefits) && section.data.benefits.length > 0) {
+    items = section.data.benefits.map((b: any) => {
+      const parts = b.title.split(":");
+      const title = parts[0]?.trim() || "";
+      const desc = parts.slice(1).join(":").trim() || "";
+      return {
+        icon: getIconComponent(b.icon),
+        title: title,
+        desc: desc,
+      };
+    });
+  }
 
   const motif = getThemeMotif(theme);
 
@@ -548,7 +601,7 @@ function FeatureIconsBlock({ section, theme }: { section?: HomepageSection; them
               </div>
               <div>
                 <h4 className="font-semibold text-sm text-[hsl(var(--color-text))]">{item.title}</h4>
-                <p className="text-xs text-[hsl(var(--color-text-muted))] mt-0.5">{item.desc}</p>
+                {item.desc && <p className="text-xs text-[hsl(var(--color-text-muted))] mt-0.5">{item.desc}</p>}
               </div>
             </div>
           ))}
@@ -561,26 +614,155 @@ function FeatureIconsBlock({ section, theme }: { section?: HomepageSection; them
 // 5. TRUST BADGES
 function TrustSectionBlock({ section, theme }: { section?: HomepageSection; theme?: string }) {
   const motif = getThemeMotif(theme);
+  const items = section?.data?.items || [];
+
   return (
     <section className={cn("py-8 bg-[hsl(var(--color-surface))] transition-all duration-300", motif.classNames)}>
       <div className="container text-center">
-        <p className="text-xs uppercase font-extrabold tracking-widest text-[hsl(var(--color-text-muted))] mb-6 flex items-center justify-center gap-2">
+        <h3 className="text-xl md:text-2xl font-display font-extrabold text-[hsl(var(--color-text))] mb-6 flex items-center justify-center gap-2">
           {motif.prefix && <span>{motif.prefix}</span>}
-          {section?.title || "Trusted By Families Across India"}
+          {section?.title || "Why Buy From TKraft"}
           {motif.suffix && <span>{motif.suffix}</span>}
-        </p>
+        </h3>
         {section?.subtitle && (
           <p className="text-xs text-[hsl(var(--color-text-muted))] -mt-4 mb-6">{section.subtitle}</p>
         )}
-        <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16 opacity-65 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-300">
-          {[1, 2, 3, 4, 5].map((idx) => (
-            <div key={idx} className="relative h-12 w-28">
-              <div className="absolute inset-0 flex items-center justify-center border border-[hsl(var(--color-border))] rounded-lg bg-[hsl(var(--color-surface-2))] text-[hsl(var(--color-text-muted))] font-display font-black tracking-wide text-xs">
-                BRAND_0{idx}
+        
+        {items.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto text-left mt-8">
+            {items.map((item: string, idx: number) => {
+              const parts = item.split(":");
+              const title = parts[0]?.trim() || "";
+              const desc = parts.slice(1).join(":").trim() || "";
+              
+              return (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: idx * 0.1 }}
+                  className="p-5 rounded-2xl bg-[hsl(var(--color-surface-2))] border border-[hsl(var(--color-border))] hover:shadow-md transition-all duration-300 flex flex-col items-center text-center"
+                >
+                  <div className="h-10 w-10 rounded-full bg-[hsl(var(--color-primary-light))]/15 text-[hsl(var(--color-primary))] flex items-center justify-center mb-3 font-bold">
+                    {idx + 1}
+                  </div>
+                  <h4 className="font-bold text-sm text-[hsl(var(--color-text))] mb-1">{title}</h4>
+                  {desc && <p className="text-xs text-[hsl(var(--color-text-muted))] leading-relaxed">{desc}</p>}
+                </motion.div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16 opacity-65 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-300">
+            {[1, 2, 3, 4, 5].map((idx) => (
+              <div key={idx} className="relative h-12 w-28">
+                <div className="absolute inset-0 flex items-center justify-center border border-[hsl(var(--color-border))] rounded-lg bg-[hsl(var(--color-surface-2))] text-[hsl(var(--color-text-muted))] font-display font-black tracking-wide text-xs">
+                  BRAND_0{idx}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+// 5b. FLASH SALE COUNTDOWN BLOCK
+function FlashSaleBlock({ section, products, theme }: { section: HomepageSection; products: WooProduct[]; theme?: string }) {
+  const endDateStr = section.data?.end_date;
+  const [timeLeft, setTimeLeft] = useState<{ days: number; hours: number; minutes: number; seconds: number } | null>(null);
+
+  useEffect(() => {
+    if (!endDateStr) return;
+    const targetDate = new Date(endDateStr).getTime();
+    if (isNaN(targetDate)) return;
+
+    const updateTimer = () => {
+      const now = new Date().getTime();
+      const difference = targetDate - now;
+
+      if (difference <= 0) {
+        setTimeLeft(null);
+        return;
+      }
+
+      const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+      setTimeLeft({ days, hours, minutes, seconds });
+    };
+
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
+    return () => clearInterval(interval);
+  }, [endDateStr]);
+
+  const motif = getThemeMotif(theme);
+  const autoplayInterval = (section.data?.scroll_interval_seconds ? Number(section.data.scroll_interval_seconds) * 1000 : 4000) || 4000;
+
+  if (!products || products.length === 0) return null;
+
+  return (
+    <section className={cn("py-8 md:py-10 bg-[hsl(var(--color-surface))] transition-all duration-300 border-b border-[hsl(var(--color-border))]", motif.classNames)}>
+      <div className="container">
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+          <div>
+            <div className="flex items-center gap-3">
+              <span className="flex h-2.5 w-2.5 relative">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+              </span>
+              <h2 className="text-2xl md:text-3xl font-display font-extrabold text-[hsl(var(--color-text))] flex items-center gap-2">
+                {motif.prefix && <span>{motif.prefix}</span>}
+                {section.title || "Flash Sale"}
+                {motif.suffix && <span>{motif.suffix}</span>}
+              </h2>
+            </div>
+            {section.subtitle && (
+              <p className="text-[hsl(var(--color-text-muted))] mt-2 text-sm max-w-lg leading-relaxed">
+                {section.subtitle}
+              </p>
+            )}
+          </div>
+
+          {timeLeft && (
+            <div className="flex items-center gap-2 self-start md:self-auto bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 px-4 py-2 rounded-2xl">
+              <span className="text-xs font-bold text-red-500 uppercase tracking-wider mr-2 hidden sm:inline">Ends In:</span>
+              <div className="flex gap-1.5 text-center items-center">
+                {timeLeft.days > 0 && (
+                  <>
+                    <div className="bg-red-500 text-white rounded-lg px-2 py-0.5 font-mono font-bold text-sm min-w-[28px]">{timeLeft.days}d</div>
+                    <span className="font-bold text-red-500 text-sm">:</span>
+                  </>
+                )}
+                <div className="bg-red-500 text-white rounded-lg px-2 py-0.5 font-mono font-bold text-sm min-w-[28px]">
+                  {String(timeLeft.hours).padStart(2, "0")}
+                </div>
+                <span className="font-bold text-red-500 text-sm">:</span>
+                <div className="bg-red-500 text-white rounded-lg px-2 py-0.5 font-mono font-bold text-sm min-w-[28px]">
+                  {String(timeLeft.minutes).padStart(2, "0")}
+                </div>
+                <span className="font-bold text-red-500 text-sm">:</span>
+                <div className="bg-red-500 text-white rounded-lg px-2 py-0.5 font-mono font-bold text-sm min-w-[28px]">
+                  {String(timeLeft.seconds).padStart(2, "0")}
+                </div>
               </div>
             </div>
-          ))}
+          )}
         </div>
+
+        <ProductCarousel
+          title=""
+          products={products}
+          viewAllUrl={section.viewAllUrl}
+          variant={section.variant || "default"}
+          autoplayInterval={autoplayInterval}
+          limitMobile={section.data?.limitMobile}
+        />
       </div>
     </section>
   );
