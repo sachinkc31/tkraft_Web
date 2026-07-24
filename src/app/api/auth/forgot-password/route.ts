@@ -1,7 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
+import { rateLimit } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limit: Max 3 password reset requests per minute to prevent mail spam
+    const limiter = rateLimit(request, 3, 60000);
+    if (!limiter.success) {
+      return NextResponse.json(
+        { error: "Too many requests. Please wait 1 minute before requesting another link." },
+        { 
+          status: 429,
+          headers: {
+            "X-RateLimit-Limit": String(limiter.limit),
+            "X-RateLimit-Remaining": String(limiter.remaining),
+            "X-RateLimit-Reset": String(limiter.reset),
+          }
+        }
+      );
+    }
+
     const { username } = await request.json();
 
     if (!username) {
