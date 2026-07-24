@@ -10,6 +10,7 @@ import {
   getTopCategories,
   getProducts,
   getCategoryBySlug,
+  getCategoriesByIds,
 } from "@/services/woocommerce";
 
 export const metadata: Metadata = {
@@ -73,6 +74,7 @@ export default async function HomePage() {
           if (sec.id === "section_highlights" && wpContent.enable_section_highlights === false) (sec as any).disabled = true;
           if (sec.id === "section_testimonials" && wpContent.enable_section_testimonials === false) (sec as any).disabled = true;
           if (sec.id === "section_newsletter" && wpContent.enable_section_newsletter === false) (sec as any).disabled = true;
+          if (sec.id === "section_grid" && wpContent.enable_section_grid === false) (sec as any).disabled = true;
           if (sec.id === "section_flash" && !wpContent.flash_sale_collection) (sec as any).disabled = true;
         }
 
@@ -81,12 +83,12 @@ export default async function HomePage() {
           const defaultSlide = sec.data?.slides?.[0] || {};
           const isCampaignActive = wpContent.campaign_theme && wpContent.campaign_theme !== "default";
           
-          // Campaign overrides
-          const headline = isCampaignActive ? (wpContent.campaign_headline || wpContent.hero_title) : wpContent.hero_title;
-          const ctaText = isCampaignActive ? (wpContent.campaign_cta_text || wpContent.hero_cta_text) : wpContent.hero_cta_text;
-          const ctaLink = isCampaignActive ? (wpContent.campaign_cta_link || wpContent.hero_cta_url) : wpContent.hero_cta_url;
-          const bannerImage = isCampaignActive ? (wpContent.campaign_banner_image || wpContent.hero_desktop_image || wpContent.hero_image) : (wpContent.hero_desktop_image || wpContent.hero_image);
-          const bannerImageMobile = isCampaignActive ? (wpContent.campaign_banner_image_mobile || wpContent.hero_mobile_image || wpContent.hero_image_mobile) : (wpContent.hero_mobile_image || wpContent.hero_image_mobile);
+          // Prioritize standard Hero fields edited in CMS, falling back to campaign overrides
+          const headline = wpContent.hero_title || wpContent.campaign_headline;
+          const ctaText = wpContent.hero_cta_text || wpContent.campaign_cta_text;
+          const ctaLink = wpContent.hero_cta_url || wpContent.campaign_cta_link;
+          const bannerImage = wpContent.hero_desktop_image || wpContent.hero_image || wpContent.campaign_banner_image;
+          const bannerImageMobile = wpContent.hero_mobile_image || wpContent.hero_image_mobile || wpContent.campaign_banner_image_mobile;
 
           sec.data = {
             ...sec.data,
@@ -134,29 +136,72 @@ export default async function HomePage() {
           }
         }
 
+        // Custom Grid Section overrides
+        if ((sec.type === "customGrid" || sec.type === "gridBlock") && wpContent) {
+          if (wpContent.grid_title) sec.title = wpContent.grid_title;
+          if (wpContent.grid_subtitle) sec.subtitle = wpContent.grid_subtitle;
+          sec.data = {
+            ...sec.data,
+            items: wpContent.grid_items || sec.data?.items || []
+          };
+        }
+
         // Category grid categories list fetching
         if (sec.type === "categoryGrid") {
           if (wpContent && (wpContent.collection_1_category || wpContent.collection_2_category || wpContent.collection_3_category)) {
-            const collections = [
-              { title: wpContent.collection_1_title, category: wpContent.collection_1_category },
-              { title: wpContent.collection_2_title, category: wpContent.collection_2_category },
-              { title: wpContent.collection_3_title, category: wpContent.collection_3_category },
-            ].filter((col) => !!col.category);
+            const allIds: number[] = [];
+            const colSlugOrNameList: { categoryVal: string, title?: string }[] = [];
+
+            const addCategory = (title?: string, categoryVal?: any) => {
+              if (Array.isArray(categoryVal)) {
+                categoryVal.forEach(val => {
+                  const num = Number(val);
+                  if (!isNaN(num) && num > 0) {
+                    allIds.push(num);
+                  } else if (val) {
+                    colSlugOrNameList.push({ categoryVal: String(val), title });
+                  }
+                });
+              } else if (categoryVal) {
+                const num = Number(categoryVal);
+                if (!isNaN(num) && num > 0) {
+                  allIds.push(num);
+                } else {
+                  colSlugOrNameList.push({ categoryVal: String(categoryVal), title });
+                }
+              }
+            };
+
+            addCategory(wpContent.collection_1_title, wpContent.collection_1_category);
+            addCategory(wpContent.collection_2_title, wpContent.collection_2_category);
+            addCategory(wpContent.collection_3_title, wpContent.collection_3_category);
 
             try {
-              const fetched = await Promise.all(
-                collections.map(async (col) => {
-                  const catObj = await getCategoryBySlug(String(col.category)).catch(() => null);
-                  if (catObj) {
-                    return {
-                      ...catObj,
-                      name: col.title || catObj.name,
-                    };
-                  }
-                  return null;
-                })
-              );
-              sec.fetchedCategories = fetched.filter((c) => c !== null) as any[];
+              let fetched: any[] = [];
+              if (allIds.length > 0) {
+                const batchFetched = await getCategoriesByIds(allIds).catch(() => []);
+                fetched = [...batchFetched];
+              }
+
+              if (colSlugOrNameList.length > 0) {
+                const slugFetched = await Promise.all(
+                  colSlugOrNameList.map(async (col) => {
+                    const catObj = await getCategoryBySlug(col.categoryVal).catch(() => null);
+                    if (catObj) {
+                      return {
+                        ...catObj,
+                        name: col.title || catObj.name,
+                      };
+                    }
+                    return null;
+                  })
+                );
+                fetched = [...fetched, ...slugFetched.filter((c) => c !== null)];
+              }
+
+              if (fetched.length > 0) {
+                sec.fetchedCategories = fetched;
+              }
             } catch (e) {
               console.error("Error resolving custom collections for categoryGrid:", e);
             }

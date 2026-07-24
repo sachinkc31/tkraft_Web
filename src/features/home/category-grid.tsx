@@ -4,15 +4,16 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
+import { TbHome, TbBox, TbBrush, TbSparkles, TbChefHat, TbShoppingBag } from "react-icons/tb";
 import type { WooCategory } from "@/types";
 import { NAVIGATION } from "@/lib/constants";
 
-const CATEGORY_EMOJIS: Record<string, string> = {
-  home: "🏠",
-  "storage-and-organization": "📦",
-  "cleaning-essential": "🧹",
-  "personal-care": "💆",
-  kitchen: "🍳",
+const CATEGORY_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  home: TbHome,
+  "storage-and-organization": TbBox,
+  "cleaning-essential": TbBrush,
+  "personal-care": TbSparkles,
+  kitchen: TbChefHat,
 };
 
 interface CategoryGridProps {
@@ -41,7 +42,7 @@ export function CategoryGrid({ categories }: CategoryGridProps) {
           categories.length
             ? `/category/${cat.slug}`
             : NAVIGATION.categories.find((n) => n.slug === cat.slug)?.href || `/category/${cat.slug}`;
-        const emoji = CATEGORY_EMOJIS[cat.slug] || "🛍️";
+        const IconComponent = CATEGORY_ICONS[cat.slug] || TbShoppingBag;
 
         return (
           <motion.div
@@ -54,7 +55,7 @@ export function CategoryGrid({ categories }: CategoryGridProps) {
               href={href}
               className="group block rounded-2xl overflow-hidden bg-white border border-[hsl(214,13%,90%)] hover:border-[hsl(var(--color-accent))] hover:shadow-lg transition-all duration-300 p-5 text-center card-lift"
             >
-              {/* Image or Emoji */}
+              {/* Image or Icon */}
               <div className="relative h-28 mb-4 rounded-xl overflow-hidden bg-[hsl(210,20%,98%)] flex items-center justify-center">
                 {cat.image?.src ? (
                   <Image
@@ -65,7 +66,7 @@ export function CategoryGrid({ categories }: CategoryGridProps) {
                     className="object-cover group-hover:scale-105 transition-transform duration-400"
                   />
                 ) : (
-                  <span className="text-5xl">{emoji}</span>
+                  <IconComponent className="h-14 w-14 text-[hsl(var(--color-primary))] group-hover:scale-110 transition-transform duration-300" />
                 )}
               </div>
 

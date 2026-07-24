@@ -50,7 +50,7 @@ export function Navbar() {
   return (
     <>
       {/* Top Bar */}
-      <div className="bg-[hsl(var(--color-accent))] text-white text-xs py-2 hidden md:block">
+      <div className="bg-[hsl(var(--color-primary))] text-black text-xs py-2 hidden md:block">
         <div className="container flex items-center justify-between">
           <span className="flex items-center gap-1.5">
             <Phone className="h-3 w-3" /> Free shipping on orders above ₹499
@@ -62,7 +62,7 @@ export function Navbar() {
                 <select
                   value={currency}
                   onChange={(e) => setCurrency(e.target.value as SupportedCurrency)}
-                  className="bg-[hsl(217,70%,32%)] text-white border-0 rounded px-2 py-0.5 text-xs focus:outline-none cursor-pointer hover:bg-[hsl(217,70%,28%)] transition-colors"
+                  className="bg-[hsl(0, 0%, 37%)] text-black border-0 rounded px-2 py-0.5 text-xs focus:outline-none cursor-pointer hover:bg-[hsla(0, 0%, 62%, 0.77)] transition-colors"
                 >
                   <option value="INR">INR (₹)</option>
                   <option value="USD">USD ($)</option>

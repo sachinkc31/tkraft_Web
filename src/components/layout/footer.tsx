@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { FOOTER_LINKS, SITE_CONFIG } from "@/lib/constants";
 import { NewsletterForm } from "./newsletter-form";
@@ -60,8 +61,18 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
           {/* Brand Column */}
           <div className="lg:col-span-1">
-            <Link href="/" className="inline-block font-display font-bold text-2xl mb-4">
-              T<span className="text-[hsl(27,96%,55%)]">kraft</span>
+           <Link
+              href="/"
+              className="flex-shrink-0 font-display font-800 text-2xl text-[hsl(var(--color-accent))] tracking-tight"
+            >
+              <Image 
+                src={SITE_CONFIG.logo} 
+                alt={SITE_CONFIG.name} 
+                width={120} 
+                height={40} 
+                className="inline-block mb-2 align-middle object-contain" 
+                priority
+              />
             </Link>
             <p className="text-sm text-white/60 leading-relaxed mb-6">
               Your trusted destination for premium home & kitchen essentials. Quality products at unbeatable prices, delivered to your doorstep.

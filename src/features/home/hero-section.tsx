@@ -57,7 +57,7 @@ export function HeroSection() {
               className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-white leading-tight mb-5"
             >
               Premium Home &{" "}
-              <span className="text-[hsl(27,96%,55%)]">Kitchen</span>{" "}
+              <span className="text-[hsl(0, 90%, 32%)]">Kitchen</span>{" "}
               Essentials
             </motion.h1>
 
@@ -80,9 +80,10 @@ export function HeroSection() {
             >
               <Link 
                 href="/shop"
+                style={{ backgroundColor: "hsl(var(--color-primary))" }}
                 className={cn(
                   buttonVariants({ size: "xl" }),
-                  "bg-[hsl(27,96%,55%)] hover:bg-[hsl(27,96%,47%)] text-white shadow-lg shadow-orange-500/30"
+                  "text-white shadow-lg hover:opacity-95 transition-opacity"
                 )}
               >
                 Shop Now
@@ -92,7 +93,7 @@ export function HeroSection() {
                 href="/shop?on_sale=true"
                 className={cn(
                   buttonVariants({ size: "xl", variant: "outline" }),
-                  "border-white/40 text-white hover:bg-white/10 hover:border-white/60"
+                  "border-white/20 text-white bg-white/5 backdrop-blur-md hover:bg-white/15 hover:border-white/40 shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
                 )}
               >
                 View Deals

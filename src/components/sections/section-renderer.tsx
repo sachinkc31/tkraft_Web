@@ -22,6 +22,7 @@ import {
   User,
   Heart 
 } from "lucide-react";
+import { TbTruckDelivery, TbShieldCheck, TbCreditCard, TbClock, TbHeart } from "react-icons/tb";
 import type { HomepageSection, CampaignConfig } from "@/services/cms";
 import type { WooProduct, WooCategory } from "@/types";
 import { ProductCarousel } from "@/components/carousel/product-carousel";
@@ -43,7 +44,7 @@ export function getThemeMotif(theme?: string): { prefix?: string; suffix?: strin
     case "diwali":
       return { prefix: "🪔", suffix: "🪔", classNames: "border-yellow-600/30 bg-gradient-to-b from-yellow-50/10 to-transparent" };
     case "blackfriday":
-      return { prefix: "⚡", suffix: "⚡", classNames: "border-slate-800/30 bg-gradient-to-b from-slate-100/10 to-transparent" };
+      return { classNames: "border-slate-800/30 bg-gradient-to-b from-slate-100/10 to-transparent" };
     case "christmas":
       return { prefix: "❄️", suffix: "🎄", classNames: "border-red-600/30 bg-gradient-to-b from-red-50/10 to-transparent" };
     default:
@@ -101,6 +102,10 @@ export function SectionRenderer({ section, products, categories, activeCampaign 
           </div>
         </section>
       );
+
+    case "customGrid":
+    case "gridBlock":
+      return <CustomGridBlock section={section} theme={theme} />;
 
     case "flashSale": {
       const targetProducts = section.fetchedProducts && section.fetchedProducts.length > 0
@@ -327,13 +332,11 @@ function HeroBannerBlock({ data, theme }: { data: any; theme?: string }) {
                 >
                   <Link
                     href={slides[current].cta_link || "/shop"}
-                    className={cn(
-                      buttonVariants({ size: "xl" }),
-                      "bg-[hsl(var(--color-primary))] text-white hover:bg-[hsl(var(--color-primary-dark))] shadow-lg font-bold"
-                    )}
+                    style={{ backgroundColor: "#af040ce0", border: "1px solid #ffffff93" }}
+                    className="inline-flex items-center justify-center gap-2 font-display font-extrabold text-white text-base md:text-lg px-8 py-3.5 rounded-xl shadow-xl shadow-black/20 hover:opacity-95 hover:scale-[1.02] active:scale-[0.98] transition-all"
                   >
                     {slides[current].cta_text || "Shop Now"}
-                    <ArrowRight className="h-4 w-4" />
+                    <ArrowRight className="h-5 w-5" />
                   </Link>
                 </motion.div>
               </div>
@@ -460,9 +463,10 @@ function PromoBannerBlock({ data, theme }: { data: any; theme?: string }) {
                 <div>
                   <Link
                     href={banner.cta_link || "/shop"}
+                    style={{ backgroundColor: "hsl(var(--color-primary))" }}
                     className={cn(
                       buttonVariants({ size: isSingle ? "md" : "sm" }),
-                      "bg-[hsl(var(--color-primary))] text-white hover:bg-[hsl(var(--color-primary-dark))] font-bold"
+                      "text-white hover:opacity-90 font-bold"
                     )}
                   >
                     {banner.cta_text || "Shop Deals"}
@@ -525,9 +529,10 @@ function CtaBannerBlock({ section, theme }: { section: HomepageSection; theme?: 
         )}
         <Link
           href={section.data?.cta_link || "/shop"}
+          style={{ backgroundColor: "hsl(var(--color-primary))" }}
           className={cn(
             buttonVariants({ size: "lg" }),
-            "bg-[hsl(var(--color-primary))] text-white hover:bg-[hsl(var(--color-primary-dark))] shadow-lg px-8 font-bold"
+            "text-white hover:opacity-90 shadow-lg px-8 font-bold"
           )}
         >
           {section.data?.cta_text || "Explore Products"}
@@ -539,23 +544,91 @@ function CtaBannerBlock({ section, theme }: { section: HomepageSection; theme?: 
 
 function getIconComponent(iconName?: string) {
   const name = iconName?.toLowerCase().trim();
-  if (!name) return <Truck className="h-6 w-6 text-[hsl(var(--color-primary))]" />;
+  if (!name) return <TbTruckDelivery className="h-6 w-6 text-[hsl(var(--color-primary))]" />;
   if (name.includes("truck") || name.includes("ship") || name.includes("delivery") || name.includes("free")) {
-    return <Truck className="h-6 w-6 text-[hsl(var(--color-primary))]" />;
+    return <TbTruckDelivery className="h-6 w-6 text-[hsl(var(--color-primary))]" />;
   }
   if (name.includes("shield") || name.includes("secure") || name.includes("safe") || name.includes("pay")) {
-    return <ShieldCheck className="h-6 w-6 text-[hsl(var(--color-primary))]" />;
+    return <TbShieldCheck className="h-6 w-6 text-[hsl(var(--color-primary))]" />;
   }
   if (name.includes("card") || name.includes("credit") || name.includes("cod") || name.includes("cash")) {
-    return <CreditCard className="h-6 w-6 text-[hsl(var(--color-primary))]" />;
+    return <TbCreditCard className="h-6 w-6 text-[hsl(var(--color-primary))]" />;
   }
   if (name.includes("clock") || name.includes("support") || name.includes("time") || name.includes("help")) {
-    return <Clock className="h-6 w-6 text-[hsl(var(--color-primary))]" />;
+    return <TbClock className="h-6 w-6 text-[hsl(var(--color-primary))]" />;
   }
   if (name.includes("heart") || name.includes("love") || name.includes("care")) {
-    return <Heart className="h-6 w-6 text-[hsl(var(--color-primary))]" />;
+    return <TbHeart className="h-6 w-6 text-[hsl(var(--color-primary))]" />;
   }
-  return <Truck className="h-6 w-6 text-[hsl(var(--color-primary))]" />;
+  return <TbTruckDelivery className="h-6 w-6 text-[hsl(var(--color-primary))]" />;
+}
+
+// 3. CUSTOM CENTERED GRID BLOCK
+function CustomGridBlock({ section, theme }: { section: any; theme?: string }) {
+  const motif = getThemeMotif(theme);
+  const items = section.data?.items || [];
+  
+  if (items.length === 0) return null;
+
+  return (
+    <section className={cn("py-8 md:py-12 bg-[hsl(var(--color-surface))] border-t transition-all duration-300", motif.classNames)}>
+      <div className="container max-w-6xl px-4 mx-auto">
+        {/* Centered Headers */}
+        <div className="text-center mb-8 md:mb-10">
+          <h2 className="text-2xl md:text-3xl font-display font-extrabold text-[hsl(var(--color-text))] flex items-center justify-center gap-2">
+            {motif.prefix && <span>{motif.prefix}</span>}
+            {section.title || "Featured Highlights"}
+            {motif.suffix && <span>{motif.suffix}</span>}
+          </h2>
+          {section.subtitle && (
+            <p className="text-[hsl(var(--color-text-muted))] mt-2 text-sm max-w-lg mx-auto leading-relaxed">
+              {section.subtitle}
+            </p>
+          )}
+        </div>
+
+        {/* Centered Responsive Grid */}
+        <div className={cn(
+          "grid gap-6 md:gap-8 justify-center items-stretch",
+          items.length === 1 && "grid-cols-1 max-w-sm mx-auto",
+          items.length === 2 && "grid-cols-1 sm:grid-cols-2 max-w-2xl mx-auto",
+          items.length >= 3 && "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3"
+        )}>
+          {items.map((item: any, idx: number) => (
+            <motion.div
+              key={idx}
+              initial={{ opacity: 0, y: 15 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: idx * 0.1 }}
+              className="flex flex-col items-center justify-between text-center p-5 bg-[hsl(var(--color-surface-2))] border border-[hsl(var(--color-border))] rounded-2xl shadow-sm hover:shadow-md hover:border-[hsl(var(--color-accent))] transition-all duration-300 group"
+            >
+              <Link href={item.url || "/shop"} className="w-full flex flex-col items-center justify-center flex-1">
+                {/* Centered Image Container */}
+                <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden mb-4 shadow-sm border border-[hsl(var(--color-border))] bg-neutral-100 flex items-center justify-center">
+                  <Image
+                    src={item.image || "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=800&q=80"}
+                    alt={item.title || "Grid Item"}
+                    fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                </div>
+                {/* Centered Title */}
+                <h3 className="font-display font-extrabold text-base md:text-lg text-[hsl(var(--color-text))] group-hover:text-[hsl(var(--color-accent))] transition-colors line-clamp-2 max-w-[240px] leading-tight text-center">
+                  {item.title}
+                </h3>
+              </Link>
+              {/* Centered CTA URL Button */}
+              <Link href={item.url || "/shop"} className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[hsl(var(--color-accent))] group-hover:underline">
+                Explore More <ArrowRight className="h-3.5 w-3.5 text-[hsl(var(--color-primary))]" />
+              </Link>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
 }
 
 // 4. FEATURE ICONS (TRUST BAR)
@@ -597,15 +670,18 @@ function FeatureIconsBlock({ section, theme }: { section?: HomepageSection; them
             )}
           </div>
         )}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {items.map((item, idx) => (
-            <div key={idx} className="flex gap-3 items-start p-2">
-              <div className="h-10 w-10 rounded-xl bg-[hsl(var(--color-surface-3))] flex items-center justify-center flex-shrink-0">
+            <div key={idx} className="flex gap-4 items-center p-4 rounded-2xl bg-white border border-[hsl(var(--color-border))]/60 shadow-sm hover:shadow-md transition-all duration-300 group">
+              <div 
+                style={{ backgroundColor: "rgba(198, 5, 15, 0.06)", borderColor: "rgba(198, 5, 15, 0.12)" }}
+                className="h-12 w-12 rounded-xl border flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300"
+              >
                 {item.icon}
               </div>
               <div>
-                <h4 className="font-semibold text-sm text-[hsl(var(--color-text))]">{item.title}</h4>
-                {item.desc && <p className="text-xs text-[hsl(var(--color-text-muted))] mt-0.5">{item.desc}</p>}
+                <h4 className="font-extrabold text-sm text-[hsl(var(--color-text))] group-hover:text-[hsl(var(--color-primary))] transition-colors">{item.title}</h4>
+                {item.desc && <p className="text-xs text-[hsl(var(--color-text-muted))] mt-1 font-medium">{item.desc}</p>}
               </div>
             </div>
           ))}
@@ -871,7 +947,10 @@ function NewsletterBlock({ data, theme }: { data?: any; theme?: string }) {
   const motif = getThemeMotif(theme);
 
   return (
-    <section className={cn("py-8 md:py-10 bg-[hsl(var(--color-accent))] text-white my-2 rounded-xl max-w-5xl mx-auto border border-white/5 transition-all duration-300", motif.classNames)}>
+    <section 
+      style={{ backgroundColor: "#171717", color: "#ffffff" }}
+      className={cn("py-8 md:py-10 text-white my-2 rounded-xl max-w-5xl mx-auto border border-white/5 transition-all duration-300", motif.classNames)}
+    >
       <div className="container max-w-3xl text-center px-6">
         <Mail className="h-10 w-10 text-[hsl(var(--color-primary-light))] mx-auto mb-4" />
         <h2 className="text-2xl md:text-3xl font-display font-extrabold mb-3 flex items-center justify-center gap-2">
@@ -920,7 +999,8 @@ function NewsletterBlock({ data, theme }: { data?: any; theme?: string }) {
               <Button
                 type="submit"
                 disabled={loading}
-                className="h-11 bg-[hsl(var(--color-primary))] text-white hover:bg-[hsl(var(--color-primary-dark))] font-bold whitespace-nowrap"
+                style={{ backgroundColor: "#af040ce0", border: "1px solid #ffffff93" }}
+                className="h-11 text-white hover:opacity-90 font-bold whitespace-nowrap background[hsl(var(--color-primary))]"
               >
                 {loading ? "Joining..." : (data?.cta_text || "Subscribe")}
               </Button>

@@ -382,7 +382,20 @@ export async function createProductReview(reviewData: {
   });
 }
 
+export async function getCategoriesByIds(ids: number[]): Promise<WooCategory[]> {
+  if (!ids || ids.length === 0) return [];
+  try {
+    return await wooFetch<WooCategory[]>(
+      `/products/categories?include=${ids.join(",")}`
+    );
+  } catch (err) {
+    console.error("Failed fetching categories by IDs:", err);
+    return [];
+  }
+}
+
 export async function createNewsletterCoupon(email: string): Promise<string> {
+
   const randomSuffix = Math.random().toString(36).substring(2, 8).toUpperCase();
   const couponCode = `WELCOME15-${randomSuffix}`;
 

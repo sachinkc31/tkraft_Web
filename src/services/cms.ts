@@ -99,7 +99,9 @@ export interface HomepageSection {
     | "customerBenefits"
     | "newsletterSignup"
     | "recentlyAdded"
-    | "blogHighlights";
+    | "blogHighlights"
+    | "customGrid"
+    | "gridBlock";
   title?: string;
   subtitle?: string;
   viewAllUrl?: string;
@@ -164,16 +166,16 @@ export interface HomepageContent {
 
   // Featured Collections
   collection_1_title?: string;
-  collection_1_category?: string;
+  collection_1_category?: any;
   collection_2_title?: string;
-  collection_2_category?: string;
+  collection_2_category?: any;
   collection_3_title?: string;
-  collection_3_category?: string;
+  collection_3_category?: any;
 
   // Flash Deals
   flash_sale_title?: string;
   flash_sale_end_date?: string;
-  flash_sale_collection?: string;
+  flash_sale_collection?: any;
 
   // Why Buy From TKraft
   why_buy_title?: string;
@@ -227,6 +229,13 @@ export interface HomepageContent {
   cta_image?: string;
   cta_cta_text?: string;
   cta_cta_link?: string;
+  
+  // Custom Grid Section
+  grid_title?: string;
+  grid_subtitle?: string;
+  grid_items?: Array<{ image: string; title: string; url: string }>;
+  enable_section_grid?: boolean;
+
   enable_section_hero?: boolean;
   enable_section_benefits?: boolean;
   enable_section_categories?: boolean;
@@ -291,6 +300,15 @@ export const DEFAULT_HOMEPAGE_LAYOUT: HomepageLayout = {
     {
       id: "section_benefits",
       type: "customerBenefits",
+    },
+    {
+      id: "section_grid",
+      type: "customGrid",
+      title: "Featured Highlights",
+      subtitle: "Elevate your spaces with premium organizers",
+      data: {
+        items: []
+      }
     },
     {
       id: "section_categories",
@@ -495,7 +513,6 @@ export async function getHomepageLayout(): Promise<HomepageLayout> {
   try {
     const wpPagesUrl = `${API_CONFIG.wpRestUrl}/pages?slug=homepage-content`;
     const res = await fetch(wpPagesUrl, {
-      headers: getAuthHeaders(),
       ...getFetchOptions(),
     });
 
@@ -524,7 +541,6 @@ export async function getHomepageContent(): Promise<HomepageContent | null> {
   try {
     const wpPagesUrl = `${API_CONFIG.wpRestUrl}/pages?slug=homepage-content`;
     const res = await fetch(wpPagesUrl, {
-      headers: getAuthHeaders(),
       ...getFetchOptions(),
     });
 
@@ -566,6 +582,32 @@ export async function getHomepageContent(): Promise<HomepageContent | null> {
           const link = (key: string) => {
             const { raw } = getVal(key);
             return cleanLink(raw);
+          };
+
+          const categoryVal = (key: string) => {
+            const { raw } = getVal(key);
+            if (!raw) return undefined;
+            if (Array.isArray(raw)) {
+              return raw.map((item: any) => {
+                if (typeof item === "object" && item !== null) {
+                  return item.id || item.term_id || item.slug || item;
+                }
+                return item;
+              });
+            }
+            if (typeof raw === "object" && raw !== null) {
+              return raw.id || raw.term_id || raw.slug || raw;
+            }
+            return raw;
+          };
+
+          const collectionVal = (key: string) => {
+            const { raw } = getVal(key);
+            if (!raw) return undefined;
+            if (typeof raw === "object" && raw !== null) {
+              return raw.slug || raw.name || raw.caption || raw.title || raw.url || undefined;
+            }
+            return raw;
           };
 
           // Parse categories slugs (could be array or comma-separated string)
@@ -629,16 +671,16 @@ export async function getHomepageContent(): Promise<HomepageContent | null> {
 
             // Featured Collections
             collection_1_title: text("collection_1_title"),
-            collection_1_category: text("collection_1_category"),
+            collection_1_category: categoryVal("collection_1_category"),
             collection_2_title: text("collection_2_title"),
-            collection_2_category: text("collection_2_category"),
+            collection_2_category: categoryVal("collection_2_category"),
             collection_3_title: text("collection_3_title"),
-            collection_3_category: text("collection_3_category"),
+            collection_3_category: categoryVal("collection_3_category"),
 
             // Flash Deals
             flash_sale_title: text("flash_sale_title"),
             flash_sale_end_date: text("flash_sale_end_date"),
-            flash_sale_collection: text("flash_sale_collection"),
+            flash_sale_collection: collectionVal("flash_sale_collection"),
 
             // Why Buy From TKraft
             why_buy_title: text("why_buy_title"),
@@ -662,8 +704,8 @@ export async function getHomepageContent(): Promise<HomepageContent | null> {
             campaign_color_primary: text("campaign_color_primary"),
             campaign_color_accent: text("campaign_color_accent"),
             campaign_color_surface: text("campaign_color_surface"),
-            campaign_headline: text("campaign_headline"),
-            campaign_cta_text: text("campaign_cta_text"),
+            campaign_headline: text("campaign_headline") || text("campaign_headline_"),
+            campaign_cta_text: text("campaign_cta_text") || text("campaign_cta_text_"),
             campaign_cta_link: link("campaign_cta_link"),
             campaign_banner_image: img("campaign_banner_image"),
             campaign_banner_image_mobile: img("campaign_banner_image_mobile"),
@@ -688,10 +730,47 @@ export async function getHomepageContent(): Promise<HomepageContent | null> {
             promo_2_cta_text: text("promo_2_cta_text"),
             promo_2_cta_link: link("promo_2_cta_link"),
             cta_title: text("cta_title"),
-            cta_subtitle: text("cta_subtitle"),
+            cta_subtitle: text("cta_subtitle") || text("cta_description"),
             cta_image: img("cta_image"),
-            cta_cta_text: text("cta_cta_text"),
-            cta_cta_link: link("cta_cta_link"),
+            cta_cta_text: text("cta_cta_text") || text("cta_button_text"),
+            cta_cta_link: link("cta_cta_link") || link("cta_button_url"),
+            // Custom Grid Section
+            grid_title: text("grid_title"),
+            grid_subtitle: text("grid_subtitle"),
+            grid_items: (() => {
+              const grid_items_val = acf.grid_items || acf.grid_items_;
+              let grid_items: Array<{ image: string; title: string; url: string }> = [];
+
+              if (Array.isArray(grid_items_val)) {
+                grid_items = grid_items_val.map((item: any) => {
+                  const rawImg = item.image || item.image_source || item.img || item.image_;
+                  const imgUrl = typeof rawImg === "string" ? rawImg : (rawImg?.url || rawImg?.sizes?.large || "");
+                  return {
+                    image: (imgUrl || "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=800&q=80") as string,
+                    title: String(item.title || item.name || ""),
+                    url: (cleanLink(item.url || item.link || item.cta_url) || "/shop") as string
+                  };
+                });
+              } else {
+                // Fallback to individual fields: grid_item_1_image, grid_item_1_title, grid_item_1_url, etc.
+                for (let i = 1; i <= 8; i++) {
+                  const { raw: rawImg, source: imgSource } = getVal(`grid_item_${i}_image`);
+                  const title = text(`grid_item_${i}_title`);
+                  const url = (link(`grid_item_${i}_url`) || link(`grid_item_${i}_link`) || "/shop") as string;
+                  const image = extractImg(rawImg, imgSource);
+                  if (image || title) {
+                    grid_items.push({
+                      image: (image || "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=800&q=80") as string,
+                      title: title || "",
+                      url: url
+                    });
+                  }
+                }
+              }
+              return grid_items;
+            })(),
+            enable_section_grid: toggle("enable_section_grid"),
+
             enable_section_hero: toggle("enable_section_hero"),
             enable_section_benefits: toggle("enable_section_benefits"),
             enable_section_categories: toggle("enable_section_categories"),
@@ -733,7 +812,6 @@ export async function getLoginContent(): Promise<LoginContent | null> {
     // Add cache buster query parameter to bypass CDN/varnish caching on WordPress host
     const wpPostsUrl = `${API_CONFIG.wpRestUrl}/posts?slug=login-content&t=${Date.now()}`;
     const res = await fetch(wpPostsUrl, {
-      headers: getAuthHeaders(),
       cache: "no-store",
     });
 
