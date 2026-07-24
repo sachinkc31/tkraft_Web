@@ -25,4 +25,9 @@ export interface IAuthService {
    * Verify the OTP for the specified mobile phone number and return the session.
    */
   verifyMobileOtp(phone: string, otp: string): Promise<AuthSession>;
+
+  /**
+   * Authenticate or register a user via social platform (Google).
+   */
+  loginOrRegisterSocial(email: string, firstName: string, lastName: string, avatarUrl?: string): Promise<AuthSession>;
 }
