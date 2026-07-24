@@ -53,7 +53,7 @@ export function Navbar() {
       <div className="bg-[hsl(var(--color-primary))] text-black text-xs py-2 hidden md:block">
         <div className="container flex items-center justify-between">
           <span className="flex items-center gap-1.5">
-            <Phone className="h-3 w-3" /> Free shipping on orders above ₹499
+            <Phone className="h-3 w-3" /> {currency === "INR" ? "Free shipping on orders above ₹499" : "Free shipping on orders above $100"}
           </span>
           <div className="flex items-center gap-4">
             {mounted && (

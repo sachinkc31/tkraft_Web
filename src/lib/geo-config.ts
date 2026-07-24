@@ -25,5 +25,5 @@ export const COUNTRY_RULES = {
   DE: { name: "Germany", tax: 0.19, shipping: 1100, freeLimit: 8300 },
   AU: { name: "Australia", tax: 0.10, shipping: 1250, freeLimit: 8300 },
   CA: { name: "Canada", tax: 0.12, shipping: 1250, freeLimit: 8300 },
-  other: { name: "Other (International)", tax: 0.10, shipping: 1660, freeLimit: 12500 },
+  other: { name: "Other (International)", tax: 0.10, shipping: 1660, freeLimit: 8300 },
 };

@@ -721,7 +721,7 @@ function LoginClientContent({ loginContent }: LoginClientProps) {
             <div className="flex flex-col gap-2 mb-2">
               <Button
                 type="button"
-                variant="outline"
+                variant="secondary"
                 size="lg"
                 className="w-full h-11 hover:bg-[hsl(210,16%,96%)] hover:text-[hsl(var(--color-accent))]"
                 rightIcon={<ArrowRight className="h-4 w-4" />}
