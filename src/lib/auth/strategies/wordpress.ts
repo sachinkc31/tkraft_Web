@@ -90,10 +90,42 @@ export class WordPressAuthService implements IAuthService {
   }
 
   async sendMobileOtp(phone: string): Promise<OtpResponse> {
-    // Sandbox / Test Mode: Return success with a mock warning or instruction
-    // In production: Connect to Twilio, MSG91, or Fast2SMS here
-    const mockOtp = "123456"; 
+    const accountSid = process.env.TWILIO_ACCOUNT_SID;
+    const authToken = process.env.TWILIO_AUTH_TOKEN;
+    const serviceSid = process.env.TWILIO_VERIFY_SERVICE_SID;
 
+    if (accountSid && authToken && serviceSid) {
+      const formattedPhone = phone.startsWith("+") ? phone : `+91${phone}`;
+      try {
+        const res = await fetch(`https://verify.twilio.com/v2/Services/${serviceSid}/Verifications`, {
+          method: "POST",
+          headers: {
+            Authorization: `Basic ${btoa(`${accountSid}:${authToken}`)}`,
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: new URLSearchParams({
+            To: formattedPhone,
+            Channel: "sms",
+          }),
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.message || "Twilio failed to send verification code");
+        }
+
+        return {
+          success: true,
+          message: "OTP verification code sent to your mobile phone.",
+        };
+      } catch (error: any) {
+        console.error("[WordPress Auth] Twilio OTP send error:", error);
+        throw new Error(error.message || "Failed to send OTP via Twilio");
+      }
+    }
+
+    // Sandbox / Test Mode: Return success with a mock warning or instruction
+    const mockOtp = "123456"; 
     return {
       success: true,
       message: `OTP sent successfully. (Use code: ${mockOtp} for sandbox verification)`,
@@ -101,9 +133,43 @@ export class WordPressAuthService implements IAuthService {
   }
 
   async verifyMobileOtp(phone: string, otp: string): Promise<AuthSession> {
-    // 1. Verify OTP (mock verification '123456')
-    if (otp !== "123456") {
-      throw new Error("Invalid OTP code. Please try again.");
+    const accountSid = process.env.TWILIO_ACCOUNT_SID;
+    const authToken = process.env.TWILIO_AUTH_TOKEN;
+    const serviceSid = process.env.TWILIO_VERIFY_SERVICE_SID;
+
+    if (accountSid && authToken && serviceSid) {
+      const formattedPhone = phone.startsWith("+") ? phone : `+91${phone}`;
+      try {
+        const res = await fetch(`https://verify.twilio.com/v2/Services/${serviceSid}/VerificationCheck`, {
+          method: "POST",
+          headers: {
+            Authorization: `Basic ${btoa(`${accountSid}:${authToken}`)}`,
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: new URLSearchParams({
+            To: formattedPhone,
+            Code: otp,
+          }),
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.message || "Twilio verification failed");
+        }
+
+        const data = await res.json();
+        if (data.status !== "approved") {
+          throw new Error("Invalid OTP code. Please try again.");
+        }
+      } catch (error: any) {
+        console.error("[WordPress Auth] Twilio OTP verification error:", error);
+        throw new Error(error.message || "Invalid OTP code. Please try again.");
+      }
+    } else {
+      // 1. Verify OTP (mock verification '123456')
+      if (otp !== "123456") {
+        throw new Error("Invalid OTP code. Please try again.");
+      }
     }
 
     const wooUrl = process.env.NEXT_PUBLIC_WOOCOMMERCE_URL;
@@ -193,6 +259,94 @@ export class WordPressAuthService implements IAuthService {
         first_name: customer.first_name || "Mobile User",
         last_name: customer.last_name || "",
         avatar_url: customer.avatar_url || "",
+        billing: customer.billing,
+        shipping: customer.shipping,
+        meta_data: customer.meta_data,
+      },
+    };
+  }
+
+  async loginOrRegisterSocial(email: string, firstName: string, lastName: string, avatarUrl?: string): Promise<AuthSession> {
+    const wooUrl = process.env.NEXT_PUBLIC_WOOCOMMERCE_URL;
+    const auth = this.getWooCommerceAuth();
+
+    console.log(`[WordPress Auth Social] Checking customer database for email: ${email}`);
+    const searchResponse = await fetch(`${wooUrl}/customers?email=${encodeURIComponent(email)}`, {
+      headers: {
+        Authorization: `Basic ${auth}`,
+      },
+    });
+
+    let customer: any = null;
+    if (searchResponse.ok) {
+      const customers = await searchResponse.json();
+      if (customers && customers.length > 0) {
+        customer = customers[0];
+      }
+    }
+
+    if (!customer) {
+      console.log(`[WordPress Auth Social] Creating new WooCommerce customer for email: ${email}`);
+      const createResponse = await fetch(`${wooUrl}/customers`, {
+        method: "POST",
+        headers: {
+          Authorization: `Basic ${auth}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email,
+          username: email.split("@")[0] + "_" + Math.floor(Math.random() * 1000),
+          first_name: firstName,
+          last_name: lastName,
+          avatar_url: avatarUrl || "",
+          billing: {
+            first_name: firstName,
+            last_name: lastName,
+            email: email,
+            country: "IN",
+          },
+          shipping: {
+            first_name: firstName,
+            last_name: lastName,
+            country: "IN",
+          },
+        }),
+      });
+
+      if (!createResponse.ok) {
+        const errText = await createResponse.text();
+        console.error("WooCommerce customer social creation failed:", errText);
+        throw new Error("Failed to register social customer profile");
+      }
+
+      customer = await createResponse.json();
+      console.log(`[WordPress Auth Social] Customer account created. ID: ${customer?.id}`);
+    } else {
+      console.log(`[WordPress Auth Social] Existing customer logged in. ID: ${customer.id}`);
+    }
+
+    if (!customer) {
+      throw new Error("Failed to resolve WooCommerce customer profile");
+    }
+
+    const payload = JSON.stringify({
+      id: customer.id,
+      email: customer.email,
+      exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 30, // 30 days
+    });
+
+    const jwtSecret = process.env.JWT_AUTH_SECRET_KEY || process.env.RAZORPAY_KEY_SECRET || "default_auth_secret_key";
+    const hmac = crypto.createHmac("sha256", jwtSecret).update(payload).digest("base64");
+    const token = `${Buffer.from(payload).toString("base64")}.${hmac}`;
+
+    return {
+      token,
+      user: {
+        id: customer.id,
+        email: customer.email,
+        first_name: customer.first_name || firstName,
+        last_name: customer.last_name || lastName,
+        avatar_url: customer.avatar_url || avatarUrl || "",
         billing: customer.billing,
         shipping: customer.shipping,
         meta_data: customer.meta_data,

@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import Script from "next/script";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -32,7 +33,7 @@ function LoginClientContent({ loginContent }: LoginClientProps) {
   const { isAuthenticated, setSession } = useAuthStore();
   const showToast = useUIStore((s) => s.showToast);
 
-  const [authTab, setAuthTab] = useState<"mobile" | "jwt">("mobile");
+  const [authTab, setAuthTab] = useState<"mobile" | "jwt">("jwt");
   const [isLoading, setIsLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState<"google" | "facebook" | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -72,21 +73,86 @@ function LoginClientContent({ loginContent }: LoginClientProps) {
     }
   }, [isAuthenticated, redirectUrl, router]);
 
-  // Social Login Mock Handler
+  // Google Sign-In Initializer
+  const initGoogleSignIn = () => {
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+    if (!clientId) {
+      console.warn("Google Client ID not configured.");
+      return;
+    }
+
+    try {
+      if (typeof window !== "undefined" && (window as any).google) {
+        (window as any).google.accounts.id.initialize({
+          client_id: clientId,
+          callback: handleGoogleCredentialResponse,
+        });
+        (window as any).google.accounts.id.renderButton(
+          document.getElementById("google-signin-btn"),
+          { theme: "outline", size: "large", width: "100%", text: "signin_with", shape: "pill" }
+        );
+      }
+    } catch (err) {
+      console.error("Google Sign-In initialization failed:", err);
+    }
+  };
+
+  // Google Identity Services JWT Response Callback
+  const handleGoogleCredentialResponse = async (response: any) => {
+    setIsLoading(true);
+    try {
+      const jwtToken = response.credential;
+      const base64Url = jwtToken.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      );
+      const payload = JSON.parse(jsonPayload);
+
+      const res = await fetch("/api/auth/social", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: payload.email,
+          first_name: payload.given_name || "Google",
+          last_name: payload.family_name || "User",
+          avatar_url: payload.picture,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Failed to log in via Google");
+      }
+
+      const sessionData = await res.json();
+      setSession(sessionData.token, sessionData.user);
+      showToast("Logged in successfully via Google!", "success");
+      router.push(redirectUrl);
+    } catch (err: any) {
+      showToast(err.message || "Google Sign-In failed.", "error");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Social Login Mock Handler (Fallback)
   const handleSocialLogin = async (platform: "google" | "facebook") => {
     setSocialLoading(platform);
     try {
-      // Simulate OAuth API call
       await new Promise((resolve) => setTimeout(resolve, 1500));
       
       const mockUser = {
-        id: platform === "google" ? 10001 : 10002,
-        email: `${platform}_user@tkraft.in`,
-        first_name: platform === "google" ? "Google" : "Facebook",
+        id: 10001,
+        email: `google_user@tkraft.in`,
+        first_name: "Google",
         last_name: "Member",
-        avatar_url: `https://api.dicebear.com/7.x/adventurer/svg?seed=${platform}`,
+        avatar_url: `https://api.dicebear.com/7.x/adventurer/svg?seed=google`,
         billing: {
-          first_name: platform === "google" ? "Google" : "Facebook",
+          first_name: "Google",
           last_name: "Member",
           company: "",
           address_1: "123 Smart St, Organizer Colony",
@@ -95,11 +161,11 @@ function LoginClientContent({ loginContent }: LoginClientProps) {
           state: "Karnataka",
           postcode: "560001",
           country: "IN",
-          email: `${platform}_user@tkraft.in`,
+          email: `google_user@tkraft.in`,
           phone: "9876543210",
         },
         shipping: {
-          first_name: platform === "google" ? "Google" : "Facebook",
+          first_name: "Google",
           last_name: "Member",
           company: "",
           address_1: "123 Smart St, Organizer Colony",
@@ -111,13 +177,13 @@ function LoginClientContent({ loginContent }: LoginClientProps) {
         }
       };
 
-      setSession(`mock-oauth-token-${platform}`, mockUser);
-      showToast(`Logged in successfully via ${platform === "google" ? "Google" : "Facebook"}!`, "success");
+      setSession(`mock-oauth-token-google`, mockUser);
+      showToast(`Logged in successfully via Google!`, "success");
       router.push(redirectUrl);
     } catch (err) {
       showToast("OAuth login failed. Please try again.", "error");
     } finally {
-      setSocialLoading(null);
+      socialLoading && setSocialLoading(null);
     }
   };
 
@@ -350,77 +416,56 @@ function LoginClientContent({ loginContent }: LoginClientProps) {
             </p>
           </div>
 
-          {/* Social Logins */}
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            <button
-              onClick={() => handleSocialLogin("google")}
-              disabled={socialLoading !== null || isLoading}
-              className="h-11 border border-[hsl(214,13%,90%)] rounded-xl flex items-center justify-center gap-2 text-xs font-semibold text-[hsl(222,47%,11%)] hover:bg-[hsl(210,16%,96%)] active:scale-[0.98] transition-all disabled:opacity-50"
-            >
-              {socialLoading === "google" ? (
-                <Loader2 className="h-4 w-4 animate-spin text-[hsl(215,16%,47%)]" />
-              ) : (
-                <svg className="h-4 w-4" viewBox="0 0 24 24">
-                  <path
-                    fill="#EA4335"
-                    d="M12.24 10.285V14.4h6.887c-.648 2.41-2.519 4.114-5.187 4.114-3.524 0-6.38-2.856-6.38-6.38s2.856-6.38 6.38-6.38c1.6 0 3.056.59 4.186 1.562l3.14-3.14C19.262 2.23 15.966 1 12.24 1 5.683 1 .37 6.313.37 12.87s5.313 11.87 11.87 11.87c7.17 0 11.86-5.043 11.86-12.073 0-.78-.07-1.382-.24-2.382H12.24z"
-                  />
-                </svg>
-              )}
-              Google
-            </button>
-            <button
-              onClick={() => handleSocialLogin("facebook")}
-              disabled={socialLoading !== null || isLoading}
-              className="h-11 border border-[hsl(214,13%,90%)] rounded-xl flex items-center justify-center gap-2 text-xs font-semibold text-[hsl(222,47%,11%)] hover:bg-[hsl(210,16%,96%)] active:scale-[0.98] transition-all disabled:opacity-50"
-            >
-              {socialLoading === "facebook" ? (
-                <Loader2 className="h-4 w-4 animate-spin text-[hsl(215,16%,47%)]" />
-              ) : (
-                <svg className="h-4 w-4" fill="#1877F2" viewBox="0 0 24 24">
-                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                </svg>
-              )}
-              Facebook
-            </button>
-          </div>
 
-          {/* Separator */}
-          <div className="flex items-center gap-4 my-6">
-            <div className="h-[1px] flex-1 bg-[hsl(214,13%,90%)]" />
-            <span className="text-xs text-[hsl(215,16%,47%)] font-semibold uppercase tracking-wider">
-              Or direct account access
-            </span>
-            <div className="h-[1px] flex-1 bg-[hsl(214,13%,90%)]" />
-          </div>
 
-          {/* Form Tabs */}
-          <div className="flex gap-2 p-1 bg-[hsl(210,16%,96%)] rounded-2xl mb-6">
-            <button
-              onClick={() => {
-                setAuthTab("mobile");
-                setOtpSent(false);
-              }}
-              className={cn(
-                "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold transition-all",
-                authTab === "mobile"
-                  ? "bg-white text-[hsl(var(--color-accent))] shadow-sm"
-                  : "text-[hsl(215,16%,47%)] hover:text-[hsl(222,47%,11%)]"
-              )}
-            >
-              <Smartphone className="h-4 w-4" /> Mobile OTP
-            </button>
-            <button
-              onClick={() => setAuthTab("jwt")}
-              className={cn(
-                "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold transition-all",
-                authTab === "jwt"
-                  ? "bg-white text-[hsl(var(--color-accent))] shadow-sm"
-                  : "text-[hsl(215,16%,47%)] hover:text-[hsl(222,47%,11%)]"
-              )}
-            >
-              <KeyRound className="h-4 w-4" /> Password Login
-            </button>
+          {/* Script and Google Sign-In Container */}
+          <Script 
+            src="https://accounts.google.com/gsi/client" 
+            onLoad={initGoogleSignIn}
+            strategy="lazyOnload"
+          />
+
+          <div className="mb-6">
+            {process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ? (
+              <div className="w-full flex flex-col gap-2">
+                <div id="google-signin-btn" className="w-full min-h-[44px]" />
+                <div className="flex items-center gap-4 my-4">
+                  <div className="h-[1px] flex-1 bg-[hsl(214,13%,90%)]" />
+                  <span className="text-[10px] text-[hsl(215,16%,47%)] font-bold uppercase tracking-wider">
+                    Or secure password access
+                  </span>
+                  <div className="h-[1px] flex-1 bg-[hsl(214,13%,90%)]" />
+                </div>
+              </div>
+            ) : (
+              <div className="w-full flex flex-col gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleSocialLogin("google")}
+                  disabled={socialLoading !== null || isLoading}
+                  className="w-full h-11 border border-[hsl(214,13%,90%)] rounded-xl flex items-center justify-center gap-2 text-xs font-semibold text-[hsl(222,47%,11%)] hover:bg-[hsl(210,16%,96%)] active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer"
+                >
+                  {socialLoading === "google" ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-[hsl(215,16%,47%)]" />
+                  ) : (
+                    <svg className="h-4 w-4" viewBox="0 0 24 24">
+                      <path
+                        fill="#EA4335"
+                        d="M12.24 10.285V14.4h6.887c-.648 2.41-2.519 4.114-5.187 4.114-3.524 0-6.38-2.856-6.38-6.38s2.856-6.38 6.38-6.38c1.6 0 3.056.59 4.186 1.562l3.14-3.14C19.262 2.23 15.966 1 12.24 1 5.683 1 .37 6.313.37 12.87s5.313 11.87 11.87 11.87c7.17 0 11.86-5.043 11.86-12.073 0-.78-.07-1.382-.24-2.382H12.24z"
+                      />
+                    </svg>
+                  )}
+                  Sign in with Google
+                </button>
+                <div className="flex items-center gap-4 my-4">
+                  <div className="h-[1px] flex-1 bg-[hsl(214,13%,90%)]" />
+                  <span className="text-[10px] text-[hsl(215,16%,47%)] font-bold uppercase tracking-wider">
+                    Or secure password access
+                  </span>
+                  <div className="h-[1px] flex-1 bg-[hsl(214,13%,90%)]" />
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Error Alert */}

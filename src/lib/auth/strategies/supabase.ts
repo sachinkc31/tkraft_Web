@@ -292,4 +292,9 @@ export class SupabaseAuthService implements IAuthService {
       user: wooCustomer,
     };
   }
+
+  async loginOrRegisterSocial(email: string, firstName: string, lastName: string, avatarUrl?: string): Promise<AuthSession> {
+    // Basic fallback implementation for Supabase OAuth compilation
+    throw new Error("Supabase social login should be initiated via the client SDK signInWithOAuth method directly.");
+  }
 }
