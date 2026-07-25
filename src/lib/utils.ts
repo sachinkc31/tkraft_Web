@@ -17,8 +17,8 @@ export function formatPrice(price: string | number, isProduct: boolean = true): 
   const numPrice = typeof price === "string" ? parseFloat(price) : price;
   if (isNaN(numPrice)) return "₹0";
 
-  // Check if browser context exists and is hydrated
-  if (typeof window !== "undefined" && (window as any).__CLIENT_HYDRATED__) {
+  // Check if browser context exists
+  if (typeof window !== "undefined") {
     try {
       const state = useCurrencyStore.getState();
       const currentCurrency = state.currency;

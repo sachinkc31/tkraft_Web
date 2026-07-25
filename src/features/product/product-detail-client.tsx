@@ -62,7 +62,7 @@ interface Props {
 type Tab = "description" | "reviews";
 
 export function ProductDetailClient({ product, initialVariations = [], bundleProducts = [] }: Props) {
-  const currency = useCurrencyStore((s) => s.currency);
+  const { currency, rates } = useCurrencyStore();
 
   // Extra states for optimizations
   const [activeAccordion, setActiveAccordion] = useState("");
@@ -1010,7 +1010,7 @@ export function ProductDetailClient({ product, initialVariations = [], bundlePro
                 {
                   id: "shipping",
                   title: "Shipping & Delivery Info",
-                  content: `We ship all orders within 24 hours of receipt (except Sundays). Standard delivery takes 2-4 business days for metros and 3-6 business days for other regions. Shipping is free for orders above ₹${COUNTRY_RULES[storeCountry as keyof typeof COUNTRY_RULES]?.freeLimit || 499}.`
+                  content: `We ship all orders within 24 hours of receipt (except Sundays). Standard delivery takes 2-4 business days for metros and 3-6 business days for other regions. Shipping is free for orders above ${formatPrice(storeCountry === "IN" ? 499 : (100 / (rates.USD || 0.012)), false)}.`
                 },
                 {
                   id: "returns",
@@ -1052,9 +1052,10 @@ export function ProductDetailClient({ product, initialVariations = [], bundlePro
                   title: "Free Delivery",
                   text: (() => {
                     const rule = COUNTRY_RULES[storeCountry as keyof typeof COUNTRY_RULES] || COUNTRY_RULES.IN;
+                    const dynamicFreeLimit = storeCountry === "IN" ? 499 : (100 / (rates.USD || 0.012));
                     return rule.shipping === 0 
                       ? "On all orders today" 
-                      : `On orders above ${formatPrice(rule.freeLimit, false)}`;
+                      : `On orders above ${formatPrice(dynamicFreeLimit, false)}`;
                   })()
                 },
                 { icon: RotateCcw, title: "30-Day Returns", text: "100% no-questions refund" },

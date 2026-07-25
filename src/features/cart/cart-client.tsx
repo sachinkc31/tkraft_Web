@@ -20,7 +20,7 @@ export function CartClient() {
   const { isAuthenticated } = useAuthStore();
   const router = useRouter();
 
-  const { countryCode, setCountryCode } = useCurrencyStore();
+  const { countryCode, setCountryCode, rates } = useCurrencyStore();
   const estCountry = countryCode || "IN";
 
   const totalPrice = getTotalPrice();
@@ -33,7 +33,8 @@ export function CartClient() {
   const multipliedTotalPrice = totalPrice * geoMultiplier;
 
   const rule = COUNTRY_RULES[estCountry as keyof typeof COUNTRY_RULES] || COUNTRY_RULES.IN;
-  const shippingCost = multipliedTotalPrice >= rule.freeLimit ? 0 : rule.shipping;
+  const dynamicFreeLimit = estCountry === "IN" ? 499 : (100 / (rates.USD || 0.012));
+  const shippingCost = multipliedTotalPrice >= dynamicFreeLimit ? 0 : rule.shipping;
   const taxCost = multipliedTotalPrice * rule.tax;
   const hasFreeShipping = shippingCost === 0;
 
@@ -267,7 +268,7 @@ export function CartClient() {
 
           {!hasFreeShipping && (
             <div className="mt-4 p-3 rounded-xl bg-[hsl(217,70%,95%)] text-[hsl(var(--color-accent))] text-xs leading-relaxed">
-              Add {formatPrice(rule.freeLimit - multipliedTotalPrice, false)} more for <strong>free shipping</strong> to {rule.name}!
+              Add {formatPrice(dynamicFreeLimit - multipliedTotalPrice, false)} more for <strong>free shipping</strong> to {rule.name}!
             </div>
           )}
 
