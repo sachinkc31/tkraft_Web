@@ -194,7 +194,7 @@ export function CartDrawer() {
                   </span>
                 </div>
                 <p className="text-xs text-[hsl(215,16%,47%)]">
-                  Shipping calculated at checkout. Free for orders above {currency === "INR" ? "₹499" : "$100"}.
+                  Shipping calculated at checkout. Free for orders above {formatPrice(currency === "INR" ? 499 : 8300)}.
                 </p>
                 <div className="flex flex-col gap-2">
                   <Button

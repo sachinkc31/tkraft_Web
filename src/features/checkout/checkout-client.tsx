@@ -32,8 +32,8 @@ const checkoutSchema = z.object({
 type CheckoutFormData = z.infer<typeof checkoutSchema>;
 
 export function CheckoutClient() {
+  const { currency, rates } = useCurrencyStore();
   const router = useRouter();
-  const currency = useCurrencyStore((s) => s.currency);
   
   // Saved Address states
   const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
@@ -138,9 +138,10 @@ export function CheckoutClient() {
   const multipliedTotalPrice = totalPrice * geoMultiplier;
 
   const rule = COUNTRY_RULES[selectedCountry as keyof typeof COUNTRY_RULES] || COUNTRY_RULES.IN;
+  const dynamicFreeLimit = selectedCountry === "IN" ? 499 : (100 / (rates.USD || 0.012));
   
   // Calculate shipping costs dynamically
-  const standardShippingCost = multipliedTotalPrice >= rule.freeLimit ? 0 : rule.shipping;
+  const standardShippingCost = multipliedTotalPrice >= dynamicFreeLimit ? 0 : rule.shipping;
   
   const expressSurchargeMap: Record<string, number> = {
     IN: 150,

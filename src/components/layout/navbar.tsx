@@ -15,7 +15,7 @@ import {
   ChevronDown,
   Phone,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, formatPrice } from "@/lib/utils";
 import { useCartStore, useUIStore, useWishlistStore, useCurrencyStore } from "@/store";
 import { NAVIGATION, SITE_CONFIG } from "@/lib/constants";
 import type { SupportedCurrency } from "@/store/currency";
@@ -32,7 +32,7 @@ export function Navbar() {
   const { isMobileMenuOpen, toggleMobileMenu, closeMobileMenu, toggleSearch } =
     useUIStore();
 
-  const { currency, setCurrency, fetchRates, detectLocation } = useCurrencyStore();
+  const { currency, rates, setCurrency, fetchRates, detectLocation } = useCurrencyStore();
 
   useEffect(() => {
     setMounted(true);
@@ -53,7 +53,7 @@ export function Navbar() {
       <div className="bg-[hsl(var(--color-primary))] text-black text-xs py-2 hidden md:block">
         <div className="container flex items-center justify-between">
           <span className="flex items-center gap-1.5">
-            <Phone className="h-3 w-3" /> {currency === "INR" ? "Free shipping on orders above ₹499" : "Free shipping on orders above $100"}
+            <Phone className="h-3 w-3" /> Free shipping on orders above {mounted ? formatPrice(currency === "INR" ? 499 : (100 / (rates.USD || 0.012)), false) : "₹499"}
           </span>
           <div className="flex items-center gap-4">
             {mounted && (
