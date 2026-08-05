@@ -14,7 +14,9 @@ import {
   Calendar,
   Layers,
   Percent,
+  Sparkles,
 } from "lucide-react";
+import { CAMPAIGN_PRESETS } from "@/services/cms";
 import { formatPrice, cn } from "@/lib/utils";
 
 interface SummaryData {
@@ -72,6 +74,7 @@ export default function AdminDashboardPage() {
   const [fetchError, setFetchError] = useState("");
 
   const [activeTab, setActiveTab] = useState<"analytics" | "cms">("analytics");
+  const [cmsTarget, setCmsTarget] = useState<"homepage" | "login">("homepage");
   const [cmsData, setCmsData] = useState<any>(null);
   const [cmsLoading, setCmsLoading] = useState(false);
   const [cmsSaveLoading, setCmsSaveLoading] = useState(false);
@@ -105,13 +108,13 @@ export default function AdminDashboardPage() {
     }
   }, [days]);
 
-  // Load CMS data on tab shift
+  // Load CMS data on tab shift or cmsTarget change
   useEffect(() => {
     const savedKey = localStorage.getItem("tkraft_admin_token");
-    if (savedKey && activeTab === "cms" && !cmsData) {
-      fetchCmsData(savedKey);
+    if (savedKey && activeTab === "cms" && (!cmsData || cmsData._target !== cmsTarget)) {
+      fetchCmsData(savedKey, cmsTarget);
     }
-  }, [activeTab, cmsData]);
+  }, [activeTab, cmsTarget]);
 
   async function fetchDashboardData(key: string, daysCount: number) {
     setLoading(true);
@@ -184,22 +187,23 @@ export default function AdminDashboardPage() {
     setCmsData(null);
   }
 
-  async function fetchCmsData(key: string) {
+  async function fetchCmsData(key: string, target: "homepage" | "login" = cmsTarget) {
     setCmsLoading(true);
     setCmsError("");
     try {
-      const res = await fetch("/api/admin/homepage-content", {
+      const endpoint = target === "homepage" ? "/api/admin/homepage-content" : "/api/admin/login-content";
+      const res = await fetch(endpoint, {
         headers: {
           Authorization: `Bearer ${key}`,
         },
       });
 
       if (!res.ok) {
-        throw new Error("Failed to load CMS fields");
+        throw new Error(`Failed to load ${target === "homepage" ? "Homepage" : "Login"} CMS fields`);
       }
 
       const resData = await res.json();
-      setCmsData(resData.acf || {});
+      setCmsData({ ...(resData.acf || {}), _target: target });
     } catch (err: any) {
       setCmsError(err.message || "An error occurred fetching CMS fields");
     } finally {
@@ -214,14 +218,18 @@ export default function AdminDashboardPage() {
     setCmsError("");
     setCmsSuccess("");
     try {
-      const res = await fetch("/api/admin/homepage-content", {
+      const endpoint = cmsTarget === "homepage" ? "/api/admin/homepage-content" : "/api/admin/login-content";
+      const payloadAcf = { ...cmsData };
+      delete payloadAcf._target;
+
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${savedKey}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          acf: cmsData,
+          acf: payloadAcf,
         }),
       });
 
@@ -230,8 +238,8 @@ export default function AdminDashboardPage() {
       }
 
       const resData = await res.json();
-      setCmsData(resData.acf || {});
-      setCmsSuccess("CMS Settings saved successfully to WordPress!");
+      setCmsData({ ...(resData.acf || {}), _target: cmsTarget });
+      setCmsSuccess(`${cmsTarget === "homepage" ? "Homepage" : "Login Page"} Settings saved successfully to WordPress!`);
       setTimeout(() => setCmsSuccess(""), 4000);
     } catch (err: any) {
       setCmsError(err.message || "An error occurred saving CMS fields");
@@ -574,6 +582,53 @@ export default function AdminDashboardPage() {
         {/* Left Side: Fields Accordion Form (7 cols) */}
         <div className="lg:col-span-7 space-y-4">
           
+          {/* Target Content Switcher */}
+          <div className="bg-[hsl(222,47%,6%)] border border-[hsl(217,32%,17%)] rounded-2xl p-2 flex items-center justify-between shadow-sm">
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  if (cmsTarget !== "homepage") {
+                    setCmsTarget("homepage");
+                    setExpandedSection("campaign");
+                    const savedKey = localStorage.getItem("tkraft_admin_token");
+                    if (savedKey) fetchCmsData(savedKey, "homepage");
+                  }
+                }}
+                className={cn(
+                  "px-4 py-2 rounded-xl text-xs font-extrabold transition-all flex items-center gap-2 cursor-pointer",
+                  cmsTarget === "homepage"
+                    ? "bg-blue-600 text-white shadow-md shadow-blue-500/25"
+                    : "text-[hsl(215,16%,57%)] hover:text-white hover:bg-[hsl(217,32%,17%)]/50"
+                )}
+              >
+                <span>🏠</span> Homepage Content (6144)
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (cmsTarget !== "login") {
+                    setCmsTarget("login");
+                    setExpandedSection("login_copy");
+                    const savedKey = localStorage.getItem("tkraft_admin_token");
+                    if (savedKey) fetchCmsData(savedKey, "login");
+                  }
+                }}
+                className={cn(
+                  "px-4 py-2 rounded-xl text-xs font-extrabold transition-all flex items-center gap-2 cursor-pointer",
+                  cmsTarget === "login"
+                    ? "bg-blue-600 text-white shadow-md shadow-blue-500/25"
+                    : "text-[hsl(215,16%,57%)] hover:text-white hover:bg-[hsl(217,32%,17%)]/50"
+                )}
+              >
+                <span>🔑</span> Login Page Content (login-content)
+              </button>
+            </div>
+            <span className="text-[10px] font-extrabold uppercase tracking-widest text-[hsl(215,16%,47%)] px-3 hidden sm:inline">
+              Target: {cmsTarget === "homepage" ? "page/6144" : "post/login-content"}
+            </span>
+          </div>
+
           {/* Header Action Bar */}
           <div className="flex items-center justify-between bg-[hsl(222,47%,6%)] border border-[hsl(217,32%,17%)] rounded-2xl p-4 shadow-sm">
             <span className="text-xs font-extrabold text-[hsl(215,16%,57%)] uppercase tracking-wider">
@@ -584,10 +639,10 @@ export default function AdminDashboardPage() {
                 type="button"
                 onClick={() => {
                   const savedKey = localStorage.getItem("tkraft_admin_token");
-                  if (savedKey) fetchCmsData(savedKey);
+                  if (savedKey) fetchCmsData(savedKey, cmsTarget);
                 }}
                 disabled={cmsSaveLoading}
-                className="px-4 py-2 border border-[hsl(217,32%,17%)] text-xs font-extrabold rounded-xl hover:bg-[hsl(217,32%,17%)]/50 transition-colors disabled:opacity-50"
+                className="px-4 py-2 border border-[hsl(217,32%,17%)] text-xs font-extrabold rounded-xl hover:bg-[hsl(217,32%,17%)]/50 transition-colors disabled:opacity-50 cursor-pointer"
               >
                 Reset Draft
               </button>
@@ -595,7 +650,7 @@ export default function AdminDashboardPage() {
                 type="button"
                 onClick={saveCmsData}
                 disabled={cmsSaveLoading}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-xs font-extrabold rounded-xl transition-all shadow-md shadow-blue-500/25 flex items-center gap-1.5 disabled:opacity-50"
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-xs font-extrabold rounded-xl transition-all shadow-md shadow-blue-500/25 flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
               >
                 {cmsSaveLoading ? (
                   <RefreshCw className="h-3 w-3 animate-spin" />
@@ -617,184 +672,274 @@ export default function AdminDashboardPage() {
             </div>
           )}
 
-          {/* Section 1: Campaigns */}
-          {editorSection("campaign", "Campaigns & Announcement Ribbon", (
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" /></svg>
-          ), (
-            <div className="space-y-4">
-              {toggleInput("Enable Header Announcement Bar", "announcement_enabled")}
-              {textInput("Announcement Bar Text", "announcement_text", "e.g. Free shipping above $499")}
-              {textInput("Announcement Accent Color (Hex)", "announcement_bg_color", "e.g. #c62128")}
-              <div className="grid grid-cols-2 gap-4">
-                {textInput("Campaign ID (Unique key)", "campaign_id", "e.g. monsoon_sale_2026")}
-                {textInput("Campaign Display Name", "campaign_name", "e.g. Monsoon Dhamaka")}
-              </div>
-              {selectInput("Campaign HSL Theme", "campaign_theme", [
-                { value: "default", label: "Default Blue Theme" },
-                { value: "summer", label: "Summer Theme (Orange)" },
-                { value: "monsoon", label: "Monsoon Theme (Teal)" },
-                { value: "diwali", label: "Diwali Theme (Gold/Terracotta)" },
-                { value: "blackfriday", label: "Black Friday Theme (Black)" },
-                { value: "christmas", label: "Christmas Theme (Pine/Crimson)" },
-              ])}
-              {textInput("Campaign Banner Title Override", "campaign_headline")}
-              {textInput("Campaign CTA Copy", "campaign_cta_text")}
-              {textInput("Campaign Redirect Link", "campaign_cta_link")}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {imageInput("Campaign Banner (Desktop)", "campaign_banner_image")}
-                {imageInput("Campaign Banner (Mobile)", "campaign_banner_image_mobile")}
-              </div>
-              {textInput("Campaign Product slugs or IDs list", "campaign_product_collection")}
-              {textInput("Campaign Ribbon Text", "campaign_promo_text")}
-            </div>
-          ))}
+          {cmsTarget === "login" ? (
+            <>
+              {/* Login Section 1: Title & Subtitle */}
+              {editorSection("login_copy", "Login Promo Title & Subtitle Copy", (
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" /></svg>
+              ), (
+                <div className="space-y-4">
+                  {textInput("Login Promo Title", "login_promo_title", "e.g. Exclusive Member Benefits")}
+                  {textareaInput("Login Promo Subtitle Copy", "login_promo_subtitle", "e.g. Unlock special deals, custom checkout pricing...")}
+                </div>
+              ))}
 
-          {/* Section 2: Hero Slide */}
-          {editorSection("hero", "Hero Carousel Banner", (
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-          ), (
-            <div className="space-y-4">
-              {textInput("Hero headline Title", "hero_title")}
-              {textareaInput("Hero subheadline Description", "hero_subtitle")}
-              {imageInput("Hero Desktop Background Image", "hero_desktop_image")}
-              {imageInput("Hero Mobile Background Image", "hero_mobile_image")}
-              <div className="grid grid-cols-2 gap-4">
-                {textInput("CTA Button Copy", "hero_cta_text")}
-                {textInput("CTA Redirect link", "hero_cta_url")}
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                {selectInput("Hero Text Alignment", "hero_alignment", [
-                  { value: "left", label: "Left Aligned" },
-                  { value: "center", label: "Centered" },
-                  { value: "right", label: "Right Aligned" },
-                ])}
-                {selectInput("Hero Overlay Contrast Theme", "hero_theme", [
-                  { value: "default", label: "Default Overlay" },
-                  { value: "light", label: "Light Overlay" },
-                  { value: "dark", label: "Dark Overlay" },
-                  { value: "minimal", label: "Minimalist" },
-                ])}
-              </div>
-              {numberInput("Rotation Interval (Seconds)", "hero_scroll_interval_seconds")}
-            </div>
-          ))}
+              {/* Login Section 2: Banner Images */}
+              {editorSection("login_banners", "Login Promo Banner Images", (
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+              ), (
+                <div className="space-y-4">
+                  {imageInput("Desktop Promo Image", "login_promo_image")}
+                  {imageInput("Mobile Promo Image", "login_promo_image_mobile")}
+                </div>
+              ))}
 
-          {/* Section 3: Category Grid */}
-          {editorSection("categories", "Category Collections Grid", (
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
-          ), (
-            <div className="space-y-4">
-              {textInput("Section Title Header", "categories_title")}
-              {textInput("Section Subtitle Description", "categories_subtitle")}
-              {textInput("Fallback Category Slugs (comma list)", "categories_slugs")}
-              <hr className="border-[hsl(217,32%,17%)]/50" />
-              <div className="grid grid-cols-2 gap-4">
-                {textInput("Collection Card 1 Title", "collection_1_title")}
-                {textInput("Collection Card 1 Category IDs", "collection_1_category", "e.g. 5173,5171")}
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                {textInput("Collection Card 2 Title", "collection_2_title")}
-                {textInput("Collection Card 2 Category IDs", "collection_2_category", "e.g. 5179,5186")}
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                {textInput("Collection Card 3 Title", "collection_3_title")}
-                {textInput("Collection Card 3 Category IDs", "collection_3_category", "e.g. 4736,4735")}
-              </div>
-            </div>
-          ))}
+              {/* Login Section 3: Call-to-Action Button & Redirects */}
+              {editorSection("login_cta", "Call-to-Action Button & Redirects", (
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
+              ), (
+                <div className="space-y-4">
+                  {textInput("CTA Button Copy", "login_promo_cta_text", "e.g. Shop Best Sellers")}
+                  {textInput("CTA Redirect Link URL", "login_promo_cta_url", "e.g. /shop")}
+                </div>
+              ))}
+            </>
+          ) : (
+            <>
+              {/* Section 0: Campaign Presets */}
+              {editorSection("presets", "Quick Campaign Presets", (
+                <Sparkles className="h-4 w-4" />
+              ), (
+                <div className="space-y-3">
+                  <p className="text-xs text-[hsl(215,16%,57%)]">
+                    Apply a preset to auto-fill campaign fields below. You can then fine-tune and save.
+                  </p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {Object.entries(CAMPAIGN_PRESETS).map(([key, preset]) => (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => {
+                          setCmsData((prev: any) => ({
+                            ...prev,
+                            campaign_theme: key,
+                            campaign_name: preset.name,
+                            campaign_promo_text: preset.promoText,
+                            campaign_color_primary: preset.colors.primary,
+                            campaign_color_accent: preset.colors.accent,
+                            campaign_color_surface: preset.colors.surface,
+                            announcement_enabled: true,
+                            announcement_text: preset.promoText,
+                          }));
+                          setExpandedSection("campaign");
+                        }}
+                        className={cn(
+                          "px-3 py-2.5 rounded-xl border text-xs font-bold text-left transition-all hover:scale-[1.02] active:scale-[0.98]",
+                          cmsData?.campaign_theme === key
+                            ? "border-blue-500 bg-blue-600/20 text-white"
+                            : "border-[hsl(217,32%,17%)] bg-[hsl(222,47%,11%)] text-[hsl(215,16%,57%)] hover:text-white hover:border-blue-500/50"
+                        )}
+                      >
+                        <span className="block font-extrabold text-white mb-0.5">{preset.name}</span>
+                        <span className="block text-[10px] leading-tight line-clamp-2 opacity-70">{preset.promoText}</span>
+                        <div className="flex gap-1 mt-1.5">
+                          {[preset.colors.primary, preset.colors.accent, preset.colors.surface].map((c, i) => (
+                            <span key={i} className="h-3 w-3 rounded-full border border-white/20 inline-block" style={{ background: c }} />
+                          ))}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
 
-          {/* Section 4: Product Collections */}
-          {editorSection("collections", "Product Collection Limits", (
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
-          ), (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                {textInput("Trending Collection Title", "trending_title")}
-                {numberInput("Trending Limit Size", "trending_limit")}
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                {textInput("Best Sellers Title", "bestseller_title")}
-                {numberInput("Best Sellers Limit Size", "bestseller_limit")}
-              </div>
-            </div>
-          ))}
+              {/* Section 1: Campaigns */}
+              {editorSection("campaign", "Campaigns & Announcement Ribbon", (
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" /></svg>
+              ), (
+                <div className="space-y-4">
+                  {toggleInput("Enable Header Announcement Bar", "announcement_enabled")}
+                  {textInput("Announcement Bar Text", "announcement_text", "e.g. Free shipping above $499")}
+                  {textInput("Announcement Accent Color (Hex)", "announcement_bg_color", "e.g. #c62128")}
+                  <div className="grid grid-cols-2 gap-4">
+                    {textInput("Campaign ID (Unique key)", "campaign_id", "e.g. monsoon_sale_2026")}
+                    {textInput("Campaign Display Name", "campaign_name", "e.g. Monsoon Dhamaka")}
+                  </div>
+                  {selectInput("Campaign HSL Theme", "campaign_theme", [
+                    { value: "default", label: "Default Blue Theme" },
+                    { value: "summer", label: "Summer Theme (Orange)" },
+                    { value: "monsoon", label: "Monsoon Theme (Teal)" },
+                    { value: "diwali", label: "Diwali Theme (Gold/Terracotta)" },
+                    { value: "blackfriday", label: "Black Friday Theme (Black)" },
+                    { value: "christmas", label: "Christmas Theme (Pine/Crimson)" },
+                  ])}
+                  {textInput("Campaign Banner Title Override", "campaign_headline")}
+                  {textInput("Campaign CTA Copy", "campaign_cta_text")}
+                  {textInput("Campaign Redirect Link", "campaign_cta_link")}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {imageInput("Campaign Banner (Desktop)", "campaign_banner_image")}
+                    {imageInput("Campaign Banner (Mobile)", "campaign_banner_image_mobile")}
+                  </div>
+                  {textInput("Campaign Product slugs or IDs list", "campaign_product_collection")}
+                  {textInput("Campaign Ribbon Text", "campaign_promo_text")}
+                  <hr className="border-[hsl(217,32%,17%)]/50" />
+                  <h4 className="text-xs font-extrabold text-blue-400 uppercase tracking-widest">Preset Color Overrides</h4>
+                  <div className="grid grid-cols-3 gap-3">
+                    {textInput("Primary Color", "campaign_color_primary", "e.g. hsl(174,90%,30%)")}
+                    {textInput("Accent Color", "campaign_color_accent", "e.g. hsl(150,80%,40%)")}
+                    {textInput("Surface Color", "campaign_color_surface", "e.g. hsl(180,50%,98%)")}
+                  </div>
+                </div>
+              ))}
 
-          {/* Section 5: Banners */}
-          {editorSection("banners", "Mid-page Promotional Banners", (
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" /></svg>
-          ), (
-            <div className="space-y-4">
-              <h4 className="text-xs font-extrabold text-blue-400 uppercase tracking-widest">Promo Banner 1 Settings</h4>
-              {textInput("Promo 1 Headline Title", "promo_title")}
-              {textInput("Promo 1 Subtitle Copy", "promo_description")}
-              {imageInput("Promo 1 Background Image", "promo_image")}
-              <div className="grid grid-cols-2 gap-4">
-                {textInput("Promo 1 Button Text", "promo_cta_text")}
-                {textInput("Promo 1 Redirect Link", "promo_cta_url")}
-              </div>
-              <hr className="border-[hsl(217,32%,17%)]/50" />
-              <h4 className="text-xs font-extrabold text-blue-400 uppercase tracking-widest">Call-to-Action Segment Banner</h4>
-              {textInput("CTA Section Title", "cta_title")}
-              {textareaInput("CTA Section Description", "cta_description")}
-              {imageInput("CTA Background Image", "cta_image")}
-              <div className="grid grid-cols-2 gap-4">
-                {textInput("CTA Button Copy", "cta_button_text")}
-                {textInput("CTA Redirect link", "cta_button_url")}
-              </div>
-            </div>
-          ))}
+              {/* Section 2: Hero Slide */}
+              {editorSection("hero", "Hero Carousel Banner", (
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+              ), (
+                <div className="space-y-4">
+                  {textInput("Hero headline Title", "hero_title")}
+                  {textareaInput("Hero subheadline Description", "hero_subtitle")}
+                  {imageInput("Hero Desktop Background Image", "hero_desktop_image")}
+                  {imageInput("Hero Mobile Background Image", "hero_mobile_image")}
+                  <div className="grid grid-cols-2 gap-4">
+                    {textInput("CTA Button Copy", "hero_cta_text")}
+                    {textInput("CTA Redirect link", "hero_cta_url")}
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    {selectInput("Hero Text Alignment", "hero_alignment", [
+                      { value: "left", label: "Left Aligned" },
+                      { value: "center", label: "Centered" },
+                      { value: "right", label: "Right Aligned" },
+                    ])}
+                    {selectInput("Hero Overlay Contrast Theme", "hero_theme", [
+                      { value: "default", label: "Default Overlay" },
+                      { value: "light", label: "Light Overlay" },
+                      { value: "dark", label: "Dark Overlay" },
+                      { value: "minimal", label: "Minimalist" },
+                    ])}
+                  </div>
+                  {numberInput("Rotation Interval (Seconds)", "hero_scroll_interval_seconds")}
+                </div>
+              ))}
 
-          {/* Section 6: Trust Benefits */}
-          {editorSection("trust", "Trust Badges & Benefits", (
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
-          ), (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                {textInput("Benefit 1 Heading", "benefit_1_title")}
-                {textInput("Benefit 1 Icon Name", "benefit_1_icon")}
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                {textInput("Benefit 2 Heading", "benefit_2_title")}
-                {textInput("Benefit 2 Icon Name", "benefit_2_icon")}
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                {textInput("Benefit 3 Heading", "benefit_3_title")}
-                {textInput("Benefit 3 Icon Name", "benefit_3_icon")}
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                {textInput("Benefit 4 Heading", "benefit_4_title")}
-                {textInput("Benefit 4 Icon Name", "benefit_4_icon")}
-              </div>
-              <hr className="border-[hsl(217,32%,17%)]/50" />
-              {textInput("Why Choose TKraft Header", "why_buy_title")}
-              <div className="grid grid-cols-2 gap-4">
-                {textInput("Bullet Copy item 1", "why_buy_item_1")}
-                {textInput("Bullet Copy item 2", "why_buy_item_2")}
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                {textInput("Bullet Copy item 3", "why_buy_item_3")}
-                {textInput("Bullet Copy item 4", "why_buy_item_4")}
-              </div>
-            </div>
-          ))}
+              {/* Section 3: Category Grid */}
+              {editorSection("categories", "Category Collections Grid", (
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+              ), (
+                <div className="space-y-4">
+                  {textInput("Section Title Header", "categories_title")}
+                  {textInput("Section Subtitle Description", "categories_subtitle")}
+                  {textInput("Fallback Category Slugs (comma list)", "categories_slugs")}
+                  <hr className="border-[hsl(217,32%,17%)]/50" />
+                  <div className="grid grid-cols-2 gap-4">
+                    {textInput("Collection Card 1 Title", "collection_1_title")}
+                    {textInput("Collection Card 1 Category IDs", "collection_1_category", "e.g. 5173,5171")}
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    {textInput("Collection Card 2 Title", "collection_2_title")}
+                    {textInput("Collection Card 2 Category IDs", "collection_2_category", "e.g. 5179,5186")}
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    {textInput("Collection Card 3 Title", "collection_3_title")}
+                    {textInput("Collection Card 3 Category IDs", "collection_3_category", "e.g. 4736,4735")}
+                  </div>
+                </div>
+              ))}
 
-          {/* Section 7: Section Visibility Settings */}
-          {editorSection("visibility", "Section Visibility Controller", (
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-          ), (
-            <div className="space-y-1">
-              {toggleInput("Show Top Hero Carousel Banner", "enable_section_hero")}
-              {toggleInput("Show Customer Trust Benefits ribbon", "enable_section_benefits")}
-              {toggleInput("Show Category Grid section", "enable_section_categories")}
-              {toggleInput("Show Trending Products slider", "enable_section_trending")}
-              {toggleInput("Show Mid-page Promo Banner", "enable_section_promo")}
-              {toggleInput("Show Best Sellers grid", "enable_section_bestsellers")}
-              {toggleInput("Show Call-to-Action segmented block", "enable_section_cta")}
-              {toggleInput("Show Why Buy Highlights segment", "enable_section_highlights")}
-              {toggleInput("Show Customers Testimonial reviews", "enable_section_testimonials")}
-              {toggleInput("Show Homepage Newsletter subscriptions", "enable_section_newsletter")}
-            </div>
-          ))}
+              {/* Section 4: Product Collections */}
+              {editorSection("collections", "Product Collection Limits", (
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
+              ), (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    {textInput("Trending Collection Title", "trending_title")}
+                    {numberInput("Trending Limit Size", "trending_limit")}
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    {textInput("Best Sellers Title", "bestseller_title")}
+                    {numberInput("Best Sellers Limit Size", "bestseller_limit")}
+                  </div>
+                </div>
+              ))}
+
+              {/* Section 5: Banners */}
+              {editorSection("banners", "Mid-page Promotional Banners", (
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" /></svg>
+              ), (
+                <div className="space-y-4">
+                  <h4 className="text-xs font-extrabold text-blue-400 uppercase tracking-widest">Promo Banner 1 Settings</h4>
+                  {textInput("Promo 1 Headline Title", "promo_title")}
+                  {textInput("Promo 1 Subtitle Copy", "promo_description")}
+                  {imageInput("Promo 1 Background Image", "promo_image")}
+                  <div className="grid grid-cols-2 gap-4">
+                    {textInput("Promo 1 Button Text", "promo_cta_text")}
+                    {textInput("Promo 1 Redirect Link", "promo_cta_url")}
+                  </div>
+                  <hr className="border-[hsl(217,32%,17%)]/50" />
+                  <h4 className="text-xs font-extrabold text-blue-400 uppercase tracking-widest">Call-to-Action Segment Banner</h4>
+                  {textInput("CTA Section Title", "cta_title")}
+                  {textareaInput("CTA Section Description", "cta_description")}
+                  {imageInput("CTA Background Image", "cta_image")}
+                  <div className="grid grid-cols-2 gap-4">
+                    {textInput("CTA Button Copy", "cta_button_text")}
+                    {textInput("CTA Redirect link", "cta_button_url")}
+                  </div>
+                </div>
+              ))}
+
+              {/* Section 6: Trust Benefits */}
+              {editorSection("trust", "Trust Badges & Benefits", (
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+              ), (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    {textInput("Benefit 1 Heading", "benefit_1_title")}
+                    {textInput("Benefit 1 Icon Name", "benefit_1_icon")}
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    {textInput("Benefit 2 Heading", "benefit_2_title")}
+                    {textInput("Benefit 2 Icon Name", "benefit_2_icon")}
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    {textInput("Benefit 3 Heading", "benefit_3_title")}
+                    {textInput("Benefit 3 Icon Name", "benefit_3_icon")}
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    {textInput("Benefit 4 Heading", "benefit_4_title")}
+                    {textInput("Benefit 4 Icon Name", "benefit_4_icon")}
+                  </div>
+                  <hr className="border-[hsl(217,32%,17%)]/50" />
+                  {textInput("Why Choose TKraft Header", "why_buy_title")}
+                  <div className="grid grid-cols-2 gap-4">
+                    {textInput("Bullet Copy item 1", "why_buy_item_1")}
+                    {textInput("Bullet Copy item 2", "why_buy_item_2")}
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    {textInput("Bullet Copy item 3", "why_buy_item_3")}
+                    {textInput("Bullet Copy item 4", "why_buy_item_4")}
+                  </div>
+                </div>
+              ))}
+
+              {/* Section 7: Section Visibility Settings */}
+              {editorSection("visibility", "Section Visibility Controller", (
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+              ), (
+                <div className="space-y-1">
+                  {toggleInput("Show Top Hero Carousel Banner", "enable_section_hero")}
+                  {toggleInput("Show Customer Trust Benefits ribbon", "enable_section_benefits")}
+                  {toggleInput("Show Category Grid section", "enable_section_categories")}
+                  {toggleInput("Show Trending Products slider", "enable_section_trending")}
+                  {toggleInput("Show Mid-page Promo Banner", "enable_section_promo")}
+                  {toggleInput("Show Best Sellers grid", "enable_section_bestsellers")}
+                  {toggleInput("Show Call-to-Action segmented block", "enable_section_cta")}
+                  {toggleInput("Show Why Buy Highlights segment", "enable_section_highlights")}
+                  {toggleInput("Show Customers Testimonial reviews", "enable_section_testimonials")}
+                  {toggleInput("Show Homepage Newsletter subscriptions", "enable_section_newsletter")}
+                </div>
+              ))}
+            </>
+          )}
 
         </div>
 
@@ -836,187 +981,238 @@ export default function AdminDashboardPage() {
                 style={{ fontSize: previewDevice === "desktop" ? "13px" : "11px" }}
               >
                 
-                {/* 1. MOCK Announcement Bar */}
-                {cmsData.announcement_enabled && (
-                  <div
-                    style={{ backgroundColor: cmsData.announcement_bg_color || "#c62128" }}
-                    className="text-white text-center py-1.5 px-3 font-semibold text-[10px] leading-tight"
-                  >
-                    {cmsData.announcement_text || "🚚 Free shipping on orders over ₹499"}
-                  </div>
-                )}
+                {cmsTarget === "login" ? (
+                  /* MOCK LOGIN PAGE PREVIEW */
+                  <div className="p-4 bg-slate-100 min-h-[500px] flex items-center justify-center">
+                    <div className="w-full max-w-sm bg-white rounded-2xl border border-slate-200 shadow-lg overflow-hidden grid grid-cols-1 gap-4 p-4">
+                      {/* Left Column Mock: Form */}
+                      <div className="space-y-3">
+                        <h3 className="font-extrabold text-sm text-slate-800">
+                          Welcome back to T<span className="text-orange-500">kraft</span>
+                        </h3>
+                        <p className="text-[10px] text-slate-500">Log in to manage orders, check out faster, or save preferences.</p>
 
-                {/* 2. MOCK Navbar */}
-                <div className="bg-white border-b px-4 py-3 flex items-center justify-between sticky top-0 z-20 shadow-sm">
-                  <span className="font-extrabold tracking-tight text-blue-600">Tkraft.in</span>
-                  <div className="flex gap-2.5 text-[10px] font-bold text-neutral-500">
-                    <span>Shop</span>
-                    <span>Categories</span>
-                    <span>Account</span>
-                  </div>
-                </div>
+                        <div className="w-full h-8 border border-slate-200 rounded-lg flex items-center justify-center gap-1.5 text-[10px] font-bold text-slate-700 bg-slate-50">
+                          <svg className="h-3 w-3" viewBox="0 0 24 24"><path fill="#EA4335" d="M12.24 10.285V14.4h6.887c-.648 2.41-2.519 4.114-5.187 4.114-3.524 0-6.38-2.856-6.38-6.38s2.856-6.38 6.38-6.38c1.6 0 3.056.59 4.186 1.562l3.14-3.14C19.262 2.23 15.966 1 12.24 1 5.683 1 .37 6.313.37 12.87s5.313 11.87 11.87 11.87c7.17 0 11.86-5.043 11.86-12.073 0-.78-.07-1.382-.24-2.382H12.24z"/></svg>
+                          Sign in with Google
+                        </div>
 
-                {/* 3. MOCK Hero Slide Banner */}
-                {cmsData.enable_section_hero !== false && (
-                  <div
-                    style={{
-                      backgroundImage: `url(${cmsData.hero_desktop_image || cmsData.hero_image || "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1600&q=80"})`,
-                      backgroundSize: "cover",
-                      backgroundPosition: "center"
-                    }}
-                    className={cn(
-                      "h-48 relative flex items-center p-6 text-white text-left",
-                      cmsData.hero_alignment === "center" && "justify-center text-center",
-                      cmsData.hero_alignment === "right" && "justify-end text-right"
+                        <div className="space-y-1.5 pt-1">
+                          <div className="h-7 bg-slate-100 rounded-lg text-[9px] px-2.5 flex items-center text-slate-400 font-medium">Username or Email</div>
+                          <div className="h-7 bg-slate-100 rounded-lg text-[9px] px-2.5 flex items-center text-slate-400 font-medium">••••••••</div>
+                        </div>
+                        <div className="h-7 bg-blue-600 rounded-lg text-white font-bold text-[10px] flex items-center justify-center shadow-sm">Log In</div>
+                      </div>
+
+                      {/* Right Column Mock: Promo Card Banner */}
+                      <div className="relative rounded-xl overflow-hidden min-h-[160px] flex flex-col justify-end p-3 text-white border border-slate-200">
+                        <div 
+                          className="absolute inset-0 bg-cover bg-center"
+                          style={{
+                            backgroundImage: `url(${cmsData.login_promo_image || "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1000&q=80"})`
+                          }}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
+                        <div className="relative z-10 space-y-1">
+                          <span className="bg-orange-500 text-white font-black text-[8px] px-1.5 py-0.5 rounded tracking-wider uppercase inline-block">Member Benefit</span>
+                          <h4 className="font-extrabold text-xs leading-tight drop-shadow">
+                            {cmsData.login_promo_title || "Exclusive Member Benefits"}
+                          </h4>
+                          <p className="text-[9px] text-slate-200 line-clamp-2 leading-tight font-medium">
+                            {cmsData.login_promo_subtitle || "Unlock special deals, custom checkout pricing, and free shipping on all organizers."}
+                          </p>
+                          <button className="bg-white text-slate-900 font-bold text-[9px] px-2.5 py-1 rounded-lg mt-1 shadow transition-transform">
+                            {cmsData.login_promo_cta_text || "Shop Best Sellers"}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {/* 1. MOCK Announcement Bar */}
+                    {cmsData.announcement_enabled && (
+                      <div
+                        style={{ backgroundColor: cmsData.announcement_bg_color || "#c62128" }}
+                        className="text-white text-center py-1.5 px-3 font-semibold text-[10px] leading-tight"
+                      >
+                        {cmsData.announcement_text || "🚚 Free shipping on orders over ₹499"}
+                      </div>
                     )}
-                  >
-                    <div className="absolute inset-0 bg-black/40" />
-                    <div className="relative z-10 max-w-[80%] space-y-1.5">
-                      <h2 className="font-black text-sm tracking-tight leading-snug drop-shadow-md text-white">
-                        {cmsData.hero_title || "Make Everyday Tasks Easier"}
-                      </h2>
-                      <p className="text-[10px] text-neutral-200 line-clamp-2 drop-shadow-sm font-medium">
-                        {cmsData.hero_subtitle || "Smart kitchen & organizers for storage solutions."}
-                      </p>
-                      <button style={{ backgroundColor: "#af040ce0", border: "1px solid #ffffff93" }} className="background[hsl(var(--color-primary))] bg-blue-600 hover:bg-blue-700 text-white font-bold text-[9px] px-3 py-1.5 rounded-lg shadow-md mt-1 transition-all">
-                        {cmsData.hero_cta_text || "Shop Now"}
-                      </button>
-                    </div>
-                  </div>
-                )}
 
-                {/* 4. MOCK Trust Benefits */}
-                {cmsData.enable_section_benefits !== false && (
-                  <div className="bg-neutral-50 border-b py-3 px-4 grid grid-cols-2 md:grid-cols-4 gap-2 text-center text-neutral-700 font-semibold text-[9px]">
-                    <div className="flex items-center gap-1.5 justify-center">
-                      <span>🚚</span>
-                      <span>{cmsData.benefit_1_title || "Fast Shipping"}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 justify-center">
-                      <span>🔒</span>
-                      <span>{cmsData.benefit_2_title || "Secure Payments"}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 justify-center">
-                      <span>🔄</span>
-                      <span>{cmsData.benefit_3_title || "Easy Returns"}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 justify-center">
-                      <span>⭐</span>
-                      <span>{cmsData.benefit_4_title || "Quality Items"}</span>
-                    </div>
-                  </div>
-                )}
-
-                {/* 5. MOCK Category Grid */}
-                {cmsData.enable_section_categories !== false && (
-                  <div className="py-4 px-4 bg-white border-b space-y-2">
-                    <h3 className="font-bold text-center text-neutral-800 text-xs">
-                      {cmsData.categories_title || "Shop by Category"}
-                    </h3>
-                    <div className="grid grid-cols-3 gap-2">
-                      <div className="border rounded-xl p-2.5 text-center bg-neutral-50 font-bold text-[10px]">
-                        <span className="block text-lg">🍳</span>
-                        <span className="text-neutral-700 line-clamp-1">{cmsData.collection_1_title || "Kitchen"}</span>
-                      </div>
-                      <div className="border rounded-xl p-2.5 text-center bg-neutral-50 font-bold text-[10px]">
-                        <span className="block text-lg">📦</span>
-                        <span className="text-neutral-700 line-clamp-1">{cmsData.collection_2_title || "Storage"}</span>
-                      </div>
-                      <div className="border rounded-xl p-2.5 text-center bg-neutral-50 font-bold text-[10px]">
-                        <span className="block text-lg">🧹</span>
-                        <span className="text-neutral-700 line-clamp-1">{cmsData.collection_3_title || "Cleaning"}</span>
+                    {/* 2. MOCK Navbar */}
+                    <div className="bg-white border-b px-4 py-3 flex items-center justify-between sticky top-0 z-20 shadow-sm">
+                      <span className="font-extrabold tracking-tight text-blue-600">Tkraft.in</span>
+                      <div className="flex gap-2.5 text-[10px] font-bold text-neutral-500">
+                        <span>Shop</span>
+                        <span>Categories</span>
+                        <span>Account</span>
                       </div>
                     </div>
-                  </div>
-                )}
 
-                {/* 6. MOCK Product Carousel (Trending) */}
-                {cmsData.enable_section_trending !== false && (
-                  <div className="py-4 px-4 bg-neutral-50 border-b space-y-2.5">
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-extrabold text-neutral-800 text-xs">{cmsData.trending_title || "Trending Now"}</h4>
-                      <span className="text-[9px] text-blue-600 font-bold">View all ({cmsData.trending_limit || 8})</span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2.5">
-                      <div className="bg-white border rounded-xl p-2 space-y-1">
-                        <div className="bg-neutral-100 rounded-lg aspect-square" />
-                        <p className="font-bold text-[10px] text-neutral-800 truncate">Premium Organizer</p>
-                        <p className="font-extrabold text-[10px] text-blue-600">₹499</p>
+                    {/* 3. MOCK Hero Slide Banner */}
+                    {cmsData.enable_section_hero !== false && (
+                      <div
+                        style={{
+                          backgroundImage: `url(${cmsData.hero_desktop_image || cmsData.hero_image || "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1600&q=80"})`,
+                          backgroundSize: "cover",
+                          backgroundPosition: "center"
+                        }}
+                        className={cn(
+                          "h-48 relative flex items-center p-6 text-white text-left",
+                          cmsData.hero_alignment === "center" && "justify-center text-center",
+                          cmsData.hero_alignment === "right" && "justify-end text-right"
+                        )}
+                      >
+                        <div className="absolute inset-0 bg-black/40" />
+                        <div className="relative z-10 max-w-[80%] space-y-1.5">
+                          <h2 className="font-black text-sm tracking-tight leading-snug drop-shadow-md text-white">
+                            {cmsData.hero_title || "Make Everyday Tasks Easier"}
+                          </h2>
+                          <p className="text-[10px] text-neutral-200 line-clamp-2 drop-shadow-sm font-medium">
+                            {cmsData.hero_subtitle || "Smart kitchen & organizers for storage solutions."}
+                          </p>
+                          <button style={{ backgroundColor: "#af040ce0", border: "1px solid #ffffff93" }} className="background[hsl(var(--color-primary))] bg-blue-600 hover:bg-blue-700 text-white font-bold text-[9px] px-3 py-1.5 rounded-lg shadow-md mt-1 transition-all">
+                            {cmsData.hero_cta_text || "Shop Now"}
+                          </button>
+                        </div>
                       </div>
-                      <div className="bg-white border rounded-xl p-2 space-y-1">
-                        <div className="bg-neutral-100 rounded-lg aspect-square" />
-                        <p className="font-bold text-[10px] text-neutral-800 truncate">Kitchen Container</p>
-                        <p className="font-extrabold text-[10px] text-blue-600">₹299</p>
+                    )}
+
+                    {/* 4. MOCK Trust Benefits */}
+                    {cmsData.enable_section_benefits !== false && (
+                      <div className="bg-neutral-50 border-b py-3 px-4 grid grid-cols-2 md:grid-cols-4 gap-2 text-center text-neutral-700 font-semibold text-[9px]">
+                        <div className="flex items-center gap-1.5 justify-center">
+                          <span>🚚</span>
+                          <span>{cmsData.benefit_1_title || "Fast Shipping"}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 justify-center">
+                          <span>🔒</span>
+                          <span>{cmsData.benefit_2_title || "Secure Payments"}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 justify-center">
+                          <span>🔄</span>
+                          <span>{cmsData.benefit_3_title || "Easy Returns"}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 justify-center">
+                          <span>⭐</span>
+                          <span>{cmsData.benefit_4_title || "Quality Items"}</span>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                )}
+                    )}
 
-                {/* 7. MOCK Promo Banner */}
-                {cmsData.enable_section_promo !== false && (
-                  <div
-                    style={{
-                      backgroundImage: `url(${cmsData.promo_image || "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=800&q=80"})`,
-                      backgroundSize: "cover",
-                      backgroundPosition: "center"
-                    }}
-                    className="h-28 relative flex items-center p-4 text-white border-b"
-                  >
-                    <div className="absolute inset-0 bg-black/35" />
-                    <div className="relative z-10 space-y-1 max-w-[80%]">
-                      <h4 className="font-black text-xs">{cmsData.promo_title || "Summer Clearance"}</h4>
-                      <p className="text-[9px] text-neutral-200 line-clamp-1">{cmsData.promo_description || "Up to 50% discount on all organizers"}</p>
-                      <button style={{ backgroundColor: "#af040ce0", border: "1px solid #ffffff93" }} className="bg-white text-blue-950 font-bold text-[8px] px-2 py-1 rounded shadow mt-1">
-                        {cmsData.promo_cta_text || "Shop Clearance"}
-                      </button>
-                    </div>
-                  </div>
-                )}
+                    {/* 5. MOCK Category Grid */}
+                    {cmsData.enable_section_categories !== false && (
+                      <div className="py-4 px-4 bg-white border-b space-y-2">
+                        <h3 className="font-bold text-center text-neutral-800 text-xs">
+                          {cmsData.categories_title || "Shop by Category"}
+                        </h3>
+                        <div className="grid grid-cols-3 gap-2">
+                          <div className="border rounded-xl p-2.5 text-center bg-neutral-50 font-bold text-[10px]">
+                            <span className="block text-lg">🍳</span>
+                            <span className="text-neutral-700 line-clamp-1">{cmsData.collection_1_title || "Kitchen"}</span>
+                          </div>
+                          <div className="border rounded-xl p-2.5 text-center bg-neutral-50 font-bold text-[10px]">
+                            <span className="block text-lg">📦</span>
+                            <span className="text-neutral-700 line-clamp-1">{cmsData.collection_2_title || "Storage"}</span>
+                          </div>
+                          <div className="border rounded-xl p-2.5 text-center bg-neutral-50 font-bold text-[10px]">
+                            <span className="block text-lg">🧹</span>
+                            <span className="text-neutral-700 line-clamp-1">{cmsData.collection_3_title || "Cleaning"}</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
-                {/* 8. MOCK CTA Segment */}
-                {cmsData.enable_section_cta !== false && (
-                  <div
-                    style={{
-                      backgroundImage: `url(${cmsData.cta_image || "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=800&q=80"})`,
-                      backgroundSize: "cover",
-                      backgroundPosition: "center"
-                    }}
-                    className="h-32 relative flex items-center justify-center p-4 text-white border-b text-center"
-                  >
-                    <div className="absolute inset-0 bg-blue-900/60" />
-                    <div className="relative z-10 space-y-1.5 max-w-[90%]">
-                      <h4 className="font-black text-xs text-white">{cmsData.cta_title || "Upgrade Your Space"}</h4>
-                      <p className="text-[9px] text-neutral-200 line-clamp-2">{cmsData.cta_description || "Indian household organizers designed for elegance."}</p>
-                      <button style={{ backgroundColor: "#af040ce0", border: "1px solid #ffffff93" }} className="bg-white text-blue-950 font-bold text-[8px] px-2.5 py-1 rounded shadow">
-                        {cmsData.cta_button_text || "Buy Now"}
-                      </button>
-                    </div>
-                  </div>
-                )}
+                    {/* 6. MOCK Product Carousel (Trending) */}
+                    {cmsData.enable_section_trending !== false && (
+                      <div className="py-4 px-4 bg-neutral-50 border-b space-y-2.5">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-extrabold text-neutral-800 text-xs">{cmsData.trending_title || "Trending Now"}</h4>
+                          <span className="text-[9px] text-blue-600 font-bold">View all ({cmsData.trending_limit || 8})</span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2.5">
+                          <div className="bg-white border rounded-xl p-2 space-y-1">
+                            <div className="bg-neutral-100 rounded-lg aspect-square" />
+                            <p className="font-bold text-[10px] text-neutral-800 truncate">Premium Organizer</p>
+                            <p className="font-extrabold text-[10px] text-blue-600">₹499</p>
+                          </div>
+                          <div className="bg-white border rounded-xl p-2 space-y-1">
+                            <div className="bg-neutral-100 rounded-lg aspect-square" />
+                            <p className="font-bold text-[10px] text-neutral-800 truncate">Kitchen Container</p>
+                            <p className="font-extrabold text-[10px] text-blue-600">₹299</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
-                {/* 9. MOCK Newsletter */}
-                {cmsData.enable_section_newsletter !== false && (
-                  <div className="py-5 px-4 bg-neutral-100 border-b text-center space-y-2">
-                    <h4 className="font-extrabold text-xs text-neutral-800">{cmsData.newsletter_title || "Join the Newsletter"}</h4>
-                    <p className="text-[9px] text-neutral-500 max-w-[80%] mx-auto leading-relaxed">{cmsData.newsletter_subtitle || "Get 15% discount coupon on subscription"}</p>
-                    <div className="flex gap-1.5 justify-center max-w-[90%] mx-auto pt-1">
-                      <input
-                        type="email"
-                        disabled
-                        placeholder={cmsData.newsletter_placeholder || "Your email address"}
-                        className="bg-white border text-[9px] px-2 py-1 rounded flex-1 focus:outline-none"
-                      />
-                      <button style={{ backgroundColor: "#af040ce0", border: "1px solid #ffffff93" }} className="bg-white text-blue-950 font-bold text-[8px] px-3 py-1 rounded shadow">
-                        {cmsData.newsletter_cta_text || "Subscribe"}
-                      </button>
-                    </div>
-                  </div>
-                )}
+                    {/* 7. MOCK Promo Banner */}
+                    {cmsData.enable_section_promo !== false && (
+                      <div
+                        style={{
+                          backgroundImage: `url(${cmsData.promo_image || "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=800&q=80"})`,
+                          backgroundSize: "cover",
+                          backgroundPosition: "center"
+                        }}
+                        className="h-28 relative flex items-center p-4 text-white border-b"
+                      >
+                        <div className="absolute inset-0 bg-black/35" />
+                        <div className="relative z-10 space-y-1 max-w-[80%]">
+                          <h4 className="font-black text-xs">{cmsData.promo_title || "Summer Clearance"}</h4>
+                          <p className="text-[9px] text-neutral-200 line-clamp-1">{cmsData.promo_description || "Up to 50% discount on all organizers"}</p>
+                          <button style={{ backgroundColor: "#af040ce0", border: "1px solid #ffffff93" }} className="bg-white text-blue-950 font-bold text-[8px] px-2 py-1 rounded shadow mt-1">
+                            {cmsData.promo_cta_text || "Shop Clearance"}
+                          </button>
+                        </div>
+                      </div>
+                    )}
 
-                {/* Footer simulation */}
-                <div className="bg-neutral-900 text-neutral-500 text-center py-4 text-[8px] font-bold">
-                  © 2026 Tkraft.in • Made with Love
-                </div>
+                    {/* 8. MOCK CTA Segment */}
+                    {cmsData.enable_section_cta !== false && (
+                      <div
+                        style={{
+                          backgroundImage: `url(${cmsData.cta_image || "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=800&q=80"})`,
+                          backgroundSize: "cover",
+                          backgroundPosition: "center"
+                        }}
+                        className="h-32 relative flex items-center justify-center p-4 text-white border-b text-center"
+                      >
+                        <div className="absolute inset-0 bg-blue-900/60" />
+                        <div className="relative z-10 space-y-1.5 max-w-[90%]">
+                          <h4 className="font-black text-xs text-white">{cmsData.cta_title || "Upgrade Your Space"}</h4>
+                          <p className="text-[9px] text-neutral-200 line-clamp-2">{cmsData.cta_description || "Indian household organizers designed for elegance."}</p>
+                          <button style={{ backgroundColor: "#af040ce0", border: "1px solid #ffffff93" }} className="bg-white text-blue-950 font-bold text-[8px] px-2.5 py-1 rounded shadow">
+                            {cmsData.cta_button_text || "Buy Now"}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 9. MOCK Newsletter */}
+                    {cmsData.enable_section_newsletter !== false && (
+                      <div className="py-5 px-4 bg-neutral-100 border-b text-center space-y-2">
+                        <h4 className="font-extrabold text-xs text-neutral-800">{cmsData.newsletter_title || "Join the Newsletter"}</h4>
+                        <p className="text-[9px] text-neutral-500 max-w-[80%] mx-auto leading-relaxed">{cmsData.newsletter_subtitle || "Get 15% discount coupon on subscription"}</p>
+                        <div className="flex gap-1.5 justify-center max-w-[90%] mx-auto pt-1">
+                          <input
+                            type="email"
+                            disabled
+                            placeholder={cmsData.newsletter_placeholder || "Your email address"}
+                            className="bg-white border text-[9px] px-2 py-1 rounded flex-1 focus:outline-none"
+                          />
+                          <button style={{ backgroundColor: "#af040ce0", border: "1px solid #ffffff93" }} className="bg-white text-blue-950 font-bold text-[8px] px-3 py-1 rounded shadow">
+                            {cmsData.newsletter_cta_text || "Subscribe"}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Footer simulation */}
+                    <div className="bg-neutral-900 text-neutral-500 text-center py-4 text-[8px] font-bold">
+                      © 2026 Tkraft.in • Made with Love
+                    </div>
+                  </>
+                )}
 
               </div>
             </div>

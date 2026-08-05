@@ -4,10 +4,10 @@
 
 export const SITE_CONFIG = {
   name: "Tkraft",
-  tagline: "Home & Kitchen Products Online Deals",
+  tagline: "Drill-Free Home & Kitchen Storage Solutions",
   description:
-    "Shop premium home essentials, kitchen products, storage solutions, and personal care items at the best prices. Free shipping on orders above ₹499.",
-  url: process.env.NEXT_PUBLIC_SITE_URL || "https://www.tkraft.in",
+    "Tkraft is a premier Indian brand specializing in drill-free home and kitchen storage organizers, heavy-duty adhesive wall hooks, and space-saving essentials. Enjoy free shipping across India on orders above ₹499.",
+  url: process.env.NEXT_PUBLIC_SITE_URL || "https://tkraft.online",
   logo: "https://tkraft.in/wp-content/uploads/2025/12/Edited.png",
   ogImage: "/images/og-default.jpg",
   locale: "en_IN",
@@ -90,7 +90,7 @@ export const TRUST_BADGES = [
 
 export const FOOTER_LINKS = {
   help: [
-    { label: "Contact Us", href: "/contact" },
+    { label: "About Us", href: "/about" },
     { label: "FAQ", href: "/faq" },
     { label: "Shipping Info", href: "/shipping" },
     { label: "Returns & Refunds", href: "/returns" },

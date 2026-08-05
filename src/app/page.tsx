@@ -553,14 +553,106 @@ ${colorVars}
     }
   }
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": `${SITE_CONFIG.url}/#organization`,
+        "name": SITE_CONFIG.name,
+        "legalName": "Tkraft Home & Kitchen Essentials",
+        "url": SITE_CONFIG.url,
+        "logo": SITE_CONFIG.logo,
+        "description": SITE_CONFIG.description,
+        "address": {
+          "@type": "PostalAddress",
+          "addressCountry": "IN",
+        },
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "email": "support@tkraft.in",
+          "contactType": "customer service",
+          "availableLanguage": ["English", "Hindi"],
+        },
+        "sameAs": [
+          "https://www.instagram.com/tkraft.in",
+          "https://www.facebook.com/tkraft.in",
+          "https://www.youtube.com/@tkraftin",
+          "https://www.trustpilot.com/review/tkraft.online",
+          "https://www.amazon.in/stores/Tkraft/page/87C0D0E8-A979-4B52-87C7-93C0C46B1D28",
+        ],
+      },
+      {
+        "@type": "WebPage",
+        "@id": `${SITE_CONFIG.url}/#webpage`,
+        "url": SITE_CONFIG.url,
+        "name": `${SITE_CONFIG.name} – ${SITE_CONFIG.tagline}`,
+        "description": SITE_CONFIG.description,
+        "isPartOf": {
+          "@type": "WebSite",
+          "@id": `${SITE_CONFIG.url}/#website`,
+          "url": SITE_CONFIG.url,
+          "name": SITE_CONFIG.name,
+        },
+        "publisher": {
+          "@id": `${SITE_CONFIG.url}/#organization`,
+        },
+      },
+      {
+        "@type": "FAQPage",
+        "@id": `${SITE_CONFIG.url}/#faq`,
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is Tkraft drill-free home and kitchen organization?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Tkraft drill-free home and kitchen organization is defined as a storage system utilizing heavy-duty acrylic adhesive pads to mount shelves, racks, and hooks on tiles and smooth surfaces without power tools or wall damage.",
+            },
+          },
+          {
+            "@type": "Question",
+            "name": "How much weight can Tkraft adhesive wall hooks and storage racks hold?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Tkraft heavy-duty adhesive hooks and stainless steel racks are lab-tested to hold up to 15.4kg of static load per adhesive pad on smooth, non-porous surfaces like ceramic tiles, glass, and polished marble under ASTM D3654 test standards.",
+            },
+          },
+          {
+            "@type": "Question",
+            "name": "How to install Tkraft adhesive organizers without damaging walls?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "To install Tkraft adhesive organizers, clean and dry the surface thoroughly, press the adhesive pad firmly from the center outward to remove trapped air bubbles, wait 12 to 24 hours for full acrylic bonding, and hook the rack onto the pad.",
+            },
+          },
+          {
+            "@type": "Question",
+            "name": "Does Tkraft offer free shipping across India?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, Tkraft offers free express shipping across India on all orders above ₹499, with Cash on Delivery (COD) and 7-day hassle-free returns.",
+            },
+          },
+        ],
+      },
+    ],
+  };
+
   return (
     <>
-      {/* Campaign specific CSS variable override injected server-side to prevent Cumulative Layout Shifts (CLS) */}
+      {/* Server-Rendered JSON-LD Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
+      {/* Campaign specific CSS variable override */}
       {campaignCss && (
         <style 
           id="tkraft-campaign-tokens" 
           dangerouslySetInnerHTML={{ __html: campaignCss }} 
-          />
+        />
       )}
 
       {/* Dynamic Announcement Bar Ribbon */}
@@ -586,6 +678,7 @@ ${colorVars}
         </div>
       )}
 
+
       {/* Dynamically Render Layout Blocks */}
       {populatedSections && populatedSections.length > 0 ? (
         populatedSections.map((section) => (
@@ -602,6 +695,8 @@ ${colorVars}
           <p className="text-[hsl(var(--color-text-muted))]">No homepage layout sections configured.</p>
         </div>
       )}
+
+      
     </>
   );
 }
