@@ -27,24 +27,49 @@ function getAuthHeaders(): HeadersInit {
 }
 
 // ---- Generic Fetcher ----
+// ---- Generic Fetcher with Retry Support for 503 / Network Errors ----
 async function wooFetch<T>(
   endpoint: string,
   options: RequestInit = {},
-  extractHeaders = false
+  extractHeaders = false,
+  retries = 2
 ): Promise<T & { _headers?: Headers }> {
   const url = `${API_CONFIG.woocommerceUrl}${endpoint}`;
+  let response: Response | null = null;
+  let lastError: any = null;
 
-  const response = await fetch(url, {
-    ...options,
-    headers: {
-      ...getAuthHeaders(),
-      ...(options.headers || {}),
-    },
-    next: {
-      revalidate: API_CONFIG.revalidateTime,
-      ...(options.next || {}),
-    },
-  });
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      response = await fetch(url, {
+        ...options,
+        headers: {
+          ...getAuthHeaders(),
+          ...(options.headers || {}),
+        },
+        next: {
+          revalidate: API_CONFIG.revalidateTime,
+          ...(options.next || {}),
+        },
+      });
+
+      // If 502, 503, 504 server overload or maintenance status, retry after backoff
+      if (response && [502, 503, 504].includes(response.status) && attempt < retries) {
+        await new Promise((res) => setTimeout(res, 350 * (attempt + 1)));
+        continue;
+      }
+
+      break;
+    } catch (err) {
+      lastError = err;
+      if (attempt < retries) {
+        await new Promise((res) => setTimeout(res, 350 * (attempt + 1)));
+      }
+    }
+  }
+
+  if (!response) {
+    throw new Error(lastError?.message || `WooCommerce API network failure: ${url}`);
+  }
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));
@@ -97,82 +122,86 @@ export async function getProducts(params?: {
   stockStatus?: string;
   include?: number[];
 }): Promise<PaginatedResponse<WooProduct>> {
-  const {
-    page = 1,
-    perPage = PRODUCTS_PER_PAGE,
-    category,
-    search,
-    sortBy = "default",
-    featured,
-    onSale,
-    minPrice,
-    maxPrice,
-    stockStatus,
-    include,
-  } = params || {};
+  const page = params?.page || 1;
+  try {
+    const {
+      perPage = PRODUCTS_PER_PAGE,
+      category,
+      search,
+      sortBy = "default",
+      featured,
+      onSale,
+      minPrice,
+      maxPrice,
+      stockStatus,
+      include,
+    } = params || {};
 
-  let endpoint = `/products?page=${page}&per_page=${perPage}&status=publish`;
-  endpoint += getSortParams(sortBy);
+    let endpoint = `/products?page=${page}&per_page=${perPage}&status=publish`;
+    endpoint += getSortParams(sortBy);
 
-  if (category) {
-    if (isNaN(Number(category))) {
-      const catObj = await getCategoryBySlug(category);
-      if (catObj) {
-        endpoint += `&category=${catObj.id}`;
+    if (category) {
+      if (isNaN(Number(category))) {
+        const catObj = await getCategoryBySlug(category);
+        if (catObj) {
+          endpoint += `&category=${catObj.id}`;
+        } else {
+          return {
+            data: [],
+            total: 0,
+            totalPages: 0,
+            currentPage: page,
+          };
+        }
       } else {
-        return {
-          data: [],
-          total: 0,
-          totalPages: 0,
-          currentPage: page,
-        };
+        endpoint += `&category=${category}`;
       }
-    } else {
-      endpoint += `&category=${category}`;
     }
+    if (search) endpoint += `&search=${encodeURIComponent(search)}`;
+    if (featured) endpoint += `&featured=true`;
+    if (onSale) endpoint += `&on_sale=true`;
+    if (minPrice) endpoint += `&min_price=${minPrice}`;
+    if (include && include.length > 0) endpoint += `&include=${include.join(",")}`;
+    if (maxPrice) endpoint += `&max_price=${maxPrice}`;
+    if (stockStatus) endpoint += `&stock_status=${stockStatus}`;
+
+    const resData = await wooFetch<WooProduct[]>(endpoint, {}, true);
+    const data: WooProduct[] = Array.isArray(resData) ? resData : [];
+    const total = parseInt(resData._headers?.get("X-WP-Total") || "0", 10);
+    const totalPages = parseInt(
+      resData._headers?.get("X-WP-TotalPages") || "0",
+      10
+    );
+
+    return {
+      data,
+      total,
+      totalPages,
+      currentPage: page,
+    };
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    return {
+      data: [],
+      total: 0,
+      totalPages: 0,
+      currentPage: page,
+    };
   }
-  if (search) endpoint += `&search=${encodeURIComponent(search)}`;
-  if (featured) endpoint += `&featured=true`;
-  if (onSale) endpoint += `&on_sale=true`;
-  if (minPrice) endpoint += `&min_price=${minPrice}`;
-  if (include && include.length > 0) endpoint += `&include=${include.join(",")}`;
-  if (maxPrice) endpoint += `&max_price=${maxPrice}`;
-  if (stockStatus) endpoint += `&stock_status=${stockStatus}`;
-
-  const response = await fetch(
-    `${API_CONFIG.woocommerceUrl}${endpoint}`,
-    {
-      headers: getAuthHeaders(),
-      next: { revalidate: API_CONFIG.revalidateTime },
-    }
-  );
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch products: ${response.status}`);
-  }
-
-  const data: WooProduct[] = await response.json();
-  const total = parseInt(response.headers.get("X-WP-Total") || "0", 10);
-  const totalPages = parseInt(
-    response.headers.get("X-WP-TotalPages") || "0",
-    10
-  );
-
-  return {
-    data,
-    total,
-    totalPages,
-    currentPage: page,
-  };
 }
 
 export async function getProductBySlug(
   slug: string
 ): Promise<WooProduct | null> {
-  const products = await wooFetch<WooProduct[]>(
-    `/products?slug=${slug}&status=publish`
-  );
-  return products[0] || null;
+  try {
+    const products = await wooFetch<WooProduct[]>(
+      `/products?slug=${slug}&status=publish`
+    );
+    return products[0] || null;
+  } catch (error) {
+    console.error(`Error fetching product by slug ${slug}:`, error);
+    return null;
+  }
 }
 
 export async function getProductById(id: number): Promise<WooProduct> {
@@ -202,35 +231,55 @@ export async function getRelatedProducts(
   productId: number,
   limit = 4
 ): Promise<WooProduct[]> {
-  const product = await getProductById(productId);
-  if (!product.related_ids.length) return [];
+  try {
+    const product = await getProductById(productId);
+    if (!product || !product.related_ids || !product.related_ids.length) return [];
 
-  const ids = product.related_ids.slice(0, limit).join(",");
-  return wooFetch<WooProduct[]>(
-    `/products?include=${ids}&status=publish`
-  );
+    const ids = product.related_ids.slice(0, limit).join(",");
+    return await wooFetch<WooProduct[]>(
+      `/products?include=${ids}&status=publish`
+    );
+  } catch (error) {
+    console.error(`Error fetching related products for ${productId}:`, error);
+    return [];
+  }
 }
 
 export async function getFeaturedProducts(
   limit = 8
 ): Promise<WooProduct[]> {
-  return wooFetch<WooProduct[]>(
-    `/products?featured=true&per_page=${limit}&status=publish`
-  );
+  try {
+    return await wooFetch<WooProduct[]>(
+      `/products?featured=true&per_page=${limit}&status=publish`
+    );
+  } catch (error) {
+    console.error("Error fetching featured products:", error);
+    return [];
+  }
 }
 
 export async function getOnSaleProducts(
   limit = 8
 ): Promise<WooProduct[]> {
-  return wooFetch<WooProduct[]>(
-    `/products?on_sale=true&per_page=${limit}&status=publish`
-  );
+  try {
+    return await wooFetch<WooProduct[]>(
+      `/products?on_sale=true&per_page=${limit}&status=publish`
+    );
+  } catch (error) {
+    console.error("Error fetching on-sale products:", error);
+    return [];
+  }
 }
 
 export async function getNewArrivals(limit = 8): Promise<WooProduct[]> {
-  return wooFetch<WooProduct[]>(
-    `/products?orderby=date&order=desc&per_page=${limit}&status=publish`
-  );
+  try {
+    return await wooFetch<WooProduct[]>(
+      `/products?orderby=date&order=desc&per_page=${limit}&status=publish`
+    );
+  } catch (error) {
+    console.error("Error fetching new arrivals:", error);
+    return [];
+  }
 }
 
 // ============================================

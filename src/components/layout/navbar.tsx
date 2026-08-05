@@ -72,6 +72,7 @@ export function Navbar() {
                 </select>
               </div>
             )}
+            <Link href="/about" className="hover:underline font-medium">About Us</Link>
             <Link href="/account" className="hover:underline">My Account</Link>
             <Link href="/faq" className="hover:underline">Help & FAQ</Link>
           </div>
@@ -118,6 +119,17 @@ export function Navbar() {
                   {cat.label}
                 </Link>
               ))}
+              <Link
+                href="/about"
+                className={cn(
+                  "px-3.5 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap",
+                  pathname === "/about"
+                    ? "bg-[hsl(217,70%,95%)] text-[hsl(var(--color-accent))]"
+                    : "text-[hsl(215,16%,47%)] hover:text-[hsl(222,47%,11%)] hover:bg-[hsl(210,16%,96%)]"
+                )}
+              >
+                About Us
+              </Link>
             </nav>
 
             {/* Search Bar — Desktop */}

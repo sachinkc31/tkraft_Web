@@ -74,19 +74,39 @@ export function Footer() {
                 priority
               />
             </Link>
-            <p className="text-sm text-white/60 leading-relaxed mb-6">
-              Your trusted destination for premium home & kitchen essentials. Quality products at unbeatable prices, delivered to your doorstep.
+            <p className="text-sm text-white/60 leading-relaxed mb-4">
+              Tkraft is your premier destination for drill-free home and kitchen storage organizers, heavy-duty adhesive wall hooks, and space-saving essentials across India.
             </p>
+            <div className="flex flex-wrap items-center gap-2 mb-6">
+              <a
+                href="https://www.trustpilot.com/review/tkraft.online"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-emerald-400 hover:underline font-semibold bg-emerald-950/40 border border-emerald-800/40 px-2.5 py-1 rounded inline-flex items-center gap-1"
+              >
+                ★ Trustpilot Reviews
+              </a>
+              <a
+                href="https://www.amazon.in/stores/Tkraft/page/87C0D0E8-A979-4B52-87C7-93C0C46B1D28"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-amber-300 hover:underline font-semibold bg-amber-950/40 border border-amber-800/40 px-2.5 py-1 rounded inline-flex items-center gap-1"
+              >
+                Amazon Storefront
+              </a>
+            </div>
             <div className="flex items-center gap-3">
               {[
-                { icon: FacebookIcon, href: "#", label: "Facebook" },
-                { icon: InstagramIcon, href: "#", label: "Instagram" },
-                { icon: TwitterIcon, href: "#", label: "Twitter" },
-                { icon: YoutubeIcon, href: "#", label: "YouTube" },
+                { icon: FacebookIcon, href: "https://www.facebook.com/tkraft.in", label: "Facebook" },
+                { icon: InstagramIcon, href: "https://www.instagram.com/tkraft.in", label: "Instagram" },
+                { icon: TwitterIcon, href: "https://twitter.com/tkraftin", label: "Twitter" },
+                { icon: YoutubeIcon, href: "https://www.youtube.com/@tkraftin", label: "YouTube" },
               ].map(({ icon: Icon, href, label }) => (
                 <a
                   key={label}
                   href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   aria-label={label}
                   className="h-9 w-9 rounded-lg bg-white/10 flex items-center justify-center text-white/70 hover:bg-[hsl(27,96%,55%)] hover:text-white transition-colors"
                 >
