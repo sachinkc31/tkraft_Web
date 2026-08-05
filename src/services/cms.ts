@@ -32,7 +32,7 @@ export interface CampaignPreset {
 export const CAMPAIGN_PRESETS: Record<string, CampaignPreset> = {
   summer: {
     name: "Summer Sale",
-    promoText: "☀️ Summer Clearance: Cool deals on home & kitchen essentials! ☀️",
+    promoText: " Summer Clearance: Cool deals on home & kitchen essentials! ",
     colors: {
       primary: "hsl(24, 95%, 45%)", // Warm Orange
       accent: "hsl(45, 100%, 50%)",  // Yellow Gold
@@ -41,7 +41,7 @@ export const CAMPAIGN_PRESETS: Record<string, CampaignPreset> = {
   },
   monsoon: {
     name: "Monsoon Sale",
-    promoText: "🌧️ Monsoon Fresh: Smart storage & home organizing deals! 🌧️",
+    promoText: " Monsoon Fresh: Smart storage & home organizing deals! ",
     colors: {
       primary: "hsl(174, 90%, 30%)", // Deep Teal
       accent: "hsl(150, 80%, 40%)",  // Emerald Accent
@@ -50,7 +50,7 @@ export const CAMPAIGN_PRESETS: Record<string, CampaignPreset> = {
   },
   diwali: {
     name: "Diwali Sale",
-    promoText: "🪔 Festive Diwali Dhamaka: Bring prosperity home with gold class storage! 🪔",
+    promoText: " Festive Diwali Dhamaka: Bring prosperity home with gold class storage! ",
     colors: {
       primary: "hsl(12, 85%, 40%)",  // Deep Terracotta Red
       accent: "hsl(43, 90%, 50%)",   // Royal Gold
@@ -59,7 +59,7 @@ export const CAMPAIGN_PRESETS: Record<string, CampaignPreset> = {
   },
   blackfriday: {
     name: "Black Friday Sale",
-    promoText: "🛍️ Black Friday Sale: The lowest prices of the entire year! 🛍️",
+    promoText: " Black Friday Sale: The lowest prices of the entire year! ",
     colors: {
       primary: "hsl(0, 0%, 9%)",     // Jet Black
       accent: "hsl(0, 85%, 55%)",    // Neon Red
@@ -68,7 +68,7 @@ export const CAMPAIGN_PRESETS: Record<string, CampaignPreset> = {
   },
   christmas: {
     name: "Christmas Sale",
-    promoText: "❄️ Christmas Joy: Gift smart organizers and kitchen decors! 🎄",
+    promoText: "Christmas Joy: Gift smart organizers and kitchen decors! ",
     colors: {
       primary: "hsl(355, 80%, 40%)", // Holiday Red
       accent: "hsl(140, 70%, 30%)",  // Pine Green

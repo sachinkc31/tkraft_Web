@@ -105,16 +105,38 @@ export async function POST(request: NextRequest) {
         continue;
       }
 
-      // 2. Convert boolean false or empty strings to null for image/media fields to satisfy WordPress REST API schemas
-      if (
-        (key.includes("image") || key.includes("banner") || key.includes("logo") || key.includes("icon")) && 
-        (value === false || value === "")
-      ) {
-        sanitized[key] = null;
+      // 2. Resolve media fields (WordPress rejects full image/file objects or string URLs, expects integer ID or null)
+      const isMediaField = key.includes("image") || key.includes("banner") || key.includes("logo");
+      if (isMediaField) {
+        if (!value || value === false || value === "") {
+          sanitized[key] = null;
+          continue;
+        }
+
+        if (typeof value === "object" && !Array.isArray(value)) {
+          const anyVal = value as any;
+          const possibleId = anyVal.id !== undefined ? anyVal.id : anyVal.ID;
+          if (possibleId !== undefined && possibleId !== null && possibleId !== "") {
+            const numId = Number(possibleId);
+            if (!isNaN(numId) && numId > 0) {
+              sanitized[key] = numId;
+              continue;
+            }
+          }
+          sanitized[key] = null;
+          continue;
+        }
+
+        const numId = Number(value);
+        if (!isNaN(numId) && numId > 0 && Number.isInteger(numId)) {
+          sanitized[key] = numId;
+        } else {
+          sanitized[key] = null;
+        }
         continue;
       }
 
-      // 2. Resolve empty icon picker objects (e.g., { type: "", value: "" }) to prevent enum errors
+      // 3. Resolve empty icon picker objects (e.g., { type: "", value: "" }) to prevent enum errors
       if (
         key.includes("icon") && 
         value && 
@@ -127,19 +149,6 @@ export async function POST(request: NextRequest) {
           value: ""
         };
         continue;
-      }
-
-      // 3. Resolve media objects
-      if (value && typeof value === "object" && !Array.isArray(value)) {
-        const anyVal = value as any;
-        const possibleId = anyVal.id !== undefined ? anyVal.id : anyVal.ID;
-        if (possibleId !== undefined && possibleId !== null && possibleId !== "") {
-          const numId = Number(possibleId);
-          if (!isNaN(numId)) {
-            sanitized[key] = numId;
-            continue;
-          }
-        }
       }
 
       // 4. Convert primitive arrays (like category slugs/IDs) to comma-separated strings if the API expects a string/null type.

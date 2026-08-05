@@ -132,7 +132,10 @@ export function CheckoutClient() {
 
   useEffect(() => {
     setCountryCode(selectedCountry);
-  }, [selectedCountry, setCountryCode]);
+    if (selectedCountry !== "IN" && selectedShippingMethod === "pickup") {
+      setSelectedShippingMethod("standard");
+    }
+  }, [selectedCountry, selectedShippingMethod, setCountryCode]);
 
   const geoMultiplier = getPriceMultiplier(selectedCountry);
   const multipliedTotalPrice = totalPrice * geoMultiplier;
@@ -641,49 +644,55 @@ export function CheckoutClient() {
                   {
                     id: "pickup",
                     name: "Store Pickup",
-                    time: "Ready in 24 hours",
+                    time: selectedCountry === "IN" ? "Ready in 24 hours" : "Unavailable outside India",
                     cost: 0,
                     formattedCost: "FREE",
                     icon: "🏪",
                   },
-                ].map((method) => (
-                  <label
-                    key={method.id}
-                    className={cn(
-                      "flex flex-col justify-between p-4 rounded-xl border-2 cursor-pointer transition-all hover:border-[hsl(217,70%,60%)]",
-                      selectedShippingMethod === method.id
-                        ? "border-[hsl(var(--color-accent))] bg-[hsl(217,70%,97%)]"
-                        : "border-[hsl(214,13%,90%)] bg-white"
-                    )}
-                  >
-                    <div className="flex items-start gap-2.5">
-                      <input
-                        type="radio"
-                        name="shipping_method"
-                        value={method.id}
-                        checked={selectedShippingMethod === method.id}
-                        onChange={() => setSelectedShippingMethod(method.id as any)}
-                        className="mt-1 accent-[hsl(var(--color-accent))]"
-                      />
-                      <div>
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-base">{method.icon}</span>
-                          <span className="font-semibold text-[hsl(222,47%,11%)] text-sm">{method.name}</span>
+                ].map((method) => {
+                  const isDisabled = method.id === "pickup" && selectedCountry !== "IN";
+                  return (
+                    <label
+                      key={method.id}
+                      className={cn(
+                        "flex flex-col justify-between p-4 rounded-xl border-2 transition-all",
+                        isDisabled
+                          ? "opacity-50 cursor-not-allowed bg-neutral-50 border-neutral-200"
+                          : selectedShippingMethod === method.id
+                          ? "border-[hsl(var(--color-accent))] bg-[hsl(217,70%,97%)] cursor-pointer hover:border-[hsl(217,70%,60%)]"
+                          : "border-[hsl(214,13%,90%)] bg-white cursor-pointer hover:border-[hsl(217,70%,60%)]"
+                      )}
+                    >
+                      <div className="flex items-start gap-2.5">
+                        <input
+                          type="radio"
+                          name="shipping_method"
+                          value={method.id}
+                          disabled={isDisabled}
+                          checked={selectedShippingMethod === method.id}
+                          onChange={() => !isDisabled && setSelectedShippingMethod(method.id as any)}
+                          className="mt-1 accent-[hsl(var(--color-accent))]"
+                        />
+                        <div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-base">{method.icon}</span>
+                            <span className="font-semibold text-[hsl(222,47%,11%)] text-sm">{method.name}</span>
+                          </div>
+                          <p className="text-xs text-[hsl(215,16%,47%)] mt-1">{method.time}</p>
                         </div>
-                        <p className="text-xs text-[hsl(215,16%,47%)] mt-1">{method.time}</p>
                       </div>
-                    </div>
-                    <div className="mt-4 pt-3 border-t border-[hsl(214,13%,95%)] flex justify-between items-center">
-                      <span className="text-xs text-[hsl(215,16%,47%)]">Price:</span>
-                      <span className={cn(
-                        "text-sm font-bold",
-                        method.cost === 0 ? "text-[hsl(142,71%,45%)]" : "text-[hsl(222,47%,11%)]"
-                      )}>
-                        {method.formattedCost}
-                      </span>
-                    </div>
-                  </label>
-                ))}
+                      <div className="mt-4 pt-3 border-t border-[hsl(214,13%,95%)] flex justify-between items-center">
+                        <span className="text-xs text-[hsl(215,16%,47%)]">Price:</span>
+                        <span className={cn(
+                          "text-sm font-bold",
+                          method.cost === 0 ? "text-[hsl(142,71%,45%)]" : "text-[hsl(222,47%,11%)]"
+                        )}>
+                          {method.formattedCost}
+                        </span>
+                      </div>
+                    </label>
+                  );
+                })}
               </div>
             </div>
 
