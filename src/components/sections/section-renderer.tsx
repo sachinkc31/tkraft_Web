@@ -40,7 +40,7 @@ export function getThemeMotif(theme?: string): { prefix?: string; suffix?: strin
     case "summer":
       return { prefix: "☀️", suffix: "☀️", classNames: "border-amber-200/50 bg-gradient-to-b from-amber-50/10 to-transparent" };
     case "monsoon":
-      return { prefix: "🌧️", suffix: "🌧️", classNames: "border-teal-200/50 bg-gradient-to-b from-teal-50/10 to-transparent" };
+      return { prefix: "", suffix: "", classNames: "border-teal-200/50 bg-gradient-to-b from-teal-50/10 to-transparent" };
     case "diwali":
       return { prefix: "🪔", suffix: "🪔", classNames: "border-yellow-600/30 bg-gradient-to-b from-yellow-50/10 to-transparent" };
     case "blackfriday":
@@ -241,7 +241,7 @@ function HeroBannerBlock({ data, theme }: { data: any; theme?: string }) {
   const slideTheme = slides[current].theme || theme;
   let tagText = "✨ Featured Offer";
   if (slideTheme === "summer") tagText = "☀️ Summer Special";
-  else if (slideTheme === "monsoon") tagText = "🌧️ Monsoon Special";
+  else if (slideTheme === "monsoon") tagText = " Monsoon Special";
   else if (slideTheme === "diwali") tagText = "🪔 Diwali Dhamaka";
   else if (slideTheme === "christmas") tagText = "❄️ Christmas Joy";
   else if (slideTheme === "blackfriday") tagText = "⚡ Black Friday Deals";
