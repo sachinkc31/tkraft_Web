@@ -10,6 +10,7 @@ import { ProductCard, ProductCardSkeleton } from "@/components/ui/product-card";
 import { Button } from "@/components/ui/button";
 import { SORT_OPTIONS } from "@/lib/constants";
 import { formatPrice, cn } from "@/lib/utils";
+import { getCategoryResource } from "@/lib/category-resources";
 import type { SortOption, WooCategory, WooProduct, PaginatedResponse } from "@/types";
 
 interface Props {
@@ -421,6 +422,138 @@ export function CategoryClient({ category, initialProducts }: Props) {
             )}
           </div>
         </div>
+
+        {/* ---- CATEGORY RESOURCE HUB & BUYER GUIDE SECTION ---- */}
+        {(() => {
+          const resource = getCategoryResource(category.slug);
+          return (
+            <div className="mt-16 pt-12 border-t border-[hsl(214,13%,90%)] space-y-12">
+              {/* Resource Title & Direct Answer BLUF */}
+              <div className="bg-[hsl(210,20%,98%)] p-6 md:p-8 rounded-2xl border border-[hsl(214,13%,88%)] space-y-4">
+                <span className="text-xs font-bold uppercase tracking-widest text-[hsl(var(--color-accent))]">
+                  Category Resource & Buying Guide
+                </span>
+                <h2 className="text-2xl md:text-3xl font-display font-extrabold text-[hsl(222,47%,11%)]">
+                  {resource.title}
+                </h2>
+                <p className="text-sm text-[hsl(215,16%,47%)] leading-relaxed font-medium">
+                  {resource.subtitle}
+                </p>
+                <div className="pt-2 text-sm text-[hsl(222,47%,11%)] leading-relaxed space-y-3">
+                  <p><strong>Direct Summary:</strong> {resource.bluf}</p>
+                  <p className="text-xs text-[hsl(215,16%,47%)] bg-white p-3 rounded-xl border border-[hsl(214,13%,90%)]">
+                    <strong>Technical Definition:</strong> {resource.definition}
+                  </p>
+                </div>
+              </div>
+
+              {/* Buying Guide */}
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <h2 className="text-xl md:text-2xl font-bold text-[hsl(222,47%,11%)]">
+                    {resource.buyingGuide.heading}
+                  </h2>
+                  <p className="text-xs md:text-sm text-[hsl(215,16%,47%)] leading-relaxed">
+                    {resource.buyingGuide.intro}
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {resource.buyingGuide.factors.map((factor, idx) => (
+                    <div key={idx} className="p-5 rounded-xl bg-white border border-[hsl(214,13%,90%)] space-y-2">
+                      <h3 className="font-bold text-sm text-[hsl(222,47%,11%)]">{factor.title}</h3>
+                      <p className="text-xs text-[hsl(215,16%,47%)] leading-relaxed">{factor.text}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Product Benefits */}
+              <div className="space-y-6">
+                <h2 className="text-xl md:text-2xl font-bold text-[hsl(222,47%,11%)]">
+                  Key Benefits of TKraft {category.name} Solutions
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                  {resource.productBenefits.map((benefit, idx) => (
+                    <div key={idx} className="p-4 rounded-xl bg-white border border-[hsl(214,13%,90%)] space-y-1.5">
+                      <h3 className="font-bold text-sm text-[hsl(var(--color-accent))]">{benefit.title}</h3>
+                      <p className="text-xs text-[hsl(215,16%,47%)] leading-relaxed">{benefit.text}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Common Household Problems & Solutions */}
+              <div className="space-y-6">
+                <h2 className="text-xl md:text-2xl font-bold text-[hsl(222,47%,11%)]">
+                  Common Household Challenges & TKraft Solutions
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {resource.commonProblems.map((prob, idx) => (
+                    <div key={idx} className="p-5 rounded-xl bg-white border border-[hsl(214,13%,90%)] space-y-2">
+                      <div className="flex items-start gap-2">
+                        <span className="text-red-500 font-bold text-xs uppercase tracking-wider">Problem:</span>
+                        <h3 className="font-bold text-xs text-[hsl(222,47%,11%)]">{prob.problem}</h3>
+                      </div>
+                      <div className="flex items-start gap-2 pt-1 border-t border-[hsl(214,13%,95%)]">
+                        <span className="text-emerald-600 font-bold text-xs uppercase tracking-wider">Solution:</span>
+                        <p className="text-xs text-[hsl(215,16%,47%)] leading-relaxed">{prob.solution}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Step-by-Step How-To Content */}
+              <div className="p-6 md:p-8 rounded-2xl bg-neutral-900 text-white space-y-6">
+                <h2 className="text-xl font-bold">{resource.howToContent.title}</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                  {resource.howToContent.steps.map((s) => (
+                    <div key={s.step} className="p-4 rounded-xl bg-white/10 space-y-2">
+                      <span className="h-7 w-7 rounded-full bg-[hsl(var(--color-accent))] text-white font-bold text-xs flex items-center justify-center">
+                        {s.step}
+                      </span>
+                      <h3 className="font-bold text-sm text-white">{s.title}</h3>
+                      <p className="text-xs text-neutral-300 leading-relaxed">{s.text}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Frequently Asked Questions */}
+              <div className="space-y-6">
+                <h2 className="text-xl md:text-2xl font-bold text-[hsl(222,47%,11%)]">
+                  Frequently Asked Questions ({category.name})
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {resource.faqs.map((faq, idx) => (
+                    <div key={idx} className="p-5 rounded-xl bg-white border border-[hsl(214,13%,90%)] space-y-2">
+                      <h3 className="font-bold text-sm text-[hsl(222,47%,11%)]">{faq.question}</h3>
+                      <p className="text-xs text-[hsl(215,16%,47%)] leading-relaxed">{faq.answer}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Internal Link Chips */}
+              <div className="pt-4 border-t border-[hsl(214,13%,90%)] space-y-3">
+                <span className="text-xs font-bold uppercase tracking-wider text-[hsl(215,16%,47%)]">
+                  Explore Related Categories & Guides
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {resource.relatedCategories.map((rel) => (
+                    <a
+                      key={rel.href}
+                      href={rel.href}
+                      className="px-3 py-1.5 rounded-lg bg-[hsl(210,20%,98%)] border border-[hsl(214,13%,88%)] text-xs font-semibold text-[hsl(222,47%,11%)] hover:bg-[hsl(var(--color-accent))] hover:text-white transition-colors"
+                    >
+                      → {rel.name}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       {/* ---- MOBILE FILTERS OVERLAY DRAWER ---- */}

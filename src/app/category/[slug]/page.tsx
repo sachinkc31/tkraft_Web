@@ -40,6 +40,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+import { getCategoryResource } from "@/lib/category-resources";
+import { CategorySchema, FAQSchema, HowToSchema, BreadcrumbSchema } from "@/schemas";
+
 export default async function CategoryPage({ params }: Props) {
   const { slug } = await params;
   if (slug === "storage-organization") {
@@ -57,37 +60,49 @@ export default async function CategoryPage({ params }: Props) {
   const productsResult = await getProducts({ category: String(category.id), perPage: 24 })
     .catch(() => ({ data: [], total: 0, totalPages: 0, currentPage: 1 }));
 
-  const breadcrumbSchema = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "itemListElement": [
-      {
-        "@type": "ListItem",
-        "position": 1,
-        "name": "Home",
-        "item": SITE_CONFIG.url,
-      },
-      {
-        "@type": "ListItem",
-        "position": 2,
-        "name": "Shop",
-        "item": `${SITE_CONFIG.url}/shop`,
-      },
-      {
-        "@type": "ListItem",
-        "position": 3,
-        "name": category.name,
-        "item": `${SITE_CONFIG.url}/category/${slug}`,
-      },
-    ],
-  };
+  const resource = getCategoryResource(slug);
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      <BreadcrumbSchema
+        data={{
+          items: [
+            { name: "Home", url: "/" },
+            { name: "Shop", url: "/shop" },
+            { name: category.name, url: `/category/${slug}` },
+          ],
+        }}
       />
+      <CategorySchema
+        collection={{
+          url: `/category/${slug}`,
+          name: category.name,
+          description: category.description || resource.bluf,
+          numberOfItems: productsResult.total,
+        }}
+        itemList={{
+          name: `${category.name} Products`,
+          itemListElement: productsResult.data.map((p, idx) => ({
+            position: idx + 1,
+            name: p.name,
+            url: `/products/${p.slug}`,
+            image: p.images[0]?.src,
+            price: p.price,
+          })),
+        }}
+      />
+      <FAQSchema data={{ items: resource.faqs }} />
+      <HowToSchema
+        data={{
+          name: resource.howToContent.title,
+          description: `Step-by-step guide for ${category.name}`,
+          step: resource.howToContent.steps.map((s) => ({
+            name: s.title,
+            text: s.text,
+          })),
+        }}
+      />
+
       <Suspense
         fallback={
           <div className="section">

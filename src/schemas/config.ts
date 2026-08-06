@@ -32,7 +32,7 @@ export const SEO_CONFIG = {
   ],
   contact: {
     email: "support@tkraft.in",
-    telephone: "+91-9876543210",
+    telephone: "+91-7972029553",
     contactType: "customer service",
     availableLanguage: ["English", "Hindi"],
   },

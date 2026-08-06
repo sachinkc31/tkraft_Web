@@ -100,10 +100,10 @@ export default function ContactPage() {
               Speak directly with our support specialist during office hours.
             </p>
             <a
-              href="tel:+919876543210"
+              href="tel:+917972029553"
               className="text-sm font-semibold text-[hsl(var(--color-primary))] underline inline-block"
             >
-              +91-9876543210
+              +91-7972029553
             </a>
           </div>
 
