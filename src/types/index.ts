@@ -31,6 +31,8 @@ export interface WooProduct {
   related_ids: number[];
   upsell_ids?: number[];
   cross_sell_ids?: number[];
+  weight?: string;
+  dimensions?: { length: string; width: string; height: string };
   date_created: string;
   date_modified: string;
   meta_data: WooMeta[];

@@ -57,6 +57,7 @@ export function ProductCard({ product, className, priority = false }: ProductCar
 
   const [mounted, setMounted] = useState(false);
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -89,16 +90,26 @@ export function ProductCard({ product, className, priority = false }: ProductCar
   return (
     <>
       <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, ease: "easeOut" }}
-      className={cn("group relative w-full", className)}
-    >
-      <div
-        className="relative block rounded-[var(--radius-lg)] overflow-hidden bg-[hsl(var(--color-surface))] border border-[hsl(var(--color-border))] shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-xl)] transition-all duration-300 card-lift"
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, ease: "easeOut" }}
+        className={cn("group relative w-full", className)}
       >
-        {/* Image Container */}
-        <div className="relative aspect-[4/3] overflow-hidden bg-[hsl(var(--color-surface-2))]">
+        <div
+          className="relative block rounded-[var(--radius-lg)] overflow-hidden bg-[hsl(var(--color-surface))] border border-[hsl(var(--color-border))] shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-xl)] transition-all duration-300 card-lift"
+        >
+          {/* Navigating Loader Overlay */}
+          {isNavigating && (
+            <div className="absolute inset-0 bg-white/75 dark:bg-black/75 backdrop-blur-xs z-30 flex flex-col items-center justify-center gap-2 transition-all">
+              <div className="h-6 w-6 rounded-full border-2 border-[hsl(var(--color-primary))] border-t-transparent animate-spin" />
+              <span className="text-[10px] font-bold text-[hsl(var(--color-primary))] uppercase tracking-wider">
+                Loading Details...
+              </span>
+            </div>
+          )}
+
+          {/* Image Container */}
+          <div className="relative aspect-[4/3] overflow-hidden bg-[hsl(var(--color-surface-2))]">
           {image?.src ? (
             <Image
               src={image.src}
@@ -182,7 +193,11 @@ export function ProductCard({ product, className, priority = false }: ProductCar
           )}
 
           <h3 className="font-semibold text-[hsl(var(--color-text))] text-sm leading-snug line-clamp-2 mb-1.5 group-hover:text-[hsl(var(--color-primary))] transition-colors">
-            <Link href={`/products/${product.slug}`} className="focus:outline-none">
+            <Link
+              href={`/products/${product.slug}`}
+              onClick={() => setIsNavigating(true)}
+              className="focus:outline-none"
+            >
               {/* Stretched Link to make the whole card clickable */}
               <span className="absolute inset-0 z-10" aria-hidden="true" />
               {product.name}

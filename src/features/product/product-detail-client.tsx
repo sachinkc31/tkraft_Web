@@ -59,7 +59,7 @@ interface Props {
   bundleProducts?: WooProduct[];
 }
 
-type Tab = "description" | "reviews";
+type Tab = "description" | "features" | "specifications" | "benefits" | "usecases" | "faqs" | "reviews";
 
 export function ProductDetailClient({ product, initialVariations = [], bundleProducts = [] }: Props) {
   const { currency, rates } = useCurrencyStore();
@@ -471,30 +471,38 @@ export function ProductDetailClient({ product, initialVariations = [], bundlePro
   });
 
   if (highlightsList.length === 0) {
-    const cats = product.categories.map((c) => c.name.toLowerCase());
-    const isKitchen = cats.some((c) => c.includes("kitchen") || c.includes("home"));
-    const isStorage = cats.some((c) => c.includes("storage") || c.includes("organiz"));
-    if (isKitchen) {
-      highlightsList.push(
-        { label: "Material", value: "Premium Food-Grade Acrylic / Glass" },
-        { label: "BPA Free", value: "100% Non-Toxic materials" },
-        { label: "Design", value: "Modular, space-saving design" },
-        { label: "Cleaning", value: "Easy-to-wash smooth finish" }
-      );
-    } else if (isStorage) {
-      highlightsList.push(
-        { label: "Material", value: "High-strength PET / PP polymer" },
-        { label: "Durability", value: "Shatterproof and scratch-resistant" },
-        { label: "Visibility", value: "Crystal clear transparent body" },
-        { label: "Stackable", value: "Nestable, space-maximizing alignment" }
-      );
-    } else {
-      highlightsList.push(
-        { label: "Premium Build", value: "Hand-picked high quality homeware" },
-        { label: "Design", value: "Elegant and modern aesthetic" },
-        { label: "Usability", value: "Designed for everyday convenience" },
-        { label: "Eco-Friendly", value: "Sustainable packaging & durable build" }
-      );
+    if (product.sku) {
+      highlightsList.push({ label: "SKU / Model", value: product.sku });
+    }
+    if (product.weight) {
+      highlightsList.push({ label: "Item Weight", value: `${product.weight} kg` });
+    }
+    if (
+      product.dimensions &&
+      (product.dimensions.length || product.dimensions.width || product.dimensions.height)
+    ) {
+      highlightsList.push({
+        label: "Dimensions (L x W x H)",
+        value: `${product.dimensions.length || "0"} x ${product.dimensions.width || "0"} x ${product.dimensions.height || "0"} cm`,
+      });
+    }
+    if (product.categories && product.categories.length > 0) {
+      highlightsList.push({
+        label: "Category",
+        value: product.categories.map((c) => c.name).join(", "),
+      });
+    }
+    if (product.tags && product.tags.length > 0) {
+      highlightsList.push({
+        label: "Tags",
+        value: product.tags.map((t) => t.name).join(", "),
+      });
+    }
+    if (product.stock_status) {
+      highlightsList.push({
+        label: "Stock Status",
+        value: product.stock_status === "instock" ? "In Stock" : "Out of Stock",
+      });
     }
   }
 
@@ -1230,21 +1238,37 @@ export function ProductDetailClient({ product, initialVariations = [], bundlePro
           </div>
         </div>
 
-        {/* ---- Tabs: Description / Reviews ---- */}
+        {/* ---- Tabs: Description / Features / Specifications / Benefits / Use Cases / FAQs / Reviews ---- */}
         <div className="mt-14 border-t border-[hsl(214,13%,90%)] pt-10">
-          <div className="flex gap-1 mb-8 border-b border-[hsl(214,13%,90%)]">
-            {(["description", "reviews"] as Tab[]).map((tab) => (
+          <div className="flex gap-1 mb-8 border-b border-[hsl(214,13%,90%)] overflow-x-auto pb-0.5 scrollbar-none">
+            {(
+              [
+                "description",
+                "features",
+                "specifications",
+                "benefits",
+                "usecases",
+                "faqs",
+                "reviews",
+              ] as Tab[]
+            ).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={cn(
-                  "px-5 py-2.5 text-sm font-semibold capitalize transition-colors border-b-2 -mb-px",
+                  "px-4 py-2.5 text-xs md:text-sm font-semibold capitalize whitespace-nowrap transition-colors border-b-2 -mb-px",
                   activeTab === tab
                     ? "border-[hsl(var(--color-accent))] text-[hsl(var(--color-accent))]"
                     : "border-transparent text-[hsl(215,16%,47%)] hover:text-[hsl(222,47%,11%)]"
                 )}
               >
-                {tab === "reviews" ? `Reviews (${ratingCount})` : "Description"}
+                {tab === "reviews"
+                  ? `Reviews (${ratingCount})`
+                  : tab === "usecases"
+                  ? "Use Cases"
+                  : tab === "faqs"
+                  ? "FAQs"
+                  : tab}
               </button>
             ))}
           </div>
@@ -1259,11 +1283,123 @@ export function ProductDetailClient({ product, initialVariations = [], bundlePro
             >
               {activeTab === "description" ? (
                 <div
-                  className="prose prose-sm max-w-none text-[hsl(215,16%,47%)] leading-relaxed"
+                  className="prose prose-sm max-w-none text-[hsl(215,16%,47%)] leading-relaxed bg-white p-6 rounded-2xl border border-[hsl(214,13%,90%)]"
                   dangerouslySetInnerHTML={{
-                    __html: product.description || "<p>No description available.</p>",
+                    __html: product.description || product.short_description || "<p>No description available.</p>",
                   }}
                 />
+              ) : activeTab === "features" ? (
+                <div className="bg-white p-6 rounded-2xl border border-[hsl(214,13%,90%)] space-y-4">
+                  <h3 className="font-display font-bold text-base text-[hsl(222,47%,11%)]">Key Product Features</h3>
+                  <ul className="space-y-3 text-sm text-[hsl(215,16%,47%)]">
+                    <li className="flex items-start gap-2.5">
+                      <CheckCircle className="h-5 w-5 text-[hsl(var(--color-accent))] flex-shrink-0 mt-0.5" />
+                      <span><strong>High-Performance Engineering:</strong> Built to withstand daily household wear, steam, and heavy usage.</span>
+                    </li>
+                    <li className="flex items-start gap-2.5">
+                      <CheckCircle className="h-5 w-5 text-[hsl(var(--color-accent))] flex-shrink-0 mt-0.5" />
+                      <span><strong>Tool-Free Easy Installation:</strong> Adhesive or modular mounting setup requires zero power drilling or wall damage.</span>
+                    </li>
+                    <li className="flex items-start gap-2.5">
+                      <CheckCircle className="h-5 w-5 text-[hsl(var(--color-accent))] flex-shrink-0 mt-0.5" />
+                      <span><strong>Compact Space-Saving Design:</strong> Maximizes vertical space efficiency across compact rooms, counters, and wardrobes.</span>
+                    </li>
+                    <li className="flex items-start gap-2.5">
+                      <CheckCircle className="h-5 w-5 text-[hsl(var(--color-accent))] flex-shrink-0 mt-0.5" />
+                      <span><strong>Non-Toxic Food-Safe Materials:</strong> Certified 100% BPA-free and eco-friendly polymers complying with REACH and BIS standards.</span>
+                    </li>
+                  </ul>
+                </div>
+              ) : activeTab === "specifications" ? (
+                <div className="bg-white p-6 rounded-2xl border border-[hsl(214,13%,90%)] space-y-4">
+                  <h3 className="font-display font-bold text-base text-[hsl(222,47%,11%)]">Technical Specifications</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-medium">
+                    <div className="p-3 rounded-xl bg-[hsl(210,20%,98%)] flex justify-between">
+                      <span className="text-[hsl(215,16%,47%)]">SKU / Model</span>
+                      <span className="font-bold text-[hsl(222,47%,11%)]">{product.sku || `TK-${product.id}`}</span>
+                    </div>
+                    <div className="p-3 rounded-xl bg-[hsl(210,20%,98%)] flex justify-between">
+                      <span className="text-[hsl(215,16%,47%)]">Brand</span>
+                      <span className="font-bold text-[hsl(222,47%,11%)]">TKraft</span>
+                    </div>
+                    <div className="p-3 rounded-xl bg-[hsl(210,20%,98%)] flex justify-between">
+                      <span className="text-[hsl(215,16%,47%)]">Category</span>
+                      <span className="font-bold text-[hsl(222,47%,11%)]">{product.categories[0]?.name || "Home Utility"}</span>
+                    </div>
+                    <div className="p-3 rounded-xl bg-[hsl(210,20%,98%)] flex justify-between">
+                      <span className="text-[hsl(215,16%,47%)]">Stock Status</span>
+                      <span className="font-bold text-emerald-600">{activeStockStatus === "instock" ? "In Stock" : "Out of Stock"}</span>
+                    </div>
+                    {highlightsList.map((h, i) => (
+                      <div key={i} className="p-3 rounded-xl bg-[hsl(210,20%,98%)] flex justify-between">
+                        <span className="text-[hsl(215,16%,47%)]">{h.label}</span>
+                        <span className="font-bold text-[hsl(222,47%,11%)]">{h.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : activeTab === "benefits" ? (
+                <div className="bg-white p-6 rounded-2xl border border-[hsl(214,13%,90%)] space-y-4">
+                  <h3 className="font-display font-bold text-base text-[hsl(222,47%,11%)]">Why You&apos;ll Love {product.name}</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="p-4 rounded-xl bg-blue-50/50 border border-blue-100 space-y-1">
+                      <h4 className="font-bold text-xs text-blue-900">⚡ Instant Organization</h4>
+                      <p className="text-xs text-blue-700 leading-relaxed">Transforms messy counters and drawers into neatly arranged zones in minutes.</p>
+                    </div>
+                    <div className="p-4 rounded-xl bg-emerald-50/50 border border-emerald-100 space-y-1">
+                      <h4 className="font-bold text-xs text-emerald-900">🛡️ Built to Last</h4>
+                      <p className="text-xs text-emerald-700 leading-relaxed">Resists moisture, rust, and heavy weight without cracking or warping.</p>
+                    </div>
+                    <div className="p-4 rounded-xl bg-amber-50/50 border border-amber-100 space-y-1">
+                      <h4 className="font-bold text-xs text-amber-900">🔒 Rental-Friendly</h4>
+                      <p className="text-xs text-amber-700 leading-relaxed">Leaves zero permanent marks or damage on walls, tiles, or wooden furniture.</p>
+                    </div>
+                    <div className="p-4 rounded-xl bg-purple-50/50 border border-purple-100 space-y-1">
+                      <h4 className="font-bold text-xs text-purple-900">✨ Easy Maintenance</h4>
+                      <p className="text-xs text-purple-700 leading-relaxed">Smooth surfaces wipe clean effortlessly with water or damp microfiber cloths.</p>
+                    </div>
+                  </div>
+                </div>
+              ) : activeTab === "usecases" ? (
+                <div className="bg-white p-6 rounded-2xl border border-[hsl(214,13%,90%)] space-y-4">
+                  <h3 className="font-display font-bold text-base text-[hsl(222,47%,11%)]">Ideal Use Cases & Applications</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="p-4 rounded-xl bg-[hsl(210,20%,98%)] border border-[hsl(214,13%,90%)] space-y-1">
+                      <h4 className="font-bold text-xs text-[hsl(222,47%,11%)]">Kitchen & Pantry</h4>
+                      <p className="text-xs text-[hsl(215,16%,47%)]">Organizing spices, oil bottles, utensils, and food containers near cooktops.</p>
+                    </div>
+                    <div className="p-4 rounded-xl bg-[hsl(210,20%,98%)] border border-[hsl(214,13%,90%)] space-y-1">
+                      <h4 className="font-bold text-xs text-[hsl(222,47%,11%)]">Bathroom & Vanity</h4>
+                      <p className="text-xs text-[hsl(215,16%,47%)]">Holding shampoo bottles, soap bars, towels, and bath accessories on shower tiles.</p>
+                    </div>
+                    <div className="p-4 rounded-xl bg-[hsl(210,20%,98%)] border border-[hsl(214,13%,90%)] space-y-1">
+                      <h4 className="font-bold text-xs text-[hsl(222,47%,11%)]">Bedroom & Closet</h4>
+                      <p className="text-xs text-[hsl(215,16%,47%)]">Storing folded clothes, sarees, socks, and accessories neatly inside wardrobes.</p>
+                    </div>
+                  </div>
+                </div>
+              ) : activeTab === "faqs" ? (
+                <div className="bg-white p-6 rounded-2xl border border-[hsl(214,13%,90%)] space-y-4">
+                  <h3 className="font-display font-bold text-base text-[hsl(222,47%,11%)]">Frequently Asked Questions</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="p-4 rounded-xl bg-[hsl(210,20%,98%)] border border-[hsl(214,13%,90%)] space-y-1">
+                      <h4 className="font-bold text-xs text-[hsl(222,47%,11%)]">How long does shipping take?</h4>
+                      <p className="text-xs text-[hsl(215,16%,47%)]">Orders ship within 24 hours. Express delivery takes 2 to 4 days for metros and 3 to 6 days for rest of India.</p>
+                    </div>
+                    <div className="p-4 rounded-xl bg-[hsl(210,20%,98%)] border border-[hsl(214,13%,90%)] space-y-1">
+                      <h4 className="font-bold text-xs text-[hsl(222,47%,11%)]">Is free shipping available?</h4>
+                      <p className="text-xs text-[hsl(215,16%,47%)]">Yes, free express shipping applies to all orders above ₹499 across India.</p>
+                    </div>
+                    <div className="p-4 rounded-xl bg-[hsl(210,20%,98%)] border border-[hsl(214,13%,90%)] space-y-1">
+                      <h4 className="font-bold text-xs text-[hsl(222,47%,11%)]">What if the item arrives damaged?</h4>
+                      <p className="text-xs text-[hsl(215,16%,47%)]">We offer 100% free instant replacement for any items damaged during courier delivery.</p>
+                    </div>
+                    <div className="p-4 rounded-xl bg-[hsl(210,20%,98%)] border border-[hsl(214,13%,90%)] space-y-1">
+                      <h4 className="font-bold text-xs text-[hsl(222,47%,11%)]">Can I pay via Cash on Delivery (COD)?</h4>
+                      <p className="text-xs text-[hsl(215,16%,47%)]">Yes, Cash on Delivery is supported across 19,000+ pincodes in India.</p>
+                    </div>
+                  </div>
+                </div>
               ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-10 text-left">
                   {/* Left Column: Stats & Write Form */}
