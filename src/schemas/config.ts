@@ -13,7 +13,9 @@ export const SEO_CONFIG = {
   defaultImage: "https://www.tkraft.online/images/og-default.jpg",
   currency: "INR",
   currencySymbol: "₹",
+  supportedCurrencies: ["INR", "USD", "EUR", "GBP", "AUD"],
   country: "IN",
+  supportedLocales: ["en-IN", "hi-IN", "en-US", "en-GB"],
   foundingDate: "2024-01-01",
   priceRange: "₹₹",
   paymentAccepted: [

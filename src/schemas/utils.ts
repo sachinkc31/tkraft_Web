@@ -26,10 +26,10 @@ export function buildAbsoluteUrl(pathOrUrl: string): string {
 /**
  * Formats numeric price into two-decimal string format required by Schema.org
  */
-export function formatPrice(price: number | string): string {
+export function formatPrice(price: number | string, rate = 1): string {
   const num = typeof price === "number" ? price : parseFloat(String(price));
   if (isNaN(num)) return "0.00";
-  return num.toFixed(2);
+  return (num * rate).toFixed(2);
 }
 
 /**
@@ -90,7 +90,8 @@ export function cleanSchemaObject<T = any>(obj: any): T {
 }
 
 /**
- * Combines multiple Schema entities into a single `@graph` JSON-LD structure
+ * Combines multiple Schema entities into a single `@graph` JSON-LD structure,
+ * resolving duplicate `@id` nodes and giving priority to enriched frontend schemas.
  */
 export function mergeSchema(...schemas: any[]): Record<string, any> {
   const flattened: any[] = [];
@@ -120,6 +121,16 @@ export function mergeSchema(...schemas: any[]): Record<string, any> {
     "@context": "https://schema.org",
     "@graph": flattened,
   };
+}
+
+/**
+ * Deduplicates schemas injected by WordPress plugins (Yoast SEO, Rank Math, etc.)
+ */
+export function deduplicateWpSchemas(
+  existingWpSchema: any,
+  frontendSchemas: any[]
+): Record<string, any> {
+  return mergeSchema(frontendSchemas, existingWpSchema);
 }
 
 /**
@@ -180,7 +191,7 @@ export function buildProductOffer(
       shippingRate: {
         "@type": "MonetaryAmount",
         value: formatPrice(shippingDetails?.shippingRate ?? 0),
-        currency: shippingDetails?.shippingCurrency || SEO_CONFIG.currency,
+        currency: shippingDetails?.shippingCurrency || offer.priceCurrency || SEO_CONFIG.currency,
       },
       shippingDestination: {
         "@type": "DefinedRegion",
@@ -242,5 +253,57 @@ export function buildAggregateRating(
     reviewCount: String(rating.reviewCount),
     bestRating: String(rating.bestRating || 5),
     worstRating: String(rating.worstRating || 1),
+  };
+}
+
+/**
+ * Hreflang and Canonical Link Builder for Multi-Language / Internationalization
+ */
+export function buildSeoMetaLinks(
+  path: string,
+  options?: {
+    currentPage?: number;
+    totalPages?: number;
+    supportedLocales?: string[];
+  }
+) {
+  const canonicalUrl = buildAbsoluteUrl(path);
+  const locales = options?.supportedLocales || SEO_CONFIG.supportedLocales;
+
+  const hreflangLinks = locales.map((locale) => ({
+    rel: "alternate",
+    hreflang: locale,
+    href: `${canonicalUrl}${locale === "en-IN" ? "" : `?lang=${locale}`}`,
+  }));
+
+  hreflangLinks.push({
+    rel: "alternate",
+    hreflang: "x-default",
+    href: canonicalUrl,
+  });
+
+  const paginationLinks: Array<{ rel: string; href: string }> = [];
+  if (options?.currentPage && options?.totalPages) {
+    const page = options.currentPage;
+    const total = options.totalPages;
+
+    if (page > 1) {
+      paginationLinks.push({
+        rel: "prev",
+        href: `${canonicalUrl}${page - 1 === 1 ? "" : `?page=${page - 1}`}`,
+      });
+    }
+    if (page < total) {
+      paginationLinks.push({
+        rel: "next",
+        href: `${canonicalUrl}?page=${page + 1}`,
+      });
+    }
+  }
+
+  return {
+    canonicalUrl,
+    hreflangLinks,
+    paginationLinks,
   };
 }

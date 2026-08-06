@@ -22,3 +22,4 @@ export * from "./HowToSchema";
 export * from "./ImageObjectSchema";
 export * from "./VideoObjectSchema";
 export * from "./BrandSchema";
+export * from "./mappers";

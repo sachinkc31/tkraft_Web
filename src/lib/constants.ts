@@ -91,15 +91,16 @@ export const TRUST_BADGES = [
 export const FOOTER_LINKS = {
   help: [
     { label: "About Us", href: "/about" },
-    { label: "FAQ", href: "/faq" },
-    { label: "Shipping Info", href: "/shipping" },
-    { label: "Returns & Refunds", href: "/returns" },
+    { label: "Contact Us", href: "/contact" },
+    { label: "Track Order", href: "/track-order" },
+    { label: "Help & FAQ", href: "/faq" },
+    { label: "HTML Sitemap", href: "/sitemap-page" },
   ],
   legal: [
+    { label: "Shipping Policy", href: "/shipping-policy" },
+    { label: "Refund & Return Policy", href: "/refund-policy" },
     { label: "Privacy Policy", href: "/privacy-policy" },
-    { label: "Terms of Service", href: "/terms" },
-    { label: "COD Policy", href: "/cod-policy" },
-    { label: "Refund Policy", href: "/refund-policy" },
+    { label: "Terms & Conditions", href: "/terms" },
   ],
   categories: NAVIGATION.categories,
 } as const;
