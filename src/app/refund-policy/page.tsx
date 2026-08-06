@@ -32,7 +32,7 @@ export default function RefundPolicyPage() {
     },
     {
       question: "What if I receive a damaged or wrong product?",
-      answer: "If you receive a damaged or incorrect product, contact us at support@tkraft.in within 48 hours with a photo/video for free instant replacement.",
+      answer: "If you receive a damaged or incorrect product, contact us at support@tkraft.online within 48 hours with a photo/video for free instant replacement.",
     },
   ];
 
@@ -105,7 +105,7 @@ export default function RefundPolicyPage() {
             <h2 className="text-xl font-bold text-[hsl(var(--color-text))]">2. How to Initiate a Return</h2>
             <p>Initiating a return is simple:</p>
             <ol className="list-decimal pl-5 space-y-2">
-              <li>Email us at <a href="mailto:support@tkraft.in" className="text-[hsl(var(--color-primary))] underline font-semibold">support@tkraft.in</a> or visit our <Link href="/contact" className="text-[hsl(var(--color-primary))] underline font-semibold">Contact Page</Link>.</li>
+              <li>Email us at <a href="mailto:support@tkraft.online" className="text-[hsl(var(--color-primary))] underline font-semibold">support@tkraft.online</a> or visit our <Link href="/contact" className="text-[hsl(var(--color-primary))] underline font-semibold">Contact Page</Link>.</li>
               <li>Provide your Order ID (e.g., #TK-10293) and reason for return.</li>
               <li>If damaged, attach 1 photo or video showing the defect.</li>
               <li>Our logistics courier partner will arrange a doorstep reverse pickup within 48 hours.</li>

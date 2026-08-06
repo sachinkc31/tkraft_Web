@@ -71,9 +71,9 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} ${outfit.variable}`} data-scroll-behavior="smooth">
       <head>
         {/* Core Web Vitals & CDN Preconnects */}
-        <link rel="preconnect" href="https://tkraft.in" />
-        <link rel="dns-prefetch" href="https://tkraft.in" />
-        <link rel="preconnect" href="https://www.tkraft.in" />
+        <link rel="preconnect" href="https://tkraft.online" />
+        <link rel="dns-prefetch" href="https://tkraft.online" />
+        <link rel="preconnect" href="https://www.tkraft.online" />
         <link rel="preconnect" href="https://i0.wp.com" />
         <link rel="dns-prefetch" href="https://i0.wp.com" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />

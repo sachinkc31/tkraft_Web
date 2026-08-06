@@ -7,11 +7,11 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "www.tkraft.in",
+        hostname: "www.tkraft.online",
       },
       {
         protocol: "https",
-        hostname: "tkraft.in",
+        hostname: "tkraft.online",
       },
       {
         protocol: "https",

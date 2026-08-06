@@ -44,7 +44,7 @@ export async function POST(req: Request) {
     const price = product.price ? `₹${product.price}` : "Check website for price";
     
     const mailOptions = {
-      from: `"Tkraft Updates" <${process.env.SMTP_USER || "noreply@tkraft.in"}>`,
+      from: `"Tkraft Updates" <${process.env.SMTP_USER || "noreply@tkraft.online"}>`,
       to: subscribers, // Bcc is better for privacy but for simplicity sending to all (or use BCC)
       bcc: subscribers,
       subject: `New Arrival: ${product.name}!`,

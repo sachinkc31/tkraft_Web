@@ -26,7 +26,7 @@ export default function ContactPage() {
   const contactFaqs = [
     {
       question: "How can I contact TKraft customer support?",
-      answer: "You can reach our customer support team via email at support@tkraft.in or by calling our hotline during business hours (Mon-Sat, 9 AM - 7 PM IST).",
+      answer: "You can reach our customer support team via email at support@tkraft.online or by calling our hotline during business hours (Mon-Sat, 9 AM - 7 PM IST).",
     },
     {
       question: "What is the response time for customer inquiries?",
@@ -84,10 +84,10 @@ export default function ContactPage() {
               Send us an email anytime and we&apos;ll respond within 2-4 hours.
             </p>
             <a
-              href="mailto:support@tkraft.in"
+              href="mailto:support@tkraft.online"
               className="text-sm font-semibold text-[hsl(var(--color-primary))] underline inline-block"
             >
-              support@tkraft.in
+              support@tkraft.online
             </a>
           </div>
 

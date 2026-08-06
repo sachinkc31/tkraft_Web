@@ -1042,7 +1042,7 @@ export default function AdminDashboardPage() {
 
                     {/* 2. MOCK Navbar */}
                     <div className="bg-white border-b px-4 py-3 flex items-center justify-between sticky top-0 z-20 shadow-sm">
-                      <span className="font-extrabold tracking-tight text-blue-600">Tkraft.in</span>
+                      <span className="font-extrabold tracking-tight text-blue-600">tkraft.online</span>
                       <div className="flex gap-2.5 text-[10px] font-bold text-neutral-500">
                         <span>Shop</span>
                         <span>Categories</span>
@@ -1209,7 +1209,7 @@ export default function AdminDashboardPage() {
 
                     {/* Footer simulation */}
                     <div className="bg-neutral-900 text-neutral-500 text-center py-4 text-[8px] font-bold">
-                      © 2026 Tkraft.in • Made with Love
+                      © 2026 tkraft.online • Made with Love
                     </div>
                   </>
                 )}

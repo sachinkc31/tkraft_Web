@@ -147,7 +147,7 @@ function LoginClientContent({ loginContent }: LoginClientProps) {
       
       const mockUser = {
         id: 10001,
-        email: `google_user@tkraft.in`,
+        email: `google_user@tkraft.online`,
         first_name: "Google",
         last_name: "Member",
         avatar_url: `https://api.dicebear.com/7.x/adventurer/svg?seed=google`,
@@ -161,7 +161,7 @@ function LoginClientContent({ loginContent }: LoginClientProps) {
           state: "Karnataka",
           postcode: "560001",
           country: "IN",
-          email: `google_user@tkraft.in`,
+          email: `google_user@tkraft.online`,
           phone: "9876543210",
         },
         shipping: {
@@ -236,7 +236,7 @@ function LoginClientContent({ loginContent }: LoginClientProps) {
       if (otp === "123456") {
         const mockUser = {
           id: 10003,
-          email: `${phone}@tkraft.in`,
+          email: `${phone}@tkraft.online`,
           first_name: "Guest",
           last_name: "User",
           avatar_url: `https://api.dicebear.com/7.x/adventurer/svg?seed=${phone}`,
@@ -250,7 +250,7 @@ function LoginClientContent({ loginContent }: LoginClientProps) {
             state: "",
             postcode: "",
             country: "IN",
-            email: `${phone}@tkraft.in`,
+            email: `${phone}@tkraft.online`,
             phone: phone,
           },
           shipping: {
@@ -320,7 +320,7 @@ function LoginClientContent({ loginContent }: LoginClientProps) {
       if (username === "admin" && password === "admin") {
         const mockUser = {
           id: 1,
-          email: "admin@tkraft.in",
+          email: "admin@tkraft.online",
           first_name: "Admin",
           last_name: "Tkraft",
           avatar_url: "https://api.dicebear.com/7.x/adventurer/svg?seed=admin",
@@ -334,7 +334,7 @@ function LoginClientContent({ loginContent }: LoginClientProps) {
             state: "Maharashtra",
             postcode: "400001",
             country: "IN",
-            email: "admin@tkraft.in",
+            email: "admin@tkraft.online",
             phone: "9999988888",
           },
           shipping: {

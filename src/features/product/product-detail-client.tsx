@@ -1023,7 +1023,7 @@ export function ProductDetailClient({ product, initialVariations = [], bundlePro
                 {
                   id: "returns",
                   title: "30-Day Hassle-Free Returns & Refunds",
-                  content: "We offer a hassle-free 30-day return policy. If you are not satisfied with the item, simply contact support@tkraft.in. We schedule a free reverse pickup and initiate a full refund to your original payment method once the item is inspected."
+                  content: "We offer a hassle-free 30-day return policy. If you are not satisfied with the item, simply contact support@tkraft.online. We schedule a free reverse pickup and initiate a full refund to your original payment method once the item is inspected."
                 },
                 {
                   id: "guarantee",

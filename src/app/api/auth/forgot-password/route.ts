@@ -29,8 +29,8 @@ export async function POST(request: NextRequest) {
     }
 
     // 1. Resolve WordPress base URL
-    const wooUrl = process.env.NEXT_PUBLIC_WOOCOMMERCE_URL || "https://tkraft.in/wp-json/wc/v3";
-    let wpBaseUrl = "https://tkraft.in";
+    const wooUrl = process.env.NEXT_PUBLIC_WOOCOMMERCE_URL || "https://tkraft.online/wp-json/wc/v3";
+    let wpBaseUrl = "https://tkraft.online";
     try {
       const parsed = new URL(wooUrl);
       wpBaseUrl = parsed.origin;

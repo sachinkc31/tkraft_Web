@@ -130,8 +130,8 @@
     },
     {
       "parameters": {
-        "fromEmail": "notify@tkraft.in",
-        "toEmail": "admin@tkraft.in",
+        "fromEmail": "notify@tkraft.online",
+        "toEmail": "admin@tkraft.online",
         "subject": "=Tkraft Daily Sales Performance Report - {{$json.reportDate}}",
         "html": "=<h2>Daily Sales Performance Dashboard</h2><p><strong>Report Date:</strong> {{$json.reportDate}}</p><table border='1' cellpadding='8' style='border-collapse: collapse; min-width: 300px;'><tr><th>Metric</th><th>Value</th></tr><tr><td>Total Revenue</td><td>₹{{$json.revenue}}</td></tr><tr><td>Orders Processed</td><td>{{$json.ordersCount}}</td></tr><tr><td>Average Order Value</td><td>₹{{$json.averageOrderValue}}</td></tr><tr><td>COD Share</td><td>{{$json.codCount}} orders (₹{{$json.codAmount}})</td></tr><tr><td>Refunded Orders</td><td>{{$json.refundsCount}} (₹{{$json.refundsAmount}})</td></tr><tr><td>Pending Orders</td><td>{{$json.pendingCount}}</td></tr></table><p><strong>Top Products:</strong> {{$json.topProducts}}</p>"
       },

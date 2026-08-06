@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
       const email = customerData.email;
       if (email) {
         // Query WooCommerce to see if a customer with this email already exists
-        const wooUrl = process.env.NEXT_PUBLIC_WOOCOMMERCE_URL || "https://tkraft.in/wp-json/wc/v3";
+        const wooUrl = process.env.NEXT_PUBLIC_WOOCOMMERCE_URL || "https://tkraft.online/wp-json/wc/v3";
         const key = process.env.WOOCOMMERCE_CONSUMER_KEY || "";
         const secret = process.env.WOOCOMMERCE_CONSUMER_SECRET || "";
         const auth = Buffer.from(`${key}:${secret}`).toString("base64");
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
       
       // If we didn't find them or update succeeded, fallback to create
       if (!updatedCustomer) {
-        const createEmail = email || `customer_${Date.now()}@tkraft.in`;
+        const createEmail = email || `customer_${Date.now()}@tkraft.online`;
         const createPayload = {
           email: createEmail,
           first_name: customerData.first_name || "Customer",

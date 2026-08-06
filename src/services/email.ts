@@ -9,7 +9,7 @@ const smtpPort = Number(process.env.SMTP_PORT) || 587;
 const smtpUser = process.env.SMTP_USER;
 const smtpPass = process.env.SMTP_PASS;
 const smtpSecure = process.env.SMTP_SECURE === "true";
-const smtpFrom = process.env.SMTP_FROM || '"Tkraft Store" <noreply@tkraft.in>';
+const smtpFrom = process.env.SMTP_FROM || '"Tkraft Store" <noreply@tkraft.online>';
 
 const transporter = smtpHost && smtpUser && smtpPass
   ? nodemailer.createTransport({
@@ -191,7 +191,7 @@ function generatePendingPaymentEmailHTML(order: any, paymentLink: string): strin
         </div>
         <div class="footer">
           &copy; ${new Date().getFullYear()} Tkraft. All rights reserved. <br>
-          For queries or assistance, contact us at <a href="mailto:support@tkraft.in">support@tkraft.in</a>.
+          For queries or assistance, contact us at <a href="mailto:support@tkraft.online">support@tkraft.online</a>.
         </div>
       </div>
     </body>
@@ -373,7 +373,7 @@ function generateNewsletterCouponEmailHTML(email: string, couponCode: string): s
           </div>
           
           <div class="cta-container">
-            <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.tkraft.in'}/shop" class="cta-button">Shop Tkraft Organizers</a>
+            <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.tkraft.online'}/shop" class="cta-button">Shop Tkraft Organizers</a>
           </div>
           
           <p style="font-size: 13px; color: #6b7280; line-height: 1.5;">
@@ -383,7 +383,7 @@ function generateNewsletterCouponEmailHTML(email: string, couponCode: string): s
         <div class="footer">
           &copy; ${new Date().getFullYear()} Tkraft. All rights reserved. <br>
           You received this email because you subscribed to Tkraft. <br>
-          For assistance, contact <a href="mailto:support@tkraft.in">support@tkraft.in</a>.
+          For assistance, contact <a href="mailto:support@tkraft.online">support@tkraft.online</a>.
         </div>
       </div>
     </body>

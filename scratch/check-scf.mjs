@@ -4,7 +4,7 @@ const encoded = Buffer.from(`${key}:${secret}`).toString("base64");
 import fs from 'fs';
 
 async function checkSCF() {
-  const url = 'https://tkraft.in/wp-json/wp/v2/pages?slug=homepage-content';
+  const url = 'https://tkraft.online/wp-json/wp/v2/pages?slug=homepage-content';
   console.log(`Fetching ${url}...`);
   try {
     const res = await fetch(url, {
