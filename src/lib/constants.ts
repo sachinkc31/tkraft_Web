@@ -8,7 +8,7 @@ export const SITE_CONFIG = {
   description:
     "Tkraft is a premier Indian brand specializing in drill-free home and kitchen storage organizers, heavy-duty adhesive wall hooks, and space-saving essentials. Enjoy free shipping across India on orders above ₹499.",
   url: process.env.NEXT_PUBLIC_SITE_URL || "https://tkraft.online",
-  logo: "https://tkraft.in/wp-content/uploads/2025/12/Edited.png",
+  logo: "https://tkraft.online/wp-content/uploads/2025/12/Edited.png",
   ogImage: "/images/og-default.jpg",
   locale: "en_IN",
   currency: "INR",
@@ -17,16 +17,16 @@ export const SITE_CONFIG = {
 
 export const API_CONFIG = {
   wordpressUrl:
-    process.env.NEXT_PUBLIC_WORDPRESS_URL || "https://tkraft.in",
+    process.env.NEXT_PUBLIC_WORDPRESS_URL || "https://tkraft.online",
   woocommerceUrl:
     process.env.NEXT_PUBLIC_WOOCOMMERCE_URL ||
-    "https://tkraft.in/wp-json/wc/v3",
+    "https://tkraft.online/wp-json/wc/v3",
   wpRestUrl:
     process.env.NEXT_PUBLIC_WP_REST_URL ||
-    "https://tkraft.in/wp-json/wp/v2",
+    "https://tkraft.online/wp-json/wp/v2",
   jwtAuthUrl:
     process.env.NEXT_PUBLIC_JWT_AUTH_URL ||
-    "https://tkraft.in/wp-json/jwt-auth/v1",
+    "https://tkraft.online/wp-json/jwt-auth/v1",
   revalidateTime: Number(process.env.NEXT_PUBLIC_REVALIDATE_TIME) || 3600,
 } as const;
 

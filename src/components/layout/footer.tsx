@@ -97,8 +97,8 @@ export function Footer() {
             </div>
             <div className="flex items-center gap-3">
               {[
-                { icon: FacebookIcon, href: "https://www.facebook.com/tkraft.in", label: "Facebook" },
-                { icon: InstagramIcon, href: "https://www.instagram.com/tkraft.in", label: "Instagram" },
+                { icon: FacebookIcon, href: "https://www.facebook.com/tkraft.online", label: "Facebook" },
+                { icon: InstagramIcon, href: "https://www.instagram.com/tkraft.online", label: "Instagram" },
                 { icon: TwitterIcon, href: "https://twitter.com/tkraftin", label: "Twitter" },
                 { icon: YoutubeIcon, href: "https://www.youtube.com/@tkraftin", label: "YouTube" },
               ].map(({ icon: Icon, href, label }) => (
@@ -174,8 +174,8 @@ export function Footer() {
             <ul className="space-y-3">
               <li className="flex items-start gap-2.5 text-sm text-white/70">
                 <Mail className="h-4 w-4 mt-0.5 flex-shrink-0 text-[hsl(27,96%,55%)]" />
-                <a href="mailto:support@tkraft.in" className="hover:text-white transition-colors">
-                  support@tkraft.in
+                <a href="mailto:support@tkraft.online" className="hover:text-white transition-colors">
+                  support@tkraft.online
                 </a>
               </li>
               <li className="flex items-start gap-2.5 text-sm text-white/70">

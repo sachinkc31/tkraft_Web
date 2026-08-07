@@ -55,13 +55,13 @@ export default function AboutPage() {
         },
         "contactPoint": {
           "@type": "ContactPoint",
-          "email": "support@tkraft.in",
+          "email": "support@tkraft.online",
           "contactType": "customer service",
           "availableLanguage": ["English", "Hindi"],
         },
         "sameAs": [
-          "https://www.instagram.com/tkraft.in",
-          "https://www.facebook.com/tkraft.in",
+          "https://www.instagram.com/tkraft.online",
+          "https://www.facebook.com/tkraft.online",
           "https://www.youtube.com/@tkraftin",
           "https://www.trustpilot.com/review/tkraft.online",
           "https://www.amazon.in/stores/Tkraft/page/87C0D0E8-A979-4B52-87C7-93C0C46B1D28",

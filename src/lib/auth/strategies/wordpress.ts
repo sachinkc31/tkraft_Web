@@ -10,7 +10,7 @@ export class WordPressAuthService implements IAuthService {
   }
 
   async loginWithCredentials(username: string, password: string): Promise<AuthSession> {
-    const jwtUrl = process.env.NEXT_PUBLIC_JWT_AUTH_URL || "https://tkraft.in/wp-json/jwt-auth/v1";
+    const jwtUrl = process.env.NEXT_PUBLIC_JWT_AUTH_URL || "https://tkraft.online/wp-json/jwt-auth/v1";
     
     // 1. Authenticate with WordPress JWT Auth
     const authResponse = await fetch(`${jwtUrl}/token`, {
@@ -191,7 +191,7 @@ export class WordPressAuthService implements IAuthService {
         (c: any) =>
           c.billing?.phone === phone ||
           c.username === `mobile_${phone}` ||
-          c.email === `${phone}@tkraft.in`
+          c.email === `${phone}@tkraft.online`
       );
     }
 
@@ -205,7 +205,7 @@ export class WordPressAuthService implements IAuthService {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          email: `${phone}@tkraft.in`,
+          email: `${phone}@tkraft.online`,
           username: `mobile_${phone}`,
           first_name: "Mobile",
           last_name: "User",

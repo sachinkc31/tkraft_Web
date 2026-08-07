@@ -32,7 +32,7 @@ export default function PrivacyPolicyPage() {
     },
     {
       question: "Can I request deletion of my data?",
-      answer: "Yes, you can request account and personal data deletion by contacting privacy@tkraft.in.",
+      answer: "Yes, you can request account and personal data deletion by contacting privacy@tkraft.online.",
     },
   ];
 

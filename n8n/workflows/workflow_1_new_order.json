@@ -96,7 +96,7 @@
     },
     {
       "parameters": {
-        "fromEmail": "notify@tkraft.in",
+        "fromEmail": "notify@tkraft.online",
         "toEmail": "={{$json.email}}",
         "subject": "=Order Confirmation #{{$json.orderId}} - Tkraft",
         "html": "=<h2>Thank you for your order, {{$json.customerName}}!</h2><p>We are processing order #{{$json.orderId}}.</p><p><strong>Items Ordered:</strong></p><pre>{{$json.itemsSummary}}</pre><p><strong>Total Amount:</strong> ₹{{$json.total}} ({{$json.paymentMethod}})</p><p>If you have any questions, feel free to reply to this email.</p>"

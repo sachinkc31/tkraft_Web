@@ -28,7 +28,7 @@ export default function TermsPage() {
     },
     {
       question: "Can an order be cancelled after placement?",
-      answer: "Orders can be cancelled before dispatch via your Account dashboard or by emailing support@tkraft.in.",
+      answer: "Orders can be cancelled before dispatch via your Account dashboard or by emailing support@tkraft.online.",
     },
     {
       question: "What law governs TKraft transactions?",

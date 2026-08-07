@@ -9,7 +9,7 @@ export const SEO_CONFIG = {
   tagline: "Drill-Free Home & Kitchen Storage Solutions",
   description:
     "TKraft is a premier online store in India specializing in drill-free kitchen organizers, home storage solutions, cleaning tools, bathroom accessories, and daily utility gadgets.",
-  logo: "https://tkraft.in/wp-content/uploads/2025/12/Edited.png",
+  logo: "https://tkraft.online/wp-content/uploads/2025/12/Edited.png",
   defaultImage: "https://www.tkraft.online/images/og-default.jpg",
   currency: "INR",
   currencySymbol: "₹",
@@ -31,14 +31,14 @@ export const SEO_CONFIG = {
     "https://schema.org/OnSitePickup",
   ],
   contact: {
-    email: "support@tkraft.in",
+    email: "support@tkraft.online",
     telephone: "+91-7972029553",
     contactType: "customer service",
     availableLanguage: ["English", "Hindi"],
   },
   socialLinks: [
-    "https://www.instagram.com/tkraft.in",
-    "https://www.facebook.com/tkraft.in",
+    "https://www.instagram.com/tkraft.online",
+    "https://www.facebook.com/tkraft.online",
     "https://www.youtube.com/@tkraftin",
     "https://www.trustpilot.com/review/tkraft.online",
     "https://www.amazon.in/stores/Tkraft/page/87C0D0E8-A979-4B52-87C7-93C0C46B1D28",

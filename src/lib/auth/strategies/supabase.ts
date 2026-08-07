@@ -116,7 +116,7 @@ export class SupabaseAuthService implements IAuthService {
         token: `mock_supabase_token_${Date.now()}`,
         user: {
           id: 9999,
-          email: username.includes("@") ? username : `${username}@tkraft.in`,
+          email: username.includes("@") ? username : `${username}@tkraft.online`,
           first_name: "Mock Supabase",
           last_name: "User",
           avatar_url: "",
@@ -130,7 +130,7 @@ export class SupabaseAuthService implements IAuthService {
             state: "MH",
             postcode: "400001",
             country: "IN",
-            email: username.includes("@") ? username : `${username}@tkraft.in`,
+            email: username.includes("@") ? username : `${username}@tkraft.online`,
             phone: "9999999999",
           },
           shipping: {
@@ -156,7 +156,7 @@ export class SupabaseAuthService implements IAuthService {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        email: username.includes("@") ? username : `${username}@tkraft.in`,
+        email: username.includes("@") ? username : `${username}@tkraft.online`,
         password: password,
       }),
     });
@@ -228,7 +228,7 @@ export class SupabaseAuthService implements IAuthService {
         token: `mock_supabase_otp_token_${Date.now()}`,
         user: {
           id: 9999,
-          email: `${phone}@tkraft.in`,
+          email: `${phone}@tkraft.online`,
           first_name: "Mock Supabase Mobile",
           last_name: "User",
           avatar_url: "",
@@ -242,7 +242,7 @@ export class SupabaseAuthService implements IAuthService {
             state: "",
             postcode: "",
             country: "IN",
-            email: `${phone}@tkraft.in`,
+            email: `${phone}@tkraft.online`,
             phone: phone,
           },
           shipping: {

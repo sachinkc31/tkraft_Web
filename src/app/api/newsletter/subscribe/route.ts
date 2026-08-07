@@ -77,7 +77,7 @@ export async function POST(req: Request) {
     }
 
     // 5. Query WooCommerce customers to check for pre-existing profiles with same email
-    const wooUrl = process.env.NEXT_PUBLIC_WOOCOMMERCE_URL || "https://tkraft.in/wp-json/wc/v3";
+    const wooUrl = process.env.NEXT_PUBLIC_WOOCOMMERCE_URL || "https://tkraft.online/wp-json/wc/v3";
     const key = process.env.WOOCOMMERCE_CONSUMER_KEY || "";
     const secret = process.env.WOOCOMMERCE_CONSUMER_SECRET || "";
     const auth = Buffer.from(`${key}:${secret}`).toString("base64");

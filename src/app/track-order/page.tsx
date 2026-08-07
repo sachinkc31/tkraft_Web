@@ -34,7 +34,7 @@ export default function TrackOrderPage() {
     },
     {
       question: "What if my tracking status hasn't updated?",
-      answer: "Courier partners update scans at major transit hubs. If your status has not updated for over 48 hours, contact support@tkraft.in.",
+      answer: "Courier partners update scans at major transit hubs. If your status has not updated for over 48 hours, contact support@tkraft.online.",
     },
   ];
 

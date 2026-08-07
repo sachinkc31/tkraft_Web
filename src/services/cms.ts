@@ -446,7 +446,7 @@ function getFetchOptions(): RequestInit {
 function cleanLink(urlStr?: string): string | undefined {
   if (!urlStr) return undefined;
   const str = String(urlStr).trim();
-  if (str.includes("tkraft.in")) {
+  if (str.includes("tkraft.online")) {
     try {
       const absoluteUrl = str.startsWith("http") ? str : `https://${str}`;
       const parsed = new URL(absoluteUrl);

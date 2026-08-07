@@ -5,7 +5,7 @@ const secret = "cs_1a61d6387ff6ab172ad9fcfdfea23ed742803bd7";
 const encoded = Buffer.from(`${key}:${secret}`).toString("base64");
 
 async function checkLayout() {
-  const url = 'https://tkraft.in/wp-json/wp/v2/pages?slug=homepage-layout';
+  const url = 'https://tkraft.online/wp-json/wp/v2/pages?slug=homepage-layout';
   console.log(`Fetching ${url}...`);
   try {
     const res = await fetch(url, {
