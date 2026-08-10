@@ -28,7 +28,7 @@ import type { WooProduct, WooCategory } from "@/types";
 import { ProductCarousel } from "@/components/carousel/product-carousel";
 import { CategoryGrid } from "@/features/home/category-grid";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { cn, formatPrice, getDiscountPercent } from "@/lib/utils";
 import { useUIStore } from "@/store";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -784,7 +784,11 @@ function FlashSaleBlock({ section, products, theme }: { section: HomepageSection
   const motif = getThemeMotif(theme);
   const autoplayInterval = (section.data?.scroll_interval_seconds ? Number(section.data.scroll_interval_seconds) * 1000 : 4000) || 4000;
 
-  if (!products || products.length === 0) return null;
+  const filteredDeals = (products || []).filter(
+    (p) => p.on_sale && getDiscountPercent(p.regular_price, p.sale_price) >= 60
+  );
+
+  if (filteredDeals.length === 0) return null;
 
   return (
     <section className={cn("py-8 md:py-10 bg-[hsl(var(--color-surface))] transition-all duration-300 border-b border-[hsl(var(--color-border))]", motif.classNames)}>
@@ -837,7 +841,7 @@ function FlashSaleBlock({ section, products, theme }: { section: HomepageSection
 
         <ProductCarousel
           title=""
-          products={products}
+          products={filteredDeals}
           viewAllUrl={section.viewAllUrl}
           variant={section.variant || "default"}
           autoplayInterval={autoplayInterval}

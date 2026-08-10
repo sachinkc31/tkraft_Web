@@ -7,6 +7,7 @@
 // ============================================
 
 import { API_CONFIG, PRODUCTS_PER_PAGE } from "@/lib/constants";
+import { getDiscountPercent } from "@/lib/utils";
 import type {
   WooProduct,
   WooCategory,
@@ -259,12 +260,20 @@ export async function getFeaturedProducts(
 }
 
 export async function getOnSaleProducts(
-  limit = 8
+  limit = 8,
+  minDiscountPercent = 60
 ): Promise<WooProduct[]> {
   try {
-    return await wooFetch<WooProduct[]>(
-      `/products?on_sale=true&per_page=${limit}&status=publish`
+    const products = await wooFetch<WooProduct[]>(
+      `/products?on_sale=true&per_page=20&status=publish`
     );
+    const filtered = products.filter(
+      (p) => getDiscountPercent(p.regular_price, p.sale_price) >= minDiscountPercent
+    );
+    if (filtered.length > 0) {
+      return filtered.slice(0, limit);
+    }
+    return products.slice(0, limit);
   } catch (error) {
     console.error("Error fetching on-sale products:", error);
     return [];

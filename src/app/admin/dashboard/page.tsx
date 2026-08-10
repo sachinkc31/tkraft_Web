@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { CAMPAIGN_PRESETS } from "@/services/cms";
 import { formatPrice, cn } from "@/lib/utils";
+import { AnalyticsDashboard } from "@/components/admin/analytics-dashboard";
 
 interface SummaryData {
   totalRevenue: number;
@@ -73,7 +74,7 @@ export default function AdminDashboardPage() {
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState("");
 
-  const [activeTab, setActiveTab] = useState<"analytics" | "cms">("analytics");
+  const [activeTab, setActiveTab] = useState<"analytics" | "funnel" | "cms">("analytics");
   const [cmsTarget, setCmsTarget] = useState<"homepage" | "login">("homepage");
   const [cmsData, setCmsData] = useState<any>(null);
   const [cmsLoading, setCmsLoading] = useState(false);
@@ -1235,11 +1236,11 @@ export default function AdminDashboardPage() {
             <span className="text-xs font-bold text-blue-400 uppercase tracking-widest block mb-1">
               Store Control Panel
             </span>
-            <div className="flex items-center gap-6 mt-1">
+            <div className="flex flex-wrap items-center gap-6 mt-1">
               <button
                 onClick={() => setActiveTab("analytics")}
                 className={cn(
-                  "text-3xl font-extrabold tracking-tight transition-colors pb-1 border-b-2",
+                  "text-2xl md:text-3xl font-extrabold tracking-tight transition-colors pb-1 border-b-2",
                   activeTab === "analytics"
                     ? "text-white border-blue-500"
                     : "text-[hsl(215,16%,57%)] hover:text-white border-transparent"
@@ -1248,9 +1249,20 @@ export default function AdminDashboardPage() {
                 Sales Dashboard
               </button>
               <button
+                onClick={() => setActiveTab("funnel")}
+                className={cn(
+                  "text-2xl md:text-3xl font-extrabold tracking-tight transition-colors pb-1 border-b-2",
+                  activeTab === "funnel"
+                    ? "text-white border-blue-500"
+                    : "text-[hsl(215,16%,57%)] hover:text-white border-transparent"
+                )}
+              >
+                Analytics & Funnels
+              </button>
+              <button
                 onClick={() => setActiveTab("cms")}
                 className={cn(
-                  "text-3xl font-extrabold tracking-tight transition-colors pb-1 border-b-2",
+                  "text-2xl md:text-3xl font-extrabold tracking-tight transition-colors pb-1 border-b-2",
                   activeTab === "cms"
                     ? "text-white border-blue-500"
                     : "text-[hsl(215,16%,57%)] hover:text-white border-transparent"
@@ -1305,6 +1317,8 @@ export default function AdminDashboardPage() {
         {/* Dashboard Content Container */}
         {activeTab === "cms" ? (
           renderCmsTab()
+        ) : activeTab === "funnel" ? (
+          <AnalyticsDashboard />
         ) : fetchError ? (
           <div className="p-6 bg-red-950/30 border border-red-500/20 rounded-2xl text-center space-y-3">
             <p className="text-red-400 font-semibold">{fetchError}</p>

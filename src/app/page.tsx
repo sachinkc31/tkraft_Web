@@ -13,6 +13,8 @@ import {
   getCategoriesByIds,
 } from "@/services/woocommerce";
 
+import { getDiscountPercent } from "@/lib/utils";
+
 export const metadata: Metadata = {
   title: `${SITE_CONFIG.name} – ${SITE_CONFIG.tagline}`,
   description: SITE_CONFIG.description,
@@ -41,7 +43,7 @@ export default async function HomePage() {
   const [fallbackCategories, fallbackNewArrivals, fallbackTrending, fallbackFeatured] = await Promise.all([
     getTopCategories().catch(() => []),
     getNewArrivals(8).catch(() => []),
-    getOnSaleProducts(8).catch(() => []),
+    getOnSaleProducts(8, 60).catch(() => []),
     getFeaturedProducts(8).catch(() => []),
   ]);
 
@@ -49,7 +51,7 @@ export default async function HomePage() {
     trending: fallbackTrending,
     bestsellers: fallbackNewArrivals,
     featured: fallbackFeatured,
-    flashSale: fallbackTrending.filter((p) => p.on_sale),
+    flashSale: fallbackTrending.filter((p) => p.on_sale && getDiscountPercent(p.regular_price, p.sale_price) >= 60),
   };
 
   // 3. Resolve dynamic sections on-demand (server-side data population)
