@@ -101,7 +101,12 @@ export interface HomepageSection {
     | "recentlyAdded"
     | "blogHighlights"
     | "customGrid"
-    | "gridBlock";
+    | "gridBlock"
+    | "shopByBudget"
+    | "shopByProblem"
+    | "beforeAfter"
+    | "bundleSave"
+    | "homeHacks";
   title?: string;
   subtitle?: string;
   viewAllUrl?: string;
@@ -302,13 +307,12 @@ export const DEFAULT_HOMEPAGE_LAYOUT: HomepageLayout = {
       type: "customerBenefits",
     },
     {
-      id: "section_grid",
-      type: "customGrid",
-      title: "Featured Highlights",
-      subtitle: "Elevate your spaces with premium organizers",
-      data: {
-        items: []
-      }
+      id: "section_budget",
+      type: "shopByBudget" as any,
+    },
+    {
+      id: "section_problem",
+      type: "shopByProblem" as any,
     },
     {
       id: "section_categories",
@@ -324,6 +328,14 @@ export const DEFAULT_HOMEPAGE_LAYOUT: HomepageLayout = {
       viewAllUrl: "/shop?sort=popularity",
       limit: 8,
       variant: "default",
+    },
+    {
+      id: "section_bundles",
+      type: "bundleSave" as any,
+    },
+    {
+      id: "section_before_after",
+      type: "beforeAfter" as any,
     },
     {
       id: "section_flash",
@@ -357,6 +369,10 @@ export const DEFAULT_HOMEPAGE_LAYOUT: HomepageLayout = {
           }
         ]
       }
+    },
+    {
+      id: "section_hacks",
+      type: "homeHacks" as any,
     },
     {
       id: "section_bestsellers",

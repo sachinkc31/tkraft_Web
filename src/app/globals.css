@@ -7,12 +7,12 @@
 
 :root {
   /* Brand Colors */
-  --color-primary: 7 95% 40%;           /* #c6050f red */
-  --color-primary-light: 7 95% 55%;
-  --color-primary-dark: 7 95% 28%;
-  --color-accent: 240 6% 9%;            /* #161619 charcoal */
-  --color-accent-light: 240 6% 20%;
-  --color-accent-dark: 240 6% 4%;
+  --color-primary: 25 100% 50%;          /* #FF6B00 Vibrant Orange */
+  --color-primary-light: 25 100% 60%;
+  --color-primary-dark: 25 100% 40%;
+  --color-accent: 222 47% 11%;           /* Deep Navy Accent */
+  --color-accent-light: 217 32% 17%;
+  --color-accent-dark: 222 47% 6%;
 
   /* Neutrals */
   --color-surface: 0 0% 100%;

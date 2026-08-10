@@ -81,3 +81,69 @@ export async function GET(request: Request) {
     );
   }
 }
+
+export async function POST(request: Request) {
+  try {
+    const formData = await request.formData();
+    const file = formData.get("file") as File | null;
+
+    if (!file) {
+      return NextResponse.json({ error: "No file provided for upload" }, { status: 400 });
+    }
+
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    const wpUser = process.env.WP_ADMIN_USERNAME?.trim().replace(/^["']|["']$/g, "");
+    const wpAppPass = process.env.WP_APPLICATION_PASSWORD?.trim().replace(/^["']|["']$/g, "");
+
+    let authHeader = "";
+    if (wpUser && wpAppPass) {
+      const cleanAppPass = wpAppPass.replace(/\s+/g, "");
+      authHeader = `Basic ${Buffer.from(`${wpUser}:${cleanAppPass}`).toString("base64")}`;
+    } else {
+      const key = process.env.WOOCOMMERCE_CONSUMER_KEY || "";
+      const secret = process.env.WOOCOMMERCE_CONSUMER_SECRET || "";
+      authHeader = `Basic ${Buffer.from(`${key}:${secret}`).toString("base64")}`;
+    }
+
+    const filename = encodeURIComponent(file.name || "upload.png");
+    const uploadRes = await fetch(`${API_CONFIG.wpRestUrl}/media`, {
+      method: "POST",
+      headers: {
+        Authorization: authHeader,
+        "Content-Disposition": `attachment; filename="${filename}"`,
+        "Content-Type": file.type || "image/jpeg",
+      },
+      body: buffer,
+    });
+
+    if (!uploadRes.ok) {
+      const errJson = await uploadRes.json().catch(() => ({}));
+      return NextResponse.json(
+        { error: errJson.message || `WordPress upload failed: ${uploadRes.statusText}` },
+        { status: uploadRes.status }
+      );
+    }
+
+    const item = await uploadRes.json();
+    return NextResponse.json({
+      success: true,
+      media: {
+        id: item.id,
+        title: item.title?.rendered || item.slug,
+        url: item.source_url,
+        mime_type: item.mime_type,
+        thumbnail: item.media_details?.sizes?.thumbnail?.source_url || item.source_url,
+        medium: item.media_details?.sizes?.medium?.source_url || item.source_url,
+      },
+    });
+
+  } catch (error: any) {
+    console.error("[API/admin/media] POST Upload Error:", error);
+    return NextResponse.json(
+      { error: "Failed to upload image to WordPress: " + (error.message || "") },
+      { status: 500 }
+    );
+  }
+}

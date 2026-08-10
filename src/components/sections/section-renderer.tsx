@@ -30,6 +30,11 @@ import { CategoryGrid } from "@/features/home/category-grid";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn, formatPrice, getDiscountPercent } from "@/lib/utils";
 import { useUIStore } from "@/store";
+import { ShopByBudgetSection } from "./shop-by-budget";
+import { ShopByProblemSection } from "./shop-by-problem";
+import { BeforeAfterSection } from "./before-after";
+import { BundleSaveSection } from "./bundle-save";
+import { HomeHacksSection } from "./home-hacks";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -106,6 +111,21 @@ export function SectionRenderer({ section, products, categories, activeCampaign 
     case "customGrid":
     case "gridBlock":
       return <CustomGridBlock section={section} theme={theme} />;
+
+    case "shopByBudget":
+      return <ShopByBudgetSection />;
+
+    case "shopByProblem":
+      return <ShopByProblemSection />;
+
+    case "beforeAfter":
+      return <BeforeAfterSection />;
+
+    case "bundleSave":
+      return <BundleSaveSection />;
+
+    case "homeHacks":
+      return <HomeHacksSection />;
 
     case "flashSale": {
       const targetProducts = section.fetchedProducts && section.fetchedProducts.length > 0

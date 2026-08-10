@@ -15,6 +15,7 @@ import {
   Layers,
   Percent,
   Sparkles,
+  Upload,
 } from "lucide-react";
 import { CAMPAIGN_PRESETS } from "@/services/cms";
 import { formatPrice, cn } from "@/lib/utils";
@@ -272,18 +273,51 @@ export default function AdminDashboardPage() {
     fetchMediaLibrary(1, "");
   };
 
+  const updateCmsField = (key: string, value: any) => {
+    setCmsData((prev: any) => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
+
   const selectMediaItem = (item: any) => {
     if (mediaPickerTargetKey) {
-      setCmsData((prev: any) => ({
-        ...prev,
-        [mediaPickerTargetKey]: {
-          id: item.id,
-          url: item.url,
-        }
-      }));
+      updateCmsField(mediaPickerTargetKey, item.url);
     }
     setMediaPickerOpen(false);
     setMediaPickerTargetKey(null);
+  };
+
+  const [isUploadingMedia, setIsUploadingMedia] = useState(false);
+
+  const handleUploadToWordPressAssets = async (file: File, targetKey?: string | null) => {
+    setIsUploadingMedia(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/admin/media", {
+        method: "POST",
+        body: formData,
+      });
+
+      const resData = await res.json();
+      if (res.ok && resData.success && resData.media?.url) {
+        const uploadedUrl = resData.media.url;
+        if (targetKey) {
+          updateCmsField(targetKey, uploadedUrl);
+        }
+        setMediaLibrary((prev: any[]) => [resData.media, ...prev]);
+        setCmsSuccess("Image uploaded directly to WordPress Assets!");
+        setTimeout(() => setCmsSuccess(""), 4000);
+      } else {
+        setCmsError(resData.error || "Failed to upload image to WordPress");
+      }
+    } catch (err: any) {
+      setCmsError("Failed to upload image: " + (err.message || ""));
+    } finally {
+      setIsUploadingMedia(false);
+    }
   };
 
   function handleRefresh() {
@@ -416,13 +450,6 @@ export default function AdminDashboardPage() {
 
     if (!cmsData) return null;
 
-    const updateCmsField = (key: string, value: any) => {
-      setCmsData((prev: any) => ({
-        ...prev,
-        [key]: value,
-      }));
-    };
-
     const toggleSection = (section: string) => {
       setExpandedSection(prev => prev === section ? "" : section);
     };
@@ -461,15 +488,28 @@ export default function AdminDashboardPage() {
                 placeholder="Image URL (e.g. https://...)"
                 className="flex-1 bg-[hsl(222,47%,11%)] border border-[hsl(217,32%,17%)] text-white px-4 py-2.5 rounded-xl focus:outline-none focus:border-blue-500 transition-colors text-sm"
               />
+              <label className="px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition-all cursor-pointer flex items-center gap-1 shrink-0">
+                <Upload className="h-4 w-4" />
+                <span>Upload</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleUploadToWordPressAssets(file, key);
+                  }}
+                />
+              </label>
               <button
                 type="button"
                 onClick={() => openMediaPicker(key)}
-                className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 hover:text-white text-white font-bold text-xs rounded-xl transition-all shadow-md shadow-blue-500/10 flex items-center gap-1 hover:scale-[1.02] active:scale-[0.98]"
+                className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 hover:text-white text-white font-bold text-xs rounded-xl transition-all shadow-md shadow-blue-500/10 flex items-center gap-1 hover:scale-[1.02] active:scale-[0.98] shrink-0"
               >
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
-                Browse...
+                Library...
               </button>
             </div>
           </div>
@@ -922,16 +962,61 @@ export default function AdminDashboardPage() {
                 </div>
               ))}
 
-              {/* Section 7: Section Visibility Settings */}
+              {/* Section 7: Shop By Budget & Problem */}
+              {editorSection("budget_problem", "Shop By Budget & Problem Sections", (
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              ), (
+                <div className="space-y-4">
+                  <h4 className="text-xs font-extrabold text-blue-400 uppercase tracking-widest">Shop By Budget Settings</h4>
+                  {textInput("Budget Section Title", "budget_title")}
+                  {textareaInput("Budget Section Subtitle", "budget_subtitle")}
+                  <hr className="border-[hsl(217,32%,17%)]/50" />
+                  <h4 className="text-xs font-extrabold text-blue-400 uppercase tracking-widest">Shop By Problem Settings</h4>
+                  {textInput("Problem Section Title", "problem_title")}
+                  {textareaInput("Problem Section Subtitle", "problem_subtitle")}
+                </div>
+              ))}
+
+              {/* Section 8: Bundles & Before/After */}
+              {editorSection("bundles_transformations", "Bundles & Before/After Makeovers", (
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
+              ), (
+                <div className="space-y-4">
+                  <h4 className="text-xs font-extrabold text-blue-400 uppercase tracking-widest">Bundle & Save Settings</h4>
+                  {textInput("Bundles Title", "bundles_title")}
+                  {textareaInput("Bundles Subtitle", "bundles_subtitle")}
+                  <hr className="border-[hsl(217,32%,17%)]/50" />
+                  <h4 className="text-xs font-extrabold text-blue-400 uppercase tracking-widest">Before & After Transformation Settings</h4>
+                  {textInput("Transformation Title", "before_after_title")}
+                  {textareaInput("Transformation Subtitle", "before_after_subtitle")}
+                </div>
+              ))}
+
+              {/* Section 9: Home Hacks & Guides */}
+              {editorSection("home_hacks", "Home Hacks & Inspiration Ideas", (
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+              ), (
+                <div className="space-y-4">
+                  {textInput("Home Hacks Section Title", "hacks_title")}
+                  {textareaInput("Home Hacks Subtitle", "hacks_subtitle")}
+                </div>
+              ))}
+
+              {/* Section 10: Section Visibility Settings */}
               {editorSection("visibility", "Section Visibility Controller", (
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
               ), (
                 <div className="space-y-1">
                   {toggleInput("Show Top Hero Carousel Banner", "enable_section_hero")}
                   {toggleInput("Show Customer Trust Benefits ribbon", "enable_section_benefits")}
+                  {toggleInput("Show Shop By Budget section", "enable_section_budget")}
+                  {toggleInput("Show Shop By Problem section", "enable_section_problem")}
                   {toggleInput("Show Category Grid section", "enable_section_categories")}
                   {toggleInput("Show Trending Products slider", "enable_section_trending")}
+                  {toggleInput("Show Bundle & Save Packs section", "enable_section_bundles")}
+                  {toggleInput("Show Before & After Transformation section", "enable_section_before_after")}
                   {toggleInput("Show Mid-page Promo Banner", "enable_section_promo")}
+                  {toggleInput("Show Home Hacks & Inspiration section", "enable_section_hacks")}
                   {toggleInput("Show Best Sellers grid", "enable_section_bestsellers")}
                   {toggleInput("Show Call-to-Action segmented block", "enable_section_cta")}
                   {toggleInput("Show Why Buy Highlights segment", "enable_section_highlights")}
@@ -1663,13 +1748,13 @@ export default function AdminDashboardPage() {
               </div>
 
               {/* Toolbar */}
-              <div className="px-6 py-3 bg-[hsl(222,47%,11%)] border-b border-[hsl(217,32%,17%)] flex gap-4 items-center">
+              <div className="px-6 py-3 bg-[hsl(222,47%,11%)] border-b border-[hsl(217,32%,17%)] flex gap-3 items-center">
                 <div className="relative flex-1">
                   <input
                     type="text"
                     value={mediaSearch}
                     onChange={(e) => setMediaSearch(e.target.value)}
-                    placeholder="Search media..."
+                    placeholder="Search media assets..."
                     className="w-full bg-[hsl(222,47%,6%)] border border-[hsl(217,32%,17%)] text-white pl-10 pr-4 py-2 rounded-xl focus:outline-none focus:border-blue-500 transition-colors text-sm"
                     onKeyDown={(e) => {
                       if (e.key === "Enter") fetchMediaLibrary(1, mediaSearch);
@@ -1688,6 +1773,25 @@ export default function AdminDashboardPage() {
                 >
                   Search
                 </button>
+
+                <label className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shrink-0 shadow-md shadow-emerald-600/20">
+                  <Upload className="h-4 w-4" />
+                  <span>{isUploadingMedia ? "Uploading..." : "Upload from Computer"}</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    disabled={isUploadingMedia}
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        handleUploadToWordPressAssets(file, mediaPickerTargetKey).then(() => {
+                          setMediaPickerOpen(false);
+                        });
+                      }
+                    }}
+                  />
+                </label>
               </div>
 
               {/* Grid Content */}
