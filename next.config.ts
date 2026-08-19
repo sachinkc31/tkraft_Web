@@ -7,6 +7,18 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
+        hostname: "tkraft.in",
+      },
+      {
+        protocol: "https",
+        hostname: "www.tkraft.in",
+      },
+      {
+        protocol: "https",
+        hostname: "*.tkraft.in",
+      },
+      {
+        protocol: "https",
         hostname: "www.tkraft.online",
       },
       {
@@ -15,15 +27,35 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "*.tkraft.online",
+      },
+      {
+        protocol: "https",
         hostname: "i0.wp.com",
       },
       {
         protocol: "https",
-        hostname: "**.wp.com",
+        hostname: "*.wp.com",
       },
       {
         protocol: "https",
         hostname: "images.unsplash.com",
+      },
+      {
+        protocol: "https",
+        hostname: "**.unsplash.com",
+      },
+      {
+        protocol: "https",
+        hostname: "*.hostinger.com",
+      },
+      {
+        protocol: "https",
+        hostname: "via.placeholder.com",
+      },
+      {
+        protocol: "http",
+        hostname: "localhost",
       },
     ],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Inter, Outfit } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/layout/navbar";
@@ -11,6 +12,7 @@ import { QueryProvider } from "@/lib/query-provider";
 import { SITE_CONFIG } from "@/lib/constants";
 import { ThemeProvider } from "@/components/layout/theme-provider";
 import { StoreHydration } from "@/components/layout/store-hydration";
+import { AnalyticsProvider } from "@/components/analytics/analytics-provider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -71,15 +73,18 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} ${outfit.variable}`} data-scroll-behavior="smooth">
       <head>
         {/* Core Web Vitals & CDN Preconnects */}
-        <link rel="preconnect" href="https://tkraft.online" />
-        <link rel="dns-prefetch" href="https://tkraft.online" />
-        <link rel="preconnect" href="https://www.tkraft.online" />
+        <link rel="preconnect" href="https://tkraft.in" />
+        <link rel="dns-prefetch" href="https://tkraft.in" />
+        <link rel="preconnect" href="https://www.tkraft.in" />
         <link rel="preconnect" href="https://i0.wp.com" />
         <link rel="dns-prefetch" href="https://i0.wp.com" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
       <body className="min-h-screen flex flex-col">
+        <Suspense fallback={null}>
+          <AnalyticsProvider />
+        </Suspense>
         <ThemeProvider />
         <StoreHydration />
         <QueryProvider>

@@ -15,9 +15,11 @@ import {
   Layers,
   Percent,
   Sparkles,
+  Upload,
 } from "lucide-react";
 import { CAMPAIGN_PRESETS } from "@/services/cms";
 import { formatPrice, cn } from "@/lib/utils";
+import { AnalyticsDashboard } from "@/components/admin/analytics-dashboard";
 
 interface SummaryData {
   totalRevenue: number;
@@ -73,7 +75,7 @@ export default function AdminDashboardPage() {
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState("");
 
-  const [activeTab, setActiveTab] = useState<"analytics" | "cms">("analytics");
+  const [activeTab, setActiveTab] = useState<"analytics" | "funnel" | "cms">("analytics");
   const [cmsTarget, setCmsTarget] = useState<"homepage" | "login">("homepage");
   const [cmsData, setCmsData] = useState<any>(null);
   const [cmsLoading, setCmsLoading] = useState(false);
@@ -233,11 +235,12 @@ export default function AdminDashboardPage() {
         }),
       });
 
+      const resData = await res.json();
+
       if (!res.ok) {
-        throw new Error("Failed to save CMS fields to WordPress");
+        throw new Error(resData.error || "Failed to save CMS fields to WordPress");
       }
 
-      const resData = await res.json();
       setCmsData({ ...(resData.acf || {}), _target: cmsTarget });
       setCmsSuccess(`${cmsTarget === "homepage" ? "Homepage" : "Login Page"} Settings saved successfully to WordPress!`);
       setTimeout(() => setCmsSuccess(""), 4000);
@@ -271,18 +274,51 @@ export default function AdminDashboardPage() {
     fetchMediaLibrary(1, "");
   };
 
+  const updateCmsField = (key: string, value: any) => {
+    setCmsData((prev: any) => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
+
   const selectMediaItem = (item: any) => {
     if (mediaPickerTargetKey) {
-      setCmsData((prev: any) => ({
-        ...prev,
-        [mediaPickerTargetKey]: {
-          id: item.id,
-          url: item.url,
-        }
-      }));
+      updateCmsField(mediaPickerTargetKey, item.url);
     }
     setMediaPickerOpen(false);
     setMediaPickerTargetKey(null);
+  };
+
+  const [isUploadingMedia, setIsUploadingMedia] = useState(false);
+
+  const handleUploadToWordPressAssets = async (file: File, targetKey?: string | null) => {
+    setIsUploadingMedia(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/admin/media", {
+        method: "POST",
+        body: formData,
+      });
+
+      const resData = await res.json();
+      if (res.ok && resData.success && resData.media?.url) {
+        const uploadedUrl = resData.media.url;
+        if (targetKey) {
+          updateCmsField(targetKey, uploadedUrl);
+        }
+        setMediaLibrary((prev: any[]) => [resData.media, ...prev]);
+        setCmsSuccess("Image uploaded directly to WordPress Assets!");
+        setTimeout(() => setCmsSuccess(""), 4000);
+      } else {
+        setCmsError(resData.error || "Failed to upload image to WordPress");
+      }
+    } catch (err: any) {
+      setCmsError("Failed to upload image: " + (err.message || ""));
+    } finally {
+      setIsUploadingMedia(false);
+    }
   };
 
   function handleRefresh() {
@@ -415,13 +451,6 @@ export default function AdminDashboardPage() {
 
     if (!cmsData) return null;
 
-    const updateCmsField = (key: string, value: any) => {
-      setCmsData((prev: any) => ({
-        ...prev,
-        [key]: value,
-      }));
-    };
-
     const toggleSection = (section: string) => {
       setExpandedSection(prev => prev === section ? "" : section);
     };
@@ -444,31 +473,54 @@ export default function AdminDashboardPage() {
       const val = cmsData[key];
       const url = typeof val === "string" ? val : (val && typeof val === "object" ? (val.url || "") : "");
       return (
-        <div className="space-y-1.5 text-left">
-          <label className="text-xs font-bold text-[hsl(215,16%,57%)] uppercase tracking-wider block">{label}:</label>
-          <div className="space-y-2">
-            {url && (
-              <div className="relative w-full h-28 rounded-xl overflow-hidden bg-neutral-950 border border-[hsl(217,32%,17%)]/60 flex items-center justify-center p-2 group">
-                <img src={url} alt={label} className="max-w-full max-h-full object-contain rounded-lg transition-transform duration-300 group-hover:scale-105" />
-              </div>
-            )}
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={url}
-                onChange={(e) => updateCmsField(key, e.target.value)}
-                placeholder="Image URL (e.g. https://...)"
-                className="flex-1 bg-[hsl(222,47%,11%)] border border-[hsl(217,32%,17%)] text-white px-4 py-2.5 rounded-xl focus:outline-none focus:border-blue-500 transition-colors text-sm"
-              />
+        <div className="space-y-2 text-left w-full">
+          <label className="text-xs font-bold text-[hsl(215,16%,57%)] uppercase tracking-wider block truncate">{label}:</label>
+          
+          {url && (
+            <div className="relative w-full h-32 rounded-xl overflow-hidden bg-neutral-950 border border-[hsl(217,32%,17%)] flex items-center justify-center p-2 group">
+              <img src={url} alt={label} className="max-w-full max-h-full object-contain rounded-lg transition-transform duration-300 group-hover:scale-105" />
+              <button
+                type="button"
+                onClick={() => updateCmsField(key, "")}
+                className="absolute top-2 right-2 p-1.5 rounded-full bg-red-600/90 hover:bg-red-600 text-white text-xs opacity-0 group-hover:opacity-100 transition-all shadow-md"
+                title="Remove Image"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+
+          <div className="space-y-2 w-full">
+            <input
+              type="text"
+              value={url}
+              onChange={(e) => updateCmsField(key, e.target.value)}
+              placeholder="Paste Image URL or select file..."
+              className="w-full bg-[hsl(222,47%,11%)] border border-[hsl(217,32%,17%)] text-white px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-blue-500 transition-colors text-xs placeholder:text-gray-500"
+            />
+            <div className="flex items-center gap-2 w-full">
+              <label className="flex-1 py-2 px-3 bg-emerald-600/90 hover:bg-emerald-600 active:scale-[0.98] text-white font-bold text-xs rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-sm border border-emerald-500/30">
+                <Upload className="h-3.5 w-3.5" />
+                <span>Upload File</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleUploadToWordPressAssets(file, key);
+                  }}
+                />
+              </label>
               <button
                 type="button"
                 onClick={() => openMediaPicker(key)}
-                className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 hover:text-white text-white font-bold text-xs rounded-xl transition-all shadow-md shadow-blue-500/10 flex items-center gap-1 hover:scale-[1.02] active:scale-[0.98]"
+                className="flex-1 py-2 px-3 bg-blue-600/90 hover:bg-blue-600 active:scale-[0.98] text-white font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm border border-blue-500/30"
               >
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
-                Browse...
+                <span>Media Library</span>
               </button>
             </div>
           </div>
@@ -793,18 +845,90 @@ export default function AdminDashboardPage() {
               ))}
 
               {/* Section 2: Hero Slide */}
-              {editorSection("hero", "Hero Carousel Banner", (
+              {editorSection("hero", "Hero Carousel Banner (Multi-Slide)", (
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
               ), (
-                <div className="space-y-4">
-                  {textInput("Hero headline Title", "hero_title")}
-                  {textareaInput("Hero subheadline Description", "hero_subtitle")}
-                  {imageInput("Hero Desktop Background Image", "hero_desktop_image")}
-                  {imageInput("Hero Mobile Background Image", "hero_mobile_image")}
-                  <div className="grid grid-cols-2 gap-4">
-                    {textInput("CTA Button Copy", "hero_cta_text")}
-                    {textInput("CTA Redirect link", "hero_cta_url")}
+                <div className="space-y-6">
+                  {numberInput("Rotation Interval (Seconds)", "hero_scroll_interval_seconds")}
+
+                  {/* Slide 1 */}
+                  <div className="p-4 rounded-xl bg-[hsl(217,32%,17%)]/40 border border-[hsl(217,32%,17%)] space-y-3">
+                    <h4 className="text-xs font-extrabold text-blue-400 uppercase tracking-widest flex items-center justify-between">
+                      <span>Hero Slide 1 (Primary)</span>
+                      <span className="text-[10px] text-gray-400 font-normal">Active</span>
+                    </h4>
+                    {textInput("Slide 1 Headline Title", "hero_title")}
+                    {textareaInput("Slide 1 Subheadline", "hero_subtitle")}
+                    <div className="grid grid-cols-2 gap-3">
+                      {imageInput("Slide 1 Desktop Image", "hero_desktop_image")}
+                      {imageInput("Slide 1 Mobile Image", "hero_mobile_image")}
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      {textInput("Slide 1 CTA Button Text", "hero_cta_text")}
+                      {textInput("Slide 1 CTA Link URL", "hero_cta_url")}
+                    </div>
                   </div>
+
+                  {/* Slide 2 */}
+                  <div className="p-4 rounded-xl bg-[hsl(217,32%,17%)]/40 border border-[hsl(217,32%,17%)] space-y-3">
+                    <h4 className="text-xs font-extrabold text-blue-400 uppercase tracking-widest">Hero Slide 2</h4>
+                    {textInput("Slide 2 Headline Title", "hero_slide_2_title")}
+                    {textareaInput("Slide 2 Subheadline", "hero_slide_2_subtitle")}
+                    <div className="grid grid-cols-2 gap-3">
+                      {imageInput("Slide 2 Desktop Image", "hero_slide_2_desktop_image")}
+                      {imageInput("Slide 2 Mobile Image", "hero_slide_2_mobile_image")}
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      {textInput("Slide 2 CTA Button Text", "hero_slide_2_cta_text")}
+                      {textInput("Slide 2 CTA Link URL", "hero_slide_2_cta_url")}
+                    </div>
+                  </div>
+
+                  {/* Slide 3 */}
+                  <div className="p-4 rounded-xl bg-[hsl(217,32%,17%)]/40 border border-[hsl(217,32%,17%)] space-y-3">
+                    <h4 className="text-xs font-extrabold text-blue-400 uppercase tracking-widest">Hero Slide 3</h4>
+                    {textInput("Slide 3 Headline Title", "hero_slide_3_title")}
+                    {textareaInput("Slide 3 Subheadline", "hero_slide_3_subtitle")}
+                    <div className="grid grid-cols-2 gap-3">
+                      {imageInput("Slide 3 Desktop Image", "hero_slide_3_desktop_image")}
+                      {imageInput("Slide 3 Mobile Image", "hero_slide_3_mobile_image")}
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      {textInput("Slide 3 CTA Button Text", "hero_slide_3_cta_text")}
+                      {textInput("Slide 3 CTA Link URL", "hero_slide_3_cta_url")}
+                    </div>
+                  </div>
+
+                  {/* Slide 4 */}
+                  <div className="p-4 rounded-xl bg-[hsl(217,32%,17%)]/40 border border-[hsl(217,32%,17%)] space-y-3">
+                    <h4 className="text-xs font-extrabold text-blue-400 uppercase tracking-widest">Hero Slide 4</h4>
+                    {textInput("Slide 4 Headline Title", "hero_slide_4_title")}
+                    {textareaInput("Slide 4 Subheadline", "hero_slide_4_subtitle")}
+                    <div className="grid grid-cols-2 gap-3">
+                      {imageInput("Slide 4 Desktop Image", "hero_slide_4_desktop_image")}
+                      {imageInput("Slide 4 Mobile Image", "hero_slide_4_mobile_image")}
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      {textInput("Slide 4 CTA Button Text", "hero_slide_4_cta_text")}
+                      {textInput("Slide 4 CTA Link URL", "hero_slide_4_cta_url")}
+                    </div>
+                  </div>
+
+                  {/* Slide 5 */}
+                  <div className="p-4 rounded-xl bg-[hsl(217,32%,17%)]/40 border border-[hsl(217,32%,17%)] space-y-3">
+                    <h4 className="text-xs font-extrabold text-blue-400 uppercase tracking-widest">Hero Slide 5</h4>
+                    {textInput("Slide 5 Headline Title", "hero_slide_5_title")}
+                    {textareaInput("Slide 5 Subheadline", "hero_slide_5_subtitle")}
+                    <div className="grid grid-cols-2 gap-3">
+                      {imageInput("Slide 5 Desktop Image", "hero_slide_5_desktop_image")}
+                      {imageInput("Slide 5 Mobile Image", "hero_slide_5_mobile_image")}
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      {textInput("Slide 5 CTA Button Text", "hero_slide_5_cta_text")}
+                      {textInput("Slide 5 CTA Link URL", "hero_slide_5_cta_url")}
+                    </div>
+                  </div>
+
                   <div className="grid grid-cols-2 gap-4">
                     {selectInput("Hero Text Alignment", "hero_alignment", [
                       { value: "left", label: "Left Aligned" },
@@ -818,7 +942,6 @@ export default function AdminDashboardPage() {
                       { value: "minimal", label: "Minimalist" },
                     ])}
                   </div>
-                  {numberInput("Rotation Interval (Seconds)", "hero_scroll_interval_seconds")}
                 </div>
               ))}
 
@@ -921,16 +1044,150 @@ export default function AdminDashboardPage() {
                 </div>
               ))}
 
-              {/* Section 7: Section Visibility Settings */}
+              {/* Section 7: Shop By Budget & Problem */}
+              {editorSection("budget_problem", "Shop By Budget & Problem Sections", (
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              ), (
+                <div className="space-y-6">
+                  <div className="space-y-4">
+                    <h4 className="text-xs font-extrabold text-blue-400 uppercase tracking-widest">Shop By Budget Settings</h4>
+                    {textInput("Budget Section Title", "budget_title")}
+                    {textareaInput("Budget Section Subtitle", "budget_subtitle")}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {imageInput("Tier Under ₹199 Card Image", "budget_199_image")}
+                      {imageInput("Tier Under ₹299 Card Image", "budget_299_image")}
+                      {imageInput("Tier Under ₹499 Card Image", "budget_499_image")}
+                      {imageInput("Tier Under ₹999 Card Image", "budget_999_image")}
+                    </div>
+                  </div>
+                  <hr className="border-[hsl(217,32%,17%)]/50" />
+                  <div className="space-y-4">
+                    <h4 className="text-xs font-extrabold text-blue-400 uppercase tracking-widest">Shop By Problem Card Settings</h4>
+                    {textInput("Problem Section Title", "problem_title")}
+                    {textareaInput("Problem Section Subtitle", "problem_subtitle")}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="p-3.5 rounded-xl bg-[hsl(217,32%,17%)]/30 border border-[hsl(217,32%,17%)] space-y-3">
+                        {textInput("Problem Card 1 Headline", "problem_1_title")}
+                        {imageInput("Problem Card 1 Image", "problem_1_image")}
+                      </div>
+                      <div className="p-3.5 rounded-xl bg-[hsl(217,32%,17%)]/30 border border-[hsl(217,32%,17%)] space-y-3">
+                        {textInput("Problem Card 2 Headline", "problem_2_title")}
+                        {imageInput("Problem Card 2 Image", "problem_2_image")}
+                      </div>
+                      <div className="p-3.5 rounded-xl bg-[hsl(217,32%,17%)]/30 border border-[hsl(217,32%,17%)] space-y-3">
+                        {textInput("Problem Card 3 Headline", "problem_3_title")}
+                        {imageInput("Problem Card 3 Image", "problem_3_image")}
+                      </div>
+                      <div className="p-3.5 rounded-xl bg-[hsl(217,32%,17%)]/30 border border-[hsl(217,32%,17%)] space-y-3">
+                        {textInput("Problem Card 4 Headline", "problem_4_title")}
+                        {imageInput("Problem Card 4 Image", "problem_4_image")}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {/* Section 8: Bundles & Before/After */}
+              {editorSection("bundles_transformations", "Bundles & Before/After Makeovers", (
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
+              ), (
+                <div className="space-y-6">
+                  <div className="space-y-4">
+                    <h4 className="text-xs font-extrabold text-blue-400 uppercase tracking-widest">Bundle & Save Settings</h4>
+                    {textInput("Bundles Title", "bundles_title")}
+                    {textareaInput("Bundles Subtitle", "bundles_subtitle")}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {imageInput("Bundle 1 Image", "bundle_1_image")}
+                      {imageInput("Bundle 2 Image", "bundle_2_image")}
+                      {imageInput("Bundle 3 Image", "bundle_3_image")}
+                    </div>
+                  </div>
+                  <hr className="border-[hsl(217,32%,17%)]/50" />
+                  <div className="space-y-4">
+                    <h4 className="text-xs font-extrabold text-blue-400 uppercase tracking-widest">Before & After Transformation Images</h4>
+                    {textInput("Transformation Title", "before_after_title")}
+                    {textareaInput("Transformation Subtitle", "before_after_subtitle")}
+                    <div className="space-y-4">
+                      <div className="p-3.5 rounded-xl bg-[hsl(217,32%,17%)]/30 border border-[hsl(217,32%,17%)] space-y-3">
+                        <h5 className="text-xs font-bold text-gray-300">Makeover 1</h5>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {imageInput("Before Image 1", "before_1_image")}
+                          {imageInput("After Image 1", "after_1_image")}
+                        </div>
+                      </div>
+                      <div className="p-3.5 rounded-xl bg-[hsl(217,32%,17%)]/30 border border-[hsl(217,32%,17%)] space-y-3">
+                        <h5 className="text-xs font-bold text-gray-300">Makeover 2</h5>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {imageInput("Before Image 2", "before_2_image")}
+                          {imageInput("After Image 2", "after_2_image")}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {/* Section 9: Home Hacks & Guides */}
+              {editorSection("home_hacks", "Home Hacks & Inspiration Ideas", (
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+              ), (
+                <div className="space-y-4">
+                  {textInput("Home Hacks Section Title", "hacks_title")}
+                  {textareaInput("Home Hacks Subtitle", "hacks_subtitle")}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {imageInput("Guide 1 Cover Image", "hack_1_image")}
+                    {imageInput("Guide 2 Cover Image", "hack_2_image")}
+                    {imageInput("Guide 3 Cover Image", "hack_3_image")}
+                  </div>
+                </div>
+              ))}
+
+              {/* Section 10: Flash Sale Deals */}
+              {editorSection("flash_sale", "Flash Sale Deals & Countdown", (
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+              ), (
+                <div className="space-y-4">
+                  {textInput("Flash Sale Section Title", "flash_sale_title")}
+                  {textInput("Flash Sale End Date (YYYY-MM-DD)", "flash_sale_end_date", "e.g. 2026-12-31")}
+                  {textInput("Flash Sale Category/Collection ID", "flash_sale_collection")}
+                </div>
+              ))}
+
+              {/* Section 11: Customer Reviews & Newsletter */}
+              {editorSection("social_proof", "Social Proof & Newsletter", (
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" /></svg>
+              ), (
+                <div className="space-y-4">
+                  <h4 className="text-xs font-extrabold text-blue-400 uppercase tracking-widest">Customer Testimonials Settings</h4>
+                  {textInput("Testimonials Section Title", "testimonials_title")}
+                  {textareaInput("Testimonials Section Subtitle", "testimonials_subtitle")}
+                  <hr className="border-[hsl(217,32%,17%)]/50" />
+                  <h4 className="text-xs font-extrabold text-blue-400 uppercase tracking-widest">Newsletter Lead Magnet Settings</h4>
+                  {textInput("Newsletter Headline", "newsletter_title")}
+                  {textareaInput("Newsletter Description Subtitle", "newsletter_subtitle")}
+                  <div className="grid grid-cols-2 gap-4">
+                    {textInput("Input Placeholder Text", "newsletter_placeholder")}
+                    {textInput("Button Copy Text", "newsletter_cta_text")}
+                  </div>
+                </div>
+              ))}
+
+              {/* Section 12: Section Visibility Settings */}
               {editorSection("visibility", "Section Visibility Controller", (
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
               ), (
                 <div className="space-y-1">
                   {toggleInput("Show Top Hero Carousel Banner", "enable_section_hero")}
                   {toggleInput("Show Customer Trust Benefits ribbon", "enable_section_benefits")}
+                  {toggleInput("Show Shop By Budget section", "enable_section_budget")}
+                  {toggleInput("Show Shop By Problem section", "enable_section_problem")}
                   {toggleInput("Show Category Grid section", "enable_section_categories")}
                   {toggleInput("Show Trending Products slider", "enable_section_trending")}
+                  {toggleInput("Show Bundle & Save Packs section", "enable_section_bundles")}
+                  {toggleInput("Show Before & After Transformation section", "enable_section_before_after")}
+                  {toggleInput("Show Flash Sale Deals section", "enable_section_flash")}
                   {toggleInput("Show Mid-page Promo Banner", "enable_section_promo")}
+                  {toggleInput("Show Home Hacks & Inspiration section", "enable_section_hacks")}
                   {toggleInput("Show Best Sellers grid", "enable_section_bestsellers")}
                   {toggleInput("Show Call-to-Action segmented block", "enable_section_cta")}
                   {toggleInput("Show Why Buy Highlights segment", "enable_section_highlights")}
@@ -1072,7 +1329,7 @@ export default function AdminDashboardPage() {
                           <p className="text-[10px] text-neutral-200 line-clamp-2 drop-shadow-sm font-medium">
                             {cmsData.hero_subtitle || "Smart kitchen & organizers for storage solutions."}
                           </p>
-                          <button style={{ backgroundColor: "#af040ce0", border: "1px solid #ffffff93" }} className="background[hsl(var(--color-primary))] bg-blue-600 hover:bg-blue-700 text-white font-bold text-[9px] px-3 py-1.5 rounded-lg shadow-md mt-1 transition-all">
+                          <button style={{ backgroundColor: "#FF6B00", border: "1px solid rgba(255,255,255,0.4)" }} className="text-white font-bold text-[9px] px-3 py-1.5 rounded-lg shadow-md mt-1 transition-all">
                             {cmsData.hero_cta_text || "Shop Now"}
                           </button>
                         </div>
@@ -1101,7 +1358,37 @@ export default function AdminDashboardPage() {
                       </div>
                     )}
 
-                    {/* 5. MOCK Category Grid */}
+                    {/* 5. MOCK Shop By Budget */}
+                    {cmsData.enable_section_budget !== false && (
+                      <div className="py-4 px-4 bg-white border-b space-y-2">
+                        <h4 className="font-extrabold text-neutral-800 text-xs text-center">{cmsData.budget_title || "Shop By Budget"}</h4>
+                        <div className="grid grid-cols-4 gap-1.5 text-center">
+                          <div className="bg-orange-50 border border-orange-200 rounded-lg p-1.5 font-bold text-[9px] text-orange-700">₹199</div>
+                          <div className="bg-orange-50 border border-orange-200 rounded-lg p-1.5 font-bold text-[9px] text-orange-700">₹299</div>
+                          <div className="bg-orange-50 border border-orange-200 rounded-lg p-1.5 font-bold text-[9px] text-orange-700">₹499</div>
+                          <div className="bg-orange-50 border border-orange-200 rounded-lg p-1.5 font-bold text-[9px] text-orange-700">₹999</div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 6. MOCK Shop By Problem */}
+                    {cmsData.enable_section_problem !== false && (
+                      <div className="py-4 px-4 bg-slate-50 border-b space-y-2">
+                        <h4 className="font-extrabold text-neutral-800 text-xs text-center">{cmsData.problem_title || "Shop By Problem"}</h4>
+                        <div className="grid grid-cols-2 gap-2 text-[9px]">
+                          <div className="bg-white border rounded-xl p-2 font-semibold">
+                            <span className="text-red-500 font-bold block">🍳 Kitchen Clutter</span>
+                            <span className="text-emerald-600">→ Acrylic Shelves</span>
+                          </div>
+                          <div className="bg-white border rounded-xl p-2 font-semibold">
+                            <span className="text-red-500 font-bold block">🚿 Tile Damage</span>
+                            <span className="text-emerald-600">→ Drill-Free Caddy</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 7. MOCK Category Grid */}
                     {cmsData.enable_section_categories !== false && (
                       <div className="py-4 px-4 bg-white border-b space-y-2">
                         <h3 className="font-bold text-center text-neutral-800 text-xs">
@@ -1124,7 +1411,7 @@ export default function AdminDashboardPage() {
                       </div>
                     )}
 
-                    {/* 6. MOCK Product Carousel (Trending) */}
+                    {/* 8. MOCK Product Carousel (Trending) */}
                     {cmsData.enable_section_trending !== false && (
                       <div className="py-4 px-4 bg-neutral-50 border-b space-y-2.5">
                         <div className="flex items-center justify-between">
@@ -1146,7 +1433,42 @@ export default function AdminDashboardPage() {
                       </div>
                     )}
 
-                    {/* 7. MOCK Promo Banner */}
+                    {/* 9. MOCK Bundle & Save */}
+                    {cmsData.enable_section_bundles !== false && (
+                      <div className="py-4 px-4 bg-amber-50/50 border-b space-y-2">
+                        <h4 className="font-extrabold text-neutral-800 text-xs text-center">{cmsData.bundles_title || "Bundle & Save Packs"}</h4>
+                        <div className="bg-white border border-amber-200 rounded-xl p-2 text-[9px] flex justify-between items-center">
+                          <div>
+                            <span className="font-extrabold text-neutral-800 block">Kitchen Starter Kit</span>
+                            <span className="text-emerald-600 font-bold">Save 35% Extra</span>
+                          </div>
+                          <span className="bg-amber-500 text-white font-bold px-2 py-1 rounded">₹1,299</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 10. MOCK Before & After */}
+                    {cmsData.enable_section_before_after !== false && (
+                      <div className="py-4 px-4 bg-white border-b space-y-2">
+                        <h4 className="font-extrabold text-neutral-800 text-xs text-center">{cmsData.before_after_title || "Before & After Transformations"}</h4>
+                        <div className="grid grid-cols-2 gap-1 text-[8px] text-center font-bold text-white">
+                          <div className="bg-red-500 p-2 rounded-l-xl">BEFORE: Messy Counter</div>
+                          <div className="bg-emerald-600 p-2 rounded-r-xl">AFTER: TKraft Shelf</div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 11. MOCK Flash Sale */}
+                    {cmsData.enable_section_flash !== false && (
+                      <div className="py-4 px-4 bg-red-600 text-white border-b space-y-2 text-center">
+                        <h4 className="font-black text-xs">{cmsData.flash_sale_title || "Flash Deals - 60%+ OFF"}</h4>
+                        <div className="text-[9px] bg-black/30 py-1 px-2 rounded-full inline-block font-bold">
+                          Ends: {cmsData.flash_sale_end_date || "2026-12-31"}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 12. MOCK Promo Banner */}
                     {cmsData.enable_section_promo !== false && (
                       <div
                         style={{
@@ -1160,9 +1482,20 @@ export default function AdminDashboardPage() {
                         <div className="relative z-10 space-y-1 max-w-[80%]">
                           <h4 className="font-black text-xs">{cmsData.promo_title || "Summer Clearance"}</h4>
                           <p className="text-[9px] text-neutral-200 line-clamp-1">{cmsData.promo_description || "Up to 50% discount on all organizers"}</p>
-                          <button style={{ backgroundColor: "#af040ce0", border: "1px solid #ffffff93" }} className="bg-white text-blue-950 font-bold text-[8px] px-2 py-1 rounded shadow mt-1">
+                          <button style={{ backgroundColor: "#FF6B00", border: "1px solid rgba(255,255,255,0.4)" }} className="text-white font-bold text-[8px] px-2 py-1 rounded shadow mt-1">
                             {cmsData.promo_cta_text || "Shop Clearance"}
                           </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 13. MOCK Home Hacks */}
+                    {cmsData.enable_section_hacks !== false && (
+                      <div className="py-4 px-4 bg-white border-b space-y-2">
+                        <h4 className="font-extrabold text-neutral-800 text-xs text-center">{cmsData.hacks_title || "Home Hacks & Inspiration"}</h4>
+                        <div className="bg-neutral-50 border rounded-xl p-2 text-[9px]">
+                          <span className="bg-orange-500 text-white font-bold px-1.5 py-0.5 rounded text-[7px] inline-block mb-1">Kitchen Guide</span>
+                          <p className="font-bold text-neutral-800 line-clamp-1">5 Kitchen Hacks for Small Indian Apartments</p>
                         </div>
                       </div>
                     )}
@@ -1181,7 +1514,7 @@ export default function AdminDashboardPage() {
                         <div className="relative z-10 space-y-1.5 max-w-[90%]">
                           <h4 className="font-black text-xs text-white">{cmsData.cta_title || "Upgrade Your Space"}</h4>
                           <p className="text-[9px] text-neutral-200 line-clamp-2">{cmsData.cta_description || "Indian household organizers designed for elegance."}</p>
-                          <button style={{ backgroundColor: "#af040ce0", border: "1px solid #ffffff93" }} className="bg-white text-blue-950 font-bold text-[8px] px-2.5 py-1 rounded shadow">
+                          <button style={{ backgroundColor: "#FF6B00", border: "1px solid rgba(255,255,255,0.4)" }} className="text-white font-bold text-[8px] px-2.5 py-1 rounded shadow">
                             {cmsData.cta_button_text || "Buy Now"}
                           </button>
                         </div>
@@ -1200,7 +1533,7 @@ export default function AdminDashboardPage() {
                             placeholder={cmsData.newsletter_placeholder || "Your email address"}
                             className="bg-white border text-[9px] px-2 py-1 rounded flex-1 focus:outline-none"
                           />
-                          <button style={{ backgroundColor: "#af040ce0", border: "1px solid #ffffff93" }} className="bg-white text-blue-950 font-bold text-[8px] px-3 py-1 rounded shadow">
+                          <button style={{ backgroundColor: "#FF6B00", border: "1px solid rgba(255,255,255,0.4)" }} className="text-white font-bold text-[8px] px-3 py-1 rounded shadow">
                             {cmsData.newsletter_cta_text || "Subscribe"}
                           </button>
                         </div>
@@ -1235,11 +1568,11 @@ export default function AdminDashboardPage() {
             <span className="text-xs font-bold text-blue-400 uppercase tracking-widest block mb-1">
               Store Control Panel
             </span>
-            <div className="flex items-center gap-6 mt-1">
+            <div className="flex flex-wrap items-center gap-6 mt-1">
               <button
                 onClick={() => setActiveTab("analytics")}
                 className={cn(
-                  "text-3xl font-extrabold tracking-tight transition-colors pb-1 border-b-2",
+                  "text-2xl md:text-3xl font-extrabold tracking-tight transition-colors pb-1 border-b-2",
                   activeTab === "analytics"
                     ? "text-white border-blue-500"
                     : "text-[hsl(215,16%,57%)] hover:text-white border-transparent"
@@ -1248,15 +1581,26 @@ export default function AdminDashboardPage() {
                 Sales Dashboard
               </button>
               <button
-                onClick={() => setActiveTab("cms")}
+                onClick={() => setActiveTab("funnel")}
                 className={cn(
-                  "text-3xl font-extrabold tracking-tight transition-colors pb-1 border-b-2",
-                  activeTab === "cms"
+                  "text-2xl md:text-3xl font-extrabold tracking-tight transition-colors pb-1 border-b-2",
+                  activeTab === "funnel"
                     ? "text-white border-blue-500"
                     : "text-[hsl(215,16%,57%)] hover:text-white border-transparent"
                 )}
               >
-                Visual CMS Editor
+                Analytics & Funnels
+              </button>
+              <button
+                onClick={() => setActiveTab("cms")}
+                className={cn(
+                  "text-2xl md:text-3xl font-extrabold tracking-tight transition-colors pb-1 border-b-2",
+                  activeTab === "cms"
+                    ? "text-white border-orange-500"
+                    : "text-[hsl(215,16%,57%)] hover:text-white border-transparent"
+                )}
+              >
+                Homepage Experience Builder (HEB)
               </button>
             </div>
           </div>
@@ -1305,6 +1649,8 @@ export default function AdminDashboardPage() {
         {/* Dashboard Content Container */}
         {activeTab === "cms" ? (
           renderCmsTab()
+        ) : activeTab === "funnel" ? (
+          <AnalyticsDashboard />
         ) : fetchError ? (
           <div className="p-6 bg-red-950/30 border border-red-500/20 rounded-2xl text-center space-y-3">
             <p className="text-red-400 font-semibold">{fetchError}</p>
@@ -1649,13 +1995,13 @@ export default function AdminDashboardPage() {
               </div>
 
               {/* Toolbar */}
-              <div className="px-6 py-3 bg-[hsl(222,47%,11%)] border-b border-[hsl(217,32%,17%)] flex gap-4 items-center">
+              <div className="px-6 py-3 bg-[hsl(222,47%,11%)] border-b border-[hsl(217,32%,17%)] flex gap-3 items-center">
                 <div className="relative flex-1">
                   <input
                     type="text"
                     value={mediaSearch}
                     onChange={(e) => setMediaSearch(e.target.value)}
-                    placeholder="Search media..."
+                    placeholder="Search media assets..."
                     className="w-full bg-[hsl(222,47%,6%)] border border-[hsl(217,32%,17%)] text-white pl-10 pr-4 py-2 rounded-xl focus:outline-none focus:border-blue-500 transition-colors text-sm"
                     onKeyDown={(e) => {
                       if (e.key === "Enter") fetchMediaLibrary(1, mediaSearch);
@@ -1674,6 +2020,25 @@ export default function AdminDashboardPage() {
                 >
                   Search
                 </button>
+
+                <label className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shrink-0 shadow-md shadow-emerald-600/20">
+                  <Upload className="h-4 w-4" />
+                  <span>{isUploadingMedia ? "Uploading..." : "Upload from Computer"}</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    disabled={isUploadingMedia}
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        handleUploadToWordPressAssets(file, mediaPickerTargetKey).then(() => {
+                          setMediaPickerOpen(false);
+                        });
+                      }
+                    }}
+                  />
+                </label>
               </div>
 
               {/* Grid Content */}

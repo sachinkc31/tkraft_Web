@@ -28,8 +28,13 @@ import type { WooProduct, WooCategory } from "@/types";
 import { ProductCarousel } from "@/components/carousel/product-carousel";
 import { CategoryGrid } from "@/features/home/category-grid";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { cn, formatPrice, getDiscountPercent } from "@/lib/utils";
 import { useUIStore } from "@/store";
+import { ShopByBudgetSection } from "./shop-by-budget";
+import { ShopByProblemSection } from "./shop-by-problem";
+import { BeforeAfterSection } from "./before-after";
+import { BundleSaveSection } from "./bundle-save";
+import { HomeHacksSection } from "./home-hacks";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -106,6 +111,21 @@ export function SectionRenderer({ section, products, categories, activeCampaign 
     case "customGrid":
     case "gridBlock":
       return <CustomGridBlock section={section} theme={theme} />;
+
+    case "shopByBudget":
+      return <ShopByBudgetSection title={section.title} subtitle={section.subtitle} data={section.data} />;
+
+    case "shopByProblem":
+      return <ShopByProblemSection title={section.title} subtitle={section.subtitle} data={section.data} />;
+
+    case "beforeAfter":
+      return <BeforeAfterSection title={section.title} subtitle={section.subtitle} data={section.data} />;
+
+    case "bundleSave":
+      return <BundleSaveSection title={section.title} subtitle={section.subtitle} data={section.data} />;
+
+    case "homeHacks":
+      return <HomeHacksSection title={section.title} subtitle={section.subtitle} data={section.data} />;
 
     case "flashSale": {
       const targetProducts = section.fetchedProducts && section.fetchedProducts.length > 0
@@ -248,6 +268,10 @@ function HeroBannerBlock({ data, theme }: { data: any; theme?: string }) {
 
   const alignment = slides[current].alignment || "left";
 
+  const defaultHeroImage = "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1600&q=80";
+  const slideImage = (typeof slides[current]?.image === "string" && (slides[current].image.startsWith("http") || slides[current].image.startsWith("/"))) ? slides[current].image : defaultHeroImage;
+  const slideImageMobile = (typeof slides[current]?.imageMobile === "string" && (slides[current].imageMobile.startsWith("http") || slides[current].imageMobile.startsWith("/"))) ? slides[current].imageMobile : undefined;
+
   return (
     <section className="relative overflow-hidden w-full h-[500px] md:h-[600px] bg-[hsl(var(--color-surface-2))]">
       <AnimatePresence mode="wait">
@@ -260,19 +284,19 @@ function HeroBannerBlock({ data, theme }: { data: any; theme?: string }) {
           className="absolute inset-0 w-full h-full"
         >
           <div className="absolute inset-0 bg-black/45 z-10" />
-          {slides[current].imageMobile ? (
+          {slideImageMobile ? (
             <>
               <Image
-                src={slides[current].image}
-                alt={slides[current].title}
+                src={slideImage}
+                alt={slides[current].title || "Banner"}
                 fill
                 priority
                 sizes="100vw"
                 className="object-cover hidden sm:block"
               />
               <Image
-                src={slides[current].imageMobile}
-                alt={slides[current].title}
+                src={slideImageMobile}
+                alt={slides[current].title || "Banner"}
                 fill
                 priority
                 sizes="100vw"
@@ -281,8 +305,8 @@ function HeroBannerBlock({ data, theme }: { data: any; theme?: string }) {
             </>
           ) : (
             <Image
-              src={slides[current].image}
-              alt={slides[current].title}
+              src={slideImage}
+              alt={slides[current].title || "Banner"}
               fill
               priority
               sizes="100vw"
@@ -332,8 +356,7 @@ function HeroBannerBlock({ data, theme }: { data: any; theme?: string }) {
                 >
                   <Link
                     href={slides[current].cta_link || "/shop"}
-                    style={{ backgroundColor: "#af040ce0", border: "1px solid #ffffff93" }}
-                    className="inline-flex items-center justify-center gap-2 font-display font-extrabold text-white text-base md:text-lg px-8 py-3.5 rounded-xl shadow-xl shadow-black/20 hover:opacity-95 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                    className="inline-flex items-center justify-center gap-2 font-display font-extrabold text-white text-base md:text-lg px-8 py-3.5 rounded-xl shadow-xl shadow-orange-500/20 bg-[hsl(var(--color-primary))] hover:bg-[hsl(var(--color-primary-dark))] hover:scale-[1.02] active:scale-[0.98] transition-all border border-orange-400/30"
                   >
                     {slides[current].cta_text || "Shop Now"}
                     <ArrowRight className="h-5 w-5" />
@@ -409,72 +432,78 @@ function PromoBannerBlock({ data, theme }: { data: any; theme?: string }) {
     <section className={cn("py-8 md:py-10 bg-[hsl(var(--color-surface))] transition-all duration-300", motif.classNames)}>
       <div className="container">
         <div className={cn("grid gap-6", isSingle ? "grid-cols-1" : "grid-cols-1 md:grid-cols-3")}>
-          {banners.map((banner: any, idx: number) => (
-            <motion.div
-              key={banner.id || idx}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: idx * 0.1, duration: 0.4 }}
-              className={cn(
-                "relative overflow-hidden rounded-2xl bg-[hsl(var(--color-surface-2))] border border-[hsl(var(--color-border))] group",
-                isSingle 
-                  ? "aspect-[21/9] md:h-[350px] w-full" 
-                  : `aspect-[4/3] md:aspect-auto md:h-[280px] ${banner.className || ""}`
-              )}
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-black/25 group-hover:from-black/65 group-hover:to-black/35 transition-colors duration-300 z-10" />
-              {banner.imageMobile ? (
-                <>
+          {banners.map((banner: any, idx: number) => {
+            const defaultPromoImg = "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=800&q=80";
+            const bannerImg = (typeof banner?.image === "string" && (banner.image.startsWith("http") || banner.image.startsWith("/"))) ? banner.image : defaultPromoImg;
+            const bannerImgMobile = (typeof banner?.imageMobile === "string" && (banner.imageMobile.startsWith("http") || banner.imageMobile.startsWith("/"))) ? banner.imageMobile : undefined;
+
+            return (
+              <motion.div
+                key={banner.id || idx}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.1, duration: 0.4 }}
+                className={cn(
+                  "relative overflow-hidden rounded-2xl bg-[hsl(var(--color-surface-2))] border border-[hsl(var(--color-border))] group",
+                  isSingle 
+                    ? "aspect-[21/9] md:h-[350px] w-full" 
+                    : `aspect-[4/3] md:aspect-auto md:h-[280px] ${banner.className || ""}`
+                )}
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-black/25 group-hover:from-black/65 group-hover:to-black/35 transition-colors duration-300 z-10" />
+                {bannerImgMobile ? (
+                  <>
+                    <Image
+                      src={bannerImg}
+                      alt={banner.title || "Promo Banner"}
+                      fill
+                      sizes={isSingle ? "100vw" : "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"}
+                      className="object-cover transition-transform duration-500 group-hover:scale-105 hidden sm:block"
+                    />
+                    <Image
+                      src={bannerImgMobile}
+                      alt={banner.title || "Promo Banner"}
+                      fill
+                      sizes={isSingle ? "100vw" : "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"}
+                      className="object-cover transition-transform duration-500 group-hover:scale-105 block sm:hidden"
+                    />
+                  </>
+                ) : (
                   <Image
-                    src={banner.image}
-                    alt={banner.title}
+                    src={bannerImg}
+                    alt={banner.title || "Promo Banner"}
                     fill
                     sizes={isSingle ? "100vw" : "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"}
-                    className="object-cover transition-transform duration-500 group-hover:scale-105 hidden sm:block"
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                  <Image
-                    src={banner.imageMobile}
-                    alt={banner.title}
-                    fill
-                    sizes={isSingle ? "100vw" : "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"}
-                    className="object-cover transition-transform duration-500 group-hover:scale-105 block sm:hidden"
-                  />
-                </>
-              ) : (
-                <Image
-                  src={banner.image}
-                  alt={banner.title}
-                  fill
-                  sizes={isSingle ? "100vw" : "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"}
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-              )}
-              <div className="absolute inset-0 z-20 flex flex-col justify-end p-6 md:p-8 text-white">
-                <span className="text-xs font-bold tracking-widest uppercase text-[hsl(var(--color-primary-light))] mb-1.5 block">
-                  Limited Offer
-                </span>
-                <h3 className={cn("font-display font-extrabold mb-1", isSingle ? "text-2xl md:text-3xl" : "text-xl md:text-2xl")}>
-                  {banner.title}
-                </h3>
-                <p className="text-sm text-white/80 mb-4 max-w-sm">
-                  {banner.subtitle}
-                </p>
-                <div>
-                  <Link
-                    href={banner.cta_link || "/shop"}
-                    style={{ backgroundColor: "hsl(var(--color-primary))" }}
-                    className={cn(
-                      buttonVariants({ size: isSingle ? "md" : "sm" }),
-                      "text-white hover:opacity-90 font-bold"
-                    )}
-                  >
-                    {banner.cta_text || "Shop Deals"}
-                  </Link>
+                )}
+                <div className="absolute inset-0 z-20 flex flex-col justify-end p-6 md:p-8 text-white">
+                  <span className="text-xs font-bold tracking-widest uppercase text-[hsl(var(--color-primary-light))] mb-1.5 block">
+                    Limited Offer
+                  </span>
+                  <h3 className={cn("font-display font-extrabold mb-1", isSingle ? "text-2xl md:text-3xl" : "text-xl md:text-2xl")}>
+                    {banner.title}
+                  </h3>
+                  <p className="text-sm text-white/80 mb-4 max-w-sm">
+                    {banner.subtitle}
+                  </p>
+                  <div>
+                    <Link
+                      href={banner.cta_link || "/shop"}
+                      style={{ backgroundColor: "hsl(var(--color-primary))" }}
+                      className={cn(
+                        buttonVariants({ size: isSingle ? "md" : "sm" }),
+                        "text-white hover:opacity-90 font-bold"
+                      )}
+                    >
+                      {banner.cta_text || "Shop Deals"}
+                    </Link>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>
@@ -483,8 +512,10 @@ function PromoBannerBlock({ data, theme }: { data: any; theme?: string }) {
 
 // 3. CTA BANNER
 function CtaBannerBlock({ section, theme }: { section: HomepageSection; theme?: string }) {
-  const bgImage = section.data?.bg_image || "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1600&q=80";
-  const bgImageMobile = section.data?.bg_image_mobile;
+  const rawBg = section.data?.bg_image;
+  const bgImage = (typeof rawBg === "string" && (rawBg.startsWith("http") || rawBg.startsWith("/"))) ? rawBg : "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1600&q=80";
+  const rawBgMobile = section.data?.bg_image_mobile;
+  const bgImageMobile = (typeof rawBgMobile === "string" && (rawBgMobile.startsWith("http") || rawBgMobile.startsWith("/"))) ? rawBgMobile : undefined;
   const motif = getThemeMotif(theme);
 
   return (
@@ -594,37 +625,42 @@ function CustomGridBlock({ section, theme }: { section: any; theme?: string }) {
           items.length === 2 && "grid-cols-1 sm:grid-cols-2 max-w-2xl mx-auto",
           items.length >= 3 && "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3"
         )}>
-          {items.map((item: any, idx: number) => (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, y: 15 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: idx * 0.1 }}
-              className="flex flex-col items-center justify-between text-center p-5 bg-[hsl(var(--color-surface-2))] border border-[hsl(var(--color-border))] rounded-2xl shadow-sm hover:shadow-md hover:border-[hsl(var(--color-accent))] transition-all duration-300 group"
-            >
-              <Link href={item.url || "/shop"} className="w-full flex flex-col items-center justify-center flex-1">
-                {/* Centered Image Container */}
-                <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden mb-4 shadow-sm border border-[hsl(var(--color-border))] bg-neutral-100 flex items-center justify-center">
-                  <Image
-                    src={item.image || "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=800&q=80"}
-                    alt={item.title || "Grid Item"}
-                    fill
-                    sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                </div>
-                {/* Centered Title */}
-                <h3 className="font-display font-extrabold text-base md:text-lg text-[hsl(var(--color-text))] group-hover:text-[hsl(var(--color-accent))] transition-colors line-clamp-2 max-w-[240px] leading-tight text-center">
-                  {item.title}
-                </h3>
-              </Link>
-              {/* Centered CTA URL Button */}
-              <Link href={item.url || "/shop"} className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[hsl(var(--color-accent))] group-hover:underline">
-                Explore More <ArrowRight className="h-3.5 w-3.5 text-[hsl(var(--color-primary))]" />
-              </Link>
-            </motion.div>
-          ))}
+          {items.map((item: any, idx: number) => {
+            const defaultGridImg = "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=800&q=80";
+            const itemImg = (typeof item?.image === "string" && (item.image.startsWith("http") || item.image.startsWith("/"))) ? item.image : defaultGridImg;
+
+            return (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 15 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: idx * 0.1 }}
+                className="flex flex-col items-center justify-between text-center p-5 bg-[hsl(var(--color-surface-2))] border border-[hsl(var(--color-border))] rounded-2xl shadow-sm hover:shadow-md hover:border-[hsl(var(--color-accent))] transition-all duration-300 group"
+              >
+                <Link href={item.url || "/shop"} className="w-full flex flex-col items-center justify-center flex-1">
+                  {/* Centered Image Container */}
+                  <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden mb-4 shadow-sm border border-[hsl(var(--color-border))] bg-neutral-100 flex items-center justify-center">
+                    <Image
+                      src={itemImg}
+                      alt={item.title || "Grid Item"}
+                      fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  </div>
+                  {/* Centered Title */}
+                  <h3 className="font-display font-extrabold text-base md:text-lg text-[hsl(var(--color-text))] group-hover:text-[hsl(var(--color-accent))] transition-colors line-clamp-2 max-w-[240px] leading-tight text-center">
+                    {item.title}
+                  </h3>
+                </Link>
+                {/* Centered CTA URL Button */}
+                <Link href={item.url || "/shop"} className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[hsl(var(--color-accent))] group-hover:underline">
+                  Explore More <ArrowRight className="h-3.5 w-3.5 text-[hsl(var(--color-primary))]" />
+                </Link>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>
@@ -674,8 +710,7 @@ function FeatureIconsBlock({ section, theme }: { section?: HomepageSection; them
           {items.map((item, idx) => (
             <div key={idx} className="flex gap-4 items-center p-4 rounded-2xl bg-white border border-[hsl(var(--color-border))]/60 shadow-sm hover:shadow-md transition-all duration-300 group">
               <div 
-                style={{ backgroundColor: "rgba(198, 5, 15, 0.06)", borderColor: "rgba(198, 5, 15, 0.12)" }}
-                className="h-12 w-12 rounded-xl border flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300"
+                className="h-12 w-12 rounded-xl bg-[hsl(var(--color-primary))]/10 border border-[hsl(var(--color-primary))]/20 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300"
               >
                 {item.icon}
               </div>
@@ -784,7 +819,18 @@ function FlashSaleBlock({ section, products, theme }: { section: HomepageSection
   const motif = getThemeMotif(theme);
   const autoplayInterval = (section.data?.scroll_interval_seconds ? Number(section.data.scroll_interval_seconds) * 1000 : 4000) || 4000;
 
-  if (!products || products.length === 0) return null;
+  let activeDeals = (products || []).filter(
+    (p) => p.on_sale && getDiscountPercent(p.regular_price, p.sale_price) >= 60
+  );
+
+  if (activeDeals.length === 0) {
+    activeDeals = (products || []).filter((p) => p.on_sale);
+  }
+  if (activeDeals.length === 0) {
+    activeDeals = products || [];
+  }
+
+  if (activeDeals.length === 0) return null;
 
   return (
     <section className={cn("py-8 md:py-10 bg-[hsl(var(--color-surface))] transition-all duration-300 border-b border-[hsl(var(--color-border))]", motif.classNames)}>
@@ -837,7 +883,7 @@ function FlashSaleBlock({ section, products, theme }: { section: HomepageSection
 
         <ProductCarousel
           title=""
-          products={products}
+          products={activeDeals}
           viewAllUrl={section.viewAllUrl}
           variant={section.variant || "default"}
           autoplayInterval={autoplayInterval}

@@ -101,7 +101,12 @@ export interface HomepageSection {
     | "recentlyAdded"
     | "blogHighlights"
     | "customGrid"
-    | "gridBlock";
+    | "gridBlock"
+    | "shopByBudget"
+    | "shopByProblem"
+    | "beforeAfter"
+    | "bundleSave"
+    | "homeHacks";
   title?: string;
   subtitle?: string;
   viewAllUrl?: string;
@@ -236,11 +241,29 @@ export interface HomepageContent {
   grid_items?: Array<{ image: string; title: string; url: string }>;
   enable_section_grid?: boolean;
 
+  hero_slides?: Array<{
+    id?: string;
+    title?: string;
+    subtitle?: string;
+    image?: string;
+    imageMobile?: string;
+    cta_text?: string;
+    cta_link?: string;
+    alignment?: string;
+    theme?: string;
+  }>;
+
   enable_section_hero?: boolean;
   enable_section_benefits?: boolean;
+  enable_section_budget?: boolean;
+  enable_section_problem?: boolean;
   enable_section_categories?: boolean;
   enable_section_trending?: boolean;
+  enable_section_bundles?: boolean;
+  enable_section_before_after?: boolean;
+  enable_section_flash?: boolean;
   enable_section_promo?: boolean;
+  enable_section_hacks?: boolean;
   enable_section_bestsellers?: boolean;
   enable_section_cta?: boolean;
   enable_section_highlights?: boolean;
@@ -259,6 +282,50 @@ export interface HomepageContent {
   testimonials_subtitle?: string;
   newsletter_placeholder?: string;
   newsletter_cta_text?: string;
+
+  // Shop By Budget
+  budget_title?: string;
+  budget_subtitle?: string;
+  budget_199_image?: string;
+  budget_299_image?: string;
+  budget_499_image?: string;
+  budget_999_image?: string;
+
+  // Shop By Problem
+  problem_title?: string;
+  problem_subtitle?: string;
+  problem_1_title?: string;
+  problem_1_image?: string;
+  problem_2_title?: string;
+  problem_2_image?: string;
+  problem_3_title?: string;
+  problem_3_image?: string;
+  problem_4_title?: string;
+  problem_4_image?: string;
+
+  // Bundles
+  bundles_title?: string;
+  bundles_subtitle?: string;
+  bundle_1_image?: string;
+  bundle_2_image?: string;
+  bundle_3_image?: string;
+
+  // Before & After
+  before_after_title?: string;
+  before_after_subtitle?: string;
+  before_1_image?: string;
+  after_1_image?: string;
+  before_2_image?: string;
+  after_2_image?: string;
+
+  // Home Hacks
+  hacks_title?: string;
+  hacks_subtitle?: string;
+  hack_1_image?: string;
+  hack_2_image?: string;
+  hack_3_image?: string;
+
+  [key: string]: any;
 }
 
 export interface LoginContent {
@@ -302,13 +369,12 @@ export const DEFAULT_HOMEPAGE_LAYOUT: HomepageLayout = {
       type: "customerBenefits",
     },
     {
-      id: "section_grid",
-      type: "customGrid",
-      title: "Featured Highlights",
-      subtitle: "Elevate your spaces with premium organizers",
-      data: {
-        items: []
-      }
+      id: "section_budget",
+      type: "shopByBudget" as any,
+    },
+    {
+      id: "section_problem",
+      type: "shopByProblem" as any,
     },
     {
       id: "section_categories",
@@ -324,6 +390,14 @@ export const DEFAULT_HOMEPAGE_LAYOUT: HomepageLayout = {
       viewAllUrl: "/shop?sort=popularity",
       limit: 8,
       variant: "default",
+    },
+    {
+      id: "section_bundles",
+      type: "bundleSave" as any,
+    },
+    {
+      id: "section_before_after",
+      type: "beforeAfter" as any,
     },
     {
       id: "section_flash",
@@ -357,6 +431,10 @@ export const DEFAULT_HOMEPAGE_LAYOUT: HomepageLayout = {
           }
         ]
       }
+    },
+    {
+      id: "section_hacks",
+      type: "homeHacks" as any,
     },
     {
       id: "section_bestsellers",
@@ -437,9 +515,12 @@ function extractJsonFromHtml(html: string): any {
  */
 function getFetchOptions(): RequestInit {
   const isDev = process.env.NODE_ENV === "development";
-  return isDev
-    ? { cache: "no-store" as RequestCache }
-    : { next: { revalidate: 60 } }; // cache for 60 seconds in production
+  return {
+    signal: AbortSignal.timeout(5000),
+    ...(isDev
+      ? { cache: "no-store" as RequestCache }
+      : { next: { revalidate: 60 } }),
+  };
 }
 
 // ---- SCF Field Extraction Helpers ----
@@ -459,23 +540,30 @@ function cleanLink(urlStr?: string): string | undefined {
 }
 
 function extractImg(imgField: any, sourceField?: any): string | undefined {
-  if (imgField) {
-    if (typeof imgField === "string") return imgField;
-    if (typeof imgField === "object" && imgField.url) return imgField.url;
-  }
-  if (sourceField) {
-    if (typeof sourceField === "string") return sourceField;
-    if (typeof sourceField === "object") {
-      if (sourceField.url) return sourceField.url;
-      if (sourceField.formatted_value) {
-        if (typeof sourceField.formatted_value === "string") return sourceField.formatted_value;
-        if (typeof sourceField.formatted_value === "object" && sourceField.formatted_value.url) {
-          return sourceField.formatted_value.url;
-        }
+  const sanitizeUrl = (val: any): string | undefined => {
+    if (!val) return undefined;
+    if (typeof val === "object") {
+      const possibleUrl =
+        val.url ||
+        val.source_url ||
+        val.src ||
+        val.formatted_value?.url ||
+        (typeof val.formatted_value === "string" ? val.formatted_value : undefined);
+      if (possibleUrl && typeof possibleUrl === "string") return sanitizeUrl(possibleUrl);
+      return undefined;
+    }
+    if (typeof val === "string") {
+      const trimmed = val.trim();
+      if (!trimmed) return undefined;
+      if (/^\d+$/.test(trimmed)) return undefined;
+      if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("/")) {
+        return trimmed;
       }
     }
-  }
-  return undefined;
+    return undefined;
+  };
+
+  return sanitizeUrl(imgField) || sanitizeUrl(sourceField) || undefined;
 }
 
 function extractText(textField: any, sourceField?: any): string | undefined {
@@ -493,44 +581,17 @@ function extractText(textField: any, sourceField?: any): string | undefined {
  * Fetch dynamic homepage section layout configuration from WordPress CMS
  */
 export async function getHomepageLayout(): Promise<HomepageLayout> {
-  // 1. Try custom layout endpoint first
-  const customUrl = `${API_CONFIG.woocommerceUrl.replace("/wp-json/wc/v3", "/wp-json/tkraft/v1/layout/homepage")}`;
-  
   try {
-    const res = await fetch(customUrl, getFetchOptions());
-    
+    const wpPageUrl = `${API_CONFIG.wpRestUrl}/pages/6144`;
+    const res = await fetch(wpPageUrl, { signal: AbortSignal.timeout(3000), next: { revalidate: 60 } });
     if (res.ok) {
-      const data = await res.json();
-      if (data && Array.isArray(data.sections)) {
-        return data as HomepageLayout;
+      const page = await res.json();
+      if (page && page.acf && page.acf.layout_sections && Array.isArray(page.acf.layout_sections)) {
+        return { sections: page.acf.layout_sections };
       }
     }
-  } catch (error) {
-    console.warn("CMS custom layout endpoint failed:", error instanceof Error ? error.message : String(error));
-  }
+  } catch (e) {}
 
-  // 2. Fallback: Try fetching layout config stored inside the WordPress page slug 'homepage-content'
-  try {
-    const wpPagesUrl = `${API_CONFIG.wpRestUrl}/pages?slug=homepage-content`;
-    const res = await fetch(wpPagesUrl, {
-      ...getFetchOptions(),
-    });
-
-    if (res.ok) {
-      const pages = await res.json();
-      if (Array.isArray(pages) && pages.length > 0) {
-        const rawContent = pages[0].content?.rendered || "";
-        const parsedLayout = extractJsonFromHtml(rawContent);
-        if (parsedLayout && Array.isArray(parsedLayout.sections)) {
-          return parsedLayout as HomepageLayout;
-        }
-      }
-    }
-  } catch (error) {
-    console.warn("CMS fallback page 'homepage-layout' failed:", error instanceof Error ? error.message : String(error));
-  }
-
-  // 3. Hardcoded fallback
   return DEFAULT_HOMEPAGE_LAYOUT;
 }
 
@@ -539,23 +600,53 @@ export async function getHomepageLayout(): Promise<HomepageLayout> {
  */
 export async function getHomepageContent(): Promise<HomepageContent | null> {
   try {
-    const wpPagesUrl = `${API_CONFIG.wpRestUrl}/pages?slug=homepage-content`;
-    const res = await fetch(wpPagesUrl, {
-      ...getFetchOptions(),
-    });
+    // 1. Try Page 6144 directly (primary CMS target)
+    let page: any = null;
+    const wpPageUrl = `${API_CONFIG.wpRestUrl}/pages/6144`;
+    try {
+      const res = await fetch(wpPageUrl, getFetchOptions());
+      if (res.ok) {
+        page = await res.json();
+      }
+    } catch (e) {
+      // Fallback below
+    }
 
-    if (res.ok) {
-      const pages = await res.json();
-      if (Array.isArray(pages) && pages.length > 0) {
-        const page = pages[0];
-        const acf = page.acf;
-        if (acf) {
-          // Dynamic parser helper to search for keys with optional trailing underscores
-          const getVal = (key: string) => {
-            const raw = acf[key] || acf[`${key}_`] || acf[`${key}__`] || acf[`${key}___`] || acf[`${key}____`] || acf[`${key}_____`];
-            const source = acf[`${key}_source`] || acf[`${key}__source`] || acf[`${key}___source`] || acf[`${key}____source`] || acf[`${key}_____source`];
-            return { raw, source };
-          };
+    // 2. Fallback to slug search if page 6144 fails
+    if (!page || !page.acf) {
+      const wpPagesUrl = `${API_CONFIG.wpRestUrl}/pages?slug=homepage-content`;
+      const res = await fetch(wpPagesUrl, getFetchOptions());
+      if (res.ok) {
+        const pages = await res.json();
+        if (Array.isArray(pages) && pages.length > 0) {
+          page = pages[0];
+        }
+      }
+    }
+
+    let acf: Record<string, any> = (page && page.acf) ? { ...page.acf } : {};
+
+    // Merge with local persistent storage fallback (Server-side only)
+    if (typeof window === "undefined") {
+      try {
+        const fs = eval('require("fs")');
+        const path = eval('require("path")');
+        const localFile = path.join(process.cwd(), "data", "homepage_content.json");
+        if (fs.existsSync(localFile)) {
+          const text = fs.readFileSync(localFile, "utf-8");
+          const localData = JSON.parse(text);
+          acf = { ...acf, ...localData };
+        }
+      } catch (e) {}
+    }
+
+    if (Object.keys(acf).length > 0) {
+      // Dynamic parser helper to search for keys with optional trailing underscores
+      const getVal = (key: string) => {
+        const raw = acf[key] || acf[`${key}_`] || acf[`${key}__`] || acf[`${key}___`] || acf[`${key}____`] || acf[`${key}_____`];
+        const source = acf[`${key}_source`] || acf[`${key}__source`] || acf[`${key}___source`] || acf[`${key}____source`] || acf[`${key}_____source`];
+        return { raw, source };
+      };
 
           const text = (key: string) => {
             const { raw, source } = getVal(key);
@@ -773,15 +864,59 @@ export async function getHomepageContent(): Promise<HomepageContent | null> {
 
             enable_section_hero: toggle("enable_section_hero"),
             enable_section_benefits: toggle("enable_section_benefits"),
+            enable_section_budget: toggle("enable_section_budget"),
+            enable_section_problem: toggle("enable_section_problem"),
             enable_section_categories: toggle("enable_section_categories"),
             enable_section_trending: toggle("enable_section_trending"),
+            enable_section_bundles: toggle("enable_section_bundles"),
+            enable_section_before_after: toggle("enable_section_before_after"),
+            enable_section_flash: toggle("enable_section_flash"),
             enable_section_promo: toggle("enable_section_promo"),
+            enable_section_hacks: toggle("enable_section_hacks"),
             enable_section_bestsellers: toggle("enable_section_bestsellers"),
             enable_section_cta: toggle("enable_section_cta"),
             enable_section_highlights: toggle("enable_section_highlights"),
-            enable_section_testimonials: toggle("enable_section_testimonials"),
-            enable_section_newsletter: toggle("enable_section_newsletter"),
-            hero_image_mobile: img("hero_image_mobile"),
+            hero_slides: (() => {
+              const slides: any[] = [];
+              const rawSlides = acf.hero_slides || acf.slides;
+              if (Array.isArray(rawSlides) && rawSlides.length > 0) {
+                return rawSlides.map((item: any, idx: number) => ({
+                  id: `hero_slide_${idx + 1}`,
+                  title: extractText(item.title, item.headline) || "",
+                  subtitle: extractText(item.subtitle, item.description) || "",
+                  image: extractImg(item.image || item.desktop_image),
+                  imageMobile: extractImg(item.imageMobile || item.mobile_image),
+                  cta_text: extractText(item.cta_text, item.button_text) || "Shop Collection",
+                  cta_link: cleanLink(item.cta_link || item.button_link || item.url) || "/shop",
+                }));
+              }
+              for (let i = 1; i <= 5; i++) {
+                const title = text(`hero_slide_${i}_title`) || (i === 1 ? text("hero_title") : undefined);
+                const subtitle = text(`hero_slide_${i}_subtitle`) || (i === 1 ? text("hero_subtitle") : undefined);
+                const { raw: rawImg, source: imgSource } = getVal(`hero_slide_${i}_desktop_image`);
+                const { raw: rawImgMobile, source: imgMobileSource } = getVal(`hero_slide_${i}_mobile_image`);
+                const fallbackImg = i === 1 ? getVal("hero_desktop_image").raw || getVal("hero_image").raw : undefined;
+                const fallbackMobile = i === 1 ? getVal("hero_mobile_image").raw : undefined;
+                
+                const image = extractImg(rawImg, imgSource) || extractImg(fallbackImg);
+                const imageMobile = extractImg(rawImgMobile, imgMobileSource) || extractImg(fallbackMobile);
+                const cta_text = text(`hero_slide_${i}_cta_text`) || (i === 1 ? text("hero_cta_text") : undefined);
+                const cta_link = link(`hero_slide_${i}_cta_url`) || link(`hero_slide_${i}_cta_link`) || (i === 1 ? link("hero_cta_url") : undefined);
+
+                if (title || image || subtitle) {
+                  slides.push({
+                    id: `hero_slide_${i}`,
+                    title: title || "Premium Home Essentials",
+                    subtitle: subtitle || "",
+                    image: image || "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1600&q=80",
+                    imageMobile: imageMobile,
+                    cta_text: cta_text || "Shop Collection",
+                    cta_link: cta_link || "/shop",
+                  });
+                }
+              }
+              return slides;
+            })(),
             categories_hide_on_mobile: toggle("categories_hide_on_mobile"),
             promo_1_image_mobile: img("promo_1_image_mobile"),
             promo_2_image_mobile: img("promo_2_image_mobile"),
@@ -794,10 +929,50 @@ export async function getHomepageContent(): Promise<HomepageContent | null> {
             testimonials_subtitle: text("testimonials_subtitle"),
             newsletter_placeholder: text("newsletter_placeholder"),
             newsletter_cta_text: text("newsletter_cta_text"),
+
+            // Shop By Budget
+            budget_title: text("budget_title"),
+            budget_subtitle: text("budget_subtitle"),
+            budget_199_image: img("budget_199_image"),
+            budget_299_image: img("budget_299_image"),
+            budget_499_image: img("budget_499_image"),
+            budget_999_image: img("budget_999_image"),
+
+            // Shop By Problem
+            problem_title: text("problem_title"),
+            problem_subtitle: text("problem_subtitle"),
+            problem_1_title: text("problem_1_title"),
+            problem_1_image: img("problem_1_image"),
+            problem_2_title: text("problem_2_title"),
+            problem_2_image: img("problem_2_image"),
+            problem_3_title: text("problem_3_title"),
+            problem_3_image: img("problem_3_image"),
+            problem_4_title: text("problem_4_title"),
+            problem_4_image: img("problem_4_image"),
+
+            // Bundles
+            bundles_title: text("bundles_title"),
+            bundles_subtitle: text("bundles_subtitle"),
+            bundle_1_image: img("bundle_1_image"),
+            bundle_2_image: img("bundle_2_image"),
+            bundle_3_image: img("bundle_3_image"),
+
+            // Before & After
+            before_after_title: text("before_after_title"),
+            before_after_subtitle: text("before_after_subtitle"),
+            before_1_image: img("before_1_image"),
+            after_1_image: img("after_1_image"),
+            before_2_image: img("before_2_image"),
+            after_2_image: img("after_2_image"),
+
+            // Home Hacks
+            hacks_title: text("hacks_title"),
+            hacks_subtitle: text("hacks_subtitle"),
+            hack_1_image: img("hack_1_image"),
+            hack_2_image: img("hack_2_image"),
+            hack_3_image: img("hack_3_image"),
           };
         }
-      }
-    }
   } catch (error) {
     console.warn("Error fetching homepage-content from WP REST API:", error instanceof Error ? error.message : String(error));
   }

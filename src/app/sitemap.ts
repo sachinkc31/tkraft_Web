@@ -7,10 +7,25 @@ export const revalidate = 3600; // 1 hour revalidation
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = SITE_CONFIG.url;
 
-  // Fetch products & categories with essential fields for XML Image Sitemap compliance
+  // Timeout helper to guarantee sitemap never blocks Next.js build (>60s)
+  const timeoutPromise = new Promise<{ data: any[] }>((resolve) =>
+    setTimeout(() => resolve({ data: [] }), 6000)
+  );
+
+  const categoriesTimeoutPromise = new Promise<any[]>((resolve) =>
+    setTimeout(() => resolve([]), 6000)
+  );
+
+  // Fetch products & categories with strict 6s max timeout
   const [productsRes, categoriesList] = await Promise.all([
-    getProducts({ perPage: 50 }).catch(() => ({ data: [] })),
-    getCategories().catch(() => []),
+    Promise.race([
+      getProducts({ perPage: 20 }).catch(() => ({ data: [] })),
+      timeoutPromise,
+    ]),
+    Promise.race([
+      getCategories().catch(() => []),
+      categoriesTimeoutPromise,
+    ]),
   ]);
 
   const staticPages = [
@@ -34,7 +49,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: page.priority,
   }));
 
-  const categoryRoutes: MetadataRoute.Sitemap = categoriesList.map((cat) => ({
+  const categoryRoutes: MetadataRoute.Sitemap = (categoriesList || []).map((cat: any) => ({
     url: `${baseUrl}/category/${cat.slug}`,
     lastModified: new Date(),
     changeFrequency: "weekly" as const,
@@ -42,12 +57,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     images: cat.image?.src ? [cat.image.src] : [],
   }));
 
-  const productRoutes: MetadataRoute.Sitemap = productsRes.data.map((prod) => ({
+  const productRoutes: MetadataRoute.Sitemap = (productsRes?.data || []).map((prod: any) => ({
     url: `${baseUrl}/products/${prod.slug}`,
     lastModified: new Date(prod.date_modified || prod.date_created || Date.now()),
     changeFrequency: "daily" as const,
     priority: 0.9,
-    images: prod.images.map((img) => img.src).filter(Boolean),
+    images: Array.isArray(prod.images) ? prod.images.map((img: any) => img.src).filter(Boolean) : [],
   }));
 
   return [...staticRoutes, ...categoryRoutes, ...productRoutes];
