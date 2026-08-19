@@ -47,11 +47,12 @@ export default async function HomePage() {
     getFeaturedProducts(8).catch(() => []),
   ]);
 
+  const flashSaleDeals = fallbackTrending.filter((p) => p.on_sale && getDiscountPercent(p.regular_price, p.sale_price) >= 60);
   const aggregatedProducts = {
     trending: fallbackTrending,
     bestsellers: fallbackNewArrivals,
     featured: fallbackFeatured,
-    flashSale: fallbackTrending.filter((p) => p.on_sale && getDiscountPercent(p.regular_price, p.sale_price) >= 60),
+    flashSale: flashSaleDeals.length > 0 ? flashSaleDeals : (fallbackTrending.filter((p) => p.on_sale).length > 0 ? fallbackTrending.filter((p) => p.on_sale) : fallbackTrending),
   };
 
   // 3. Resolve dynamic sections on-demand (server-side data population)
@@ -66,18 +67,23 @@ export default async function HomePage() {
 
         // 3a. Enablement toggles check
         if (wpContent) {
-          if (sec.id === "section_hero" && wpContent.enable_section_hero === false) (sec as any).disabled = true;
-          if (sec.id === "section_benefits" && wpContent.enable_section_benefits === false) (sec as any).disabled = true;
-          if (sec.id === "section_categories" && wpContent.enable_section_categories === false) (sec as any).disabled = true;
-          if (sec.id === "section_trending" && wpContent.enable_section_trending === false) (sec as any).disabled = true;
-          if (sec.id === "section_promo" && wpContent.enable_section_promo === false) (sec as any).disabled = true;
-          if (sec.id === "section_bestsellers" && wpContent.enable_section_bestsellers === false) (sec as any).disabled = true;
-          if (sec.id === "section_cta" && wpContent.enable_section_cta === false) (sec as any).disabled = true;
-          if (sec.id === "section_highlights" && wpContent.enable_section_highlights === false) (sec as any).disabled = true;
-          if (sec.id === "section_testimonials" && wpContent.enable_section_testimonials === false) (sec as any).disabled = true;
-          if (sec.id === "section_newsletter" && wpContent.enable_section_newsletter === false) (sec as any).disabled = true;
-          if (sec.id === "section_grid" && wpContent.enable_section_grid === false) (sec as any).disabled = true;
-          if (sec.id === "section_flash" && !wpContent.flash_sale_collection) (sec as any).disabled = true;
+          if ((sec.id === "section_hero" || sec.type === "heroBanner") && wpContent.enable_section_hero === false) (sec as any).disabled = true;
+          if ((sec.id === "section_benefits" || sec.type === "customerBenefits") && wpContent.enable_section_benefits === false) (sec as any).disabled = true;
+          if ((sec.id === "section_budget" || sec.type === "shopByBudget") && wpContent.enable_section_budget === false) (sec as any).disabled = true;
+          if ((sec.id === "section_problem" || sec.type === "shopByProblem") && wpContent.enable_section_problem === false) (sec as any).disabled = true;
+          if ((sec.id === "section_categories" || sec.type === "categoryGrid") && wpContent.enable_section_categories === false) (sec as any).disabled = true;
+          if ((sec.id === "section_trending" || sec.type === "trendingProducts") && wpContent.enable_section_trending === false) (sec as any).disabled = true;
+          if ((sec.id === "section_bundles" || sec.type === "bundleSave") && wpContent.enable_section_bundles === false) (sec as any).disabled = true;
+          if ((sec.id === "section_before_after" || sec.type === "beforeAfter") && wpContent.enable_section_before_after === false) (sec as any).disabled = true;
+          if ((sec.id === "section_flash" || sec.type === "flashSale") && wpContent.enable_section_flash === false) (sec as any).disabled = true;
+          if ((sec.id === "section_promo" || sec.type === "promoBanner") && wpContent.enable_section_promo === false) (sec as any).disabled = true;
+          if ((sec.id === "section_hacks" || sec.type === "homeHacks") && wpContent.enable_section_hacks === false) (sec as any).disabled = true;
+          if ((sec.id === "section_bestsellers" || sec.type === "bestSellerProducts") && wpContent.enable_section_bestsellers === false) (sec as any).disabled = true;
+          if ((sec.id === "section_cta" || sec.type === "ctaBanner") && wpContent.enable_section_cta === false) (sec as any).disabled = true;
+          if ((sec.id === "section_highlights" || sec.type === "brandHighlights") && wpContent.enable_section_highlights === false) (sec as any).disabled = true;
+          if ((sec.id === "section_testimonials" || sec.type === "testimonials") && wpContent.enable_section_testimonials === false) (sec as any).disabled = true;
+          if ((sec.id === "section_newsletter" || sec.type === "newsletterSignup") && wpContent.enable_section_newsletter === false) (sec as any).disabled = true;
+          if ((sec.id === "section_grid" || sec.type === "customGrid") && wpContent.enable_section_grid === false) (sec as any).disabled = true;
         }
 
         // Hero Banner WordPress SCF resolution
@@ -85,16 +91,28 @@ export default async function HomePage() {
           const defaultSlide = sec.data?.slides?.[0] || {};
           const isCampaignActive = wpContent.campaign_theme && wpContent.campaign_theme !== "default";
           
-          // Prioritize standard Hero fields edited in CMS, falling back to campaign overrides
-          const headline = wpContent.hero_title || wpContent.campaign_headline;
-          const ctaText = wpContent.hero_cta_text || wpContent.campaign_cta_text;
-          const ctaLink = wpContent.hero_cta_url || wpContent.campaign_cta_link;
-          const bannerImage = wpContent.hero_desktop_image || wpContent.hero_image || wpContent.campaign_banner_image;
-          const bannerImageMobile = wpContent.hero_mobile_image || wpContent.hero_image_mobile || wpContent.campaign_banner_image_mobile;
+          let heroSlides = [];
+          if (wpContent.hero_slides && Array.isArray(wpContent.hero_slides) && wpContent.hero_slides.length > 0) {
+            heroSlides = wpContent.hero_slides.map((s: any, idx: number) => ({
+              id: s.id || `wp_hero_${idx + 1}`,
+              title: s.title || defaultSlide.title || "Premium Home Essentials",
+              subtitle: s.subtitle || defaultSlide.subtitle || "",
+              image: s.image || defaultSlide.image || "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1600&q=80",
+              imageMobile: s.imageMobile || undefined,
+              cta_text: s.cta_text || defaultSlide.cta_text || "Shop Collection",
+              cta_link: s.cta_link || defaultSlide.cta_link || "/shop",
+              alignment: wpContent.hero_alignment || defaultSlide.alignment || "left",
+              theme: wpContent.hero_theme || defaultSlide.theme || "default",
+              scroll_interval_seconds: wpContent.hero_scroll_interval_seconds || sec.data?.scroll_interval_seconds || 6,
+            }));
+          } else {
+            const headline = wpContent.hero_title || wpContent.campaign_headline;
+            const ctaText = wpContent.hero_cta_text || wpContent.campaign_cta_text;
+            const ctaLink = wpContent.hero_cta_url || wpContent.campaign_cta_link;
+            const bannerImage = wpContent.hero_desktop_image || wpContent.hero_image || wpContent.campaign_banner_image;
+            const bannerImageMobile = wpContent.hero_mobile_image || wpContent.hero_image_mobile || wpContent.campaign_banner_image_mobile;
 
-          sec.data = {
-            ...sec.data,
-            slides: [
+            heroSlides = [
               {
                 id: "wp_hero_1",
                 title: headline || defaultSlide.title || "Premium Home Essentials",
@@ -107,7 +125,12 @@ export default async function HomePage() {
                 theme: wpContent.hero_theme || defaultSlide.theme || "default",
                 scroll_interval_seconds: wpContent.hero_scroll_interval_seconds || sec.data?.scroll_interval_seconds || 6,
               }
-            ]
+            ];
+          }
+
+          sec.data = {
+            ...sec.data,
+            slides: heroSlides,
           };
         }
 
@@ -488,6 +511,56 @@ export default async function HomePage() {
               cta_text: wpContent.newsletter_cta_text || undefined,
             };
           }
+        }
+
+        // Shop By Problem overrides
+        if (sec.type === "shopByProblem" && wpContent) {
+          if (wpContent.problem_title) sec.title = wpContent.problem_title;
+          if (wpContent.problem_subtitle) sec.subtitle = wpContent.problem_subtitle;
+          sec.data = {
+            ...sec.data,
+            ...wpContent,
+          };
+        }
+
+        // Shop By Budget overrides
+        if (sec.type === "shopByBudget" && wpContent) {
+          if (wpContent.budget_title) sec.title = wpContent.budget_title;
+          if (wpContent.budget_subtitle) sec.subtitle = wpContent.budget_subtitle;
+          sec.data = {
+            ...sec.data,
+            ...wpContent,
+          };
+        }
+
+        // Bundle & Save overrides
+        if (sec.type === "bundleSave" && wpContent) {
+          if (wpContent.bundles_title) sec.title = wpContent.bundles_title;
+          if (wpContent.bundles_subtitle) sec.subtitle = wpContent.bundles_subtitle;
+          sec.data = {
+            ...sec.data,
+            ...wpContent,
+          };
+        }
+
+        // Before & After overrides
+        if (sec.type === "beforeAfter" && wpContent) {
+          if (wpContent.before_after_title) sec.title = wpContent.before_after_title;
+          if (wpContent.before_after_subtitle) sec.subtitle = wpContent.before_after_subtitle;
+          sec.data = {
+            ...sec.data,
+            ...wpContent,
+          };
+        }
+
+        // Home Hacks overrides
+        if (sec.type === "homeHacks" && wpContent) {
+          if (wpContent.hacks_title) sec.title = wpContent.hacks_title;
+          if (wpContent.hacks_subtitle) sec.subtitle = wpContent.hacks_subtitle;
+          sec.data = {
+            ...sec.data,
+            ...wpContent,
+          };
         }
 
         return sec;

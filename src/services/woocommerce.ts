@@ -42,6 +42,7 @@ async function wooFetch<T>(
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
       response = await fetch(url, {
+        signal: AbortSignal.timeout(8000),
         ...options,
         headers: {
           ...getAuthHeaders(),
@@ -267,6 +268,7 @@ export async function getOnSaleProducts(
     const products = await wooFetch<WooProduct[]>(
       `/products?on_sale=true&per_page=20&status=publish`
     );
+    if (!Array.isArray(products)) return [];
     const filtered = products.filter(
       (p) => getDiscountPercent(p.regular_price, p.sale_price) >= minDiscountPercent
     );

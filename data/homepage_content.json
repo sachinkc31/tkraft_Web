@@ -1,0 +1,1258 @@
+{
+  "announcement_enabled": true,
+  "announcement_enabled_source": {
+    "label": "Announcement Enabled",
+    "type": "true_false",
+    "formatted_value": true
+  },
+  "announcement_text": "🚚 Free Shipping Above ₹499 🔥 Summer Sale Up To 50% Off 💳 Secure Payments",
+  "announcement_text_source": {
+    "label": "announcement text",
+    "type": "text",
+    "formatted_value": "🚚 Free Shipping Above ₹499 🔥 Summer Sale Up To 50% Off 💳 Secure Payments"
+  },
+  "announcement_link": {
+    "title": "Car Inflatable Bed Mattress (2026) – Back Seat Air Bed with Pump & 2 Pillows | Travel Comfort",
+    "url": "https://www.tkraft.in/product/car-inflatable-bed-mattress-india/",
+    "target": ""
+  },
+  "announcement_link_source": {
+    "label": "announcement link",
+    "type": "link",
+    "formatted_value": "https://www.tkraft.in/product/car-inflatable-bed-mattress-india/"
+  },
+  "announcement_bg_color": "#c62128",
+  "announcement_bg_color_source": {
+    "label": "announcement bg color",
+    "type": "color_picker",
+    "formatted_value": "#c62128"
+  },
+  "bestseller_title": "Best Seller ",
+  "bestseller_title_source": {
+    "label": "bestseller_title",
+    "type": "text",
+    "formatted_value": "Best Seller "
+  },
+  "bestseller_count": 4,
+  "bestseller_count_source": {
+    "label": "bestseller_count",
+    "type": "number",
+    "formatted_value": "4"
+  },
+  "trending_collection": "featured",
+  "trending_collection_source": {
+    "label": "trending_collection",
+    "type": "select",
+    "formatted_value": "featured"
+  },
+  "enable_section_bestsellers": true,
+  "enable_section_bestsellers_source": {
+    "label": "Enable Best Sellers",
+    "type": "true_false",
+    "formatted_value": true
+  },
+  "campaign_headline_": "campaign headline",
+  "campaign_headline__source": {
+    "label": "campaign headline",
+    "type": "text",
+    "formatted_value": "campaign headline"
+  },
+  "campaign_cta_text_": "Buy Now",
+  "campaign_cta_text__source": {
+    "label": "campaign cta text",
+    "type": "text",
+    "formatted_value": "Buy Now"
+  },
+  "campaign_cta_link": "",
+  "campaign_cta_link_source": {
+    "label": "Campaign CTA Link URL",
+    "type": "text",
+    "formatted_value": ""
+  },
+  "campaign_banner_image": "https://www.tkraft.in/wp-content/uploads/2026/05/NoodelsSlicer.jpeg",
+  "campaign_banner_image_source": {
+    "label": "Campaign Banner Image (Desktop)",
+    "type": "image",
+    "formatted_value": false
+  },
+  "campaign_banner_image_mobile": false,
+  "campaign_banner_image_mobile_source": {
+    "label": "Campaign Banner Image (Mobile)",
+    "type": "image",
+    "formatted_value": false
+  },
+  "campaign_product_collection": "Amazing Deals you will get only on Tkraft",
+  "campaign_product_collection_source": {
+    "label": "Campaign Product Collection Override",
+    "type": "text",
+    "formatted_value": ""
+  },
+  "cta_title": "Upgrade Your Living Experience ",
+  "cta_title_source": {
+    "label": "Call-to-Action Section Title",
+    "type": "text",
+    "formatted_value": "Upgrade Your Living Experience "
+  },
+  "cta_description": "Sale Ending Soon! Grab Before you miss out on",
+  "cta_description_source": {
+    "label": "cta_description",
+    "type": "textarea",
+    "formatted_value": "Sale Ending Soon! Grab Before you miss out on"
+  },
+  "cta_button_text": "Buy Now",
+  "cta_button_text_source": {
+    "label": "cta_button_text",
+    "type": "text",
+    "formatted_value": "Buy Now"
+  },
+  "cta_button_url": "http://localhost:3000/category/home",
+  "cta_button_url_source": {
+    "label": "cta_button_url",
+    "type": "url",
+    "formatted_value": "http://localhost:3000/category/home"
+  },
+  "cta_image": "https://www.tkraft.in/wp-content/uploads/2026/08/Gemini_Generated_Image_hurx4ghurx4ghurx-1.png",
+  "cta_image_source": {
+    "label": "Call-to-Action Background Image",
+    "type": "image",
+    "formatted_value": {
+      "ID": 6165,
+      "id": 6165,
+      "title": "SmartKitechen",
+      "filename": "SmartKitechen.png",
+      "filesize": 8741292,
+      "url": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?fit=3712%2C1152&ssl=1",
+      "link": "https://www.tkraft.in/homepage-content/smartkitechen/",
+      "alt": "",
+      "author": "1",
+      "description": "",
+      "caption": "",
+      "name": "smartkitechen",
+      "status": "inherit",
+      "uploaded_to": 6144,
+      "date": "2026-05-24 13:30:12",
+      "modified": "2026-05-24 13:30:12",
+      "menu_order": 0,
+      "mime_type": "image/png",
+      "type": "image",
+      "subtype": "png",
+      "icon": "https://www.tkraft.in/wp-includes/images/media/default.png",
+      "width": 3712,
+      "height": 1152,
+      "sizes": {
+        "thumbnail": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?resize=555%2C360&ssl=1",
+        "thumbnail-width": 555,
+        "thumbnail-height": 360,
+        "medium": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?fit=570%2C177&ssl=1",
+        "medium-width": 570,
+        "medium-height": 177,
+        "medium_large": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?fit=768%2C238&ssl=1",
+        "medium_large-width": 768,
+        "medium_large-height": 238,
+        "large": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?fit=770%2C239&ssl=1",
+        "large-width": 770,
+        "large-height": 239,
+        "1536x1536": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?fit=1536%2C477&ssl=1",
+        "1536x1536-width": 1536,
+        "1536x1536-height": 477,
+        "2048x2048": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?fit=2048%2C636&ssl=1",
+        "2048x2048-width": 2048,
+        "2048x2048-height": 636,
+        "post-thumbnail": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?resize=360%2C210&ssl=1",
+        "post-thumbnail-width": 360,
+        "post-thumbnail-height": 210,
+        "konte-post-thumbnail-medium": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?resize=580%2C400&ssl=1",
+        "konte-post-thumbnail-medium-width": 580,
+        "konte-post-thumbnail-medium-height": 400,
+        "konte-post-thumbnail-large": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?resize=750%2C420&ssl=1",
+        "konte-post-thumbnail-large-width": 750,
+        "konte-post-thumbnail-large-height": 420,
+        "konte-post-thumbnail-navigation": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?resize=100%2C68&ssl=1",
+        "konte-post-thumbnail-navigation-width": 100,
+        "konte-post-thumbnail-navigation-height": 68,
+        "konte-post-thumbnail-shortcode": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?resize=450%2C300&ssl=1",
+        "konte-post-thumbnail-shortcode-width": 450,
+        "konte-post-thumbnail-shortcode-height": 300,
+        "konte-portfolio-thumbnail": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?resize=660%2C660&ssl=1",
+        "konte-portfolio-thumbnail-width": 660,
+        "konte-portfolio-thumbnail-height": 660,
+        "konte-portfolio-masonry": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?fit=660%2C205&ssl=1",
+        "konte-portfolio-masonry-width": 660,
+        "konte-portfolio-masonry-height": 205,
+        "woocommerce_thumbnail": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?resize=680%2C680&ssl=1",
+        "woocommerce_thumbnail-width": 680,
+        "woocommerce_thumbnail-height": 680,
+        "woocommerce_single": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?fit=840%2C261&ssl=1",
+        "woocommerce_single-width": 840,
+        "woocommerce_single-height": 261,
+        "woocommerce_gallery_thumbnail": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?resize=120%2C140&ssl=1",
+        "woocommerce_gallery_thumbnail-width": 120,
+        "woocommerce_gallery_thumbnail-height": 140,
+        "jetpack-portfolio-admin-thumb": "https://www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png",
+        "jetpack-portfolio-admin-thumb-width": 50,
+        "jetpack-portfolio-admin-thumb-height": 16
+      }
+    }
+  },
+  "enable_section_cta": true,
+  "enable_section_cta_source": {
+    "label": "Enable CTA Banner",
+    "type": "true_false",
+    "formatted_value": true
+  },
+  "collection_1_title": "",
+  "collection_1_title_source": {
+    "label": "Collection Card 1 Title",
+    "type": "text",
+    "formatted_value": ""
+  },
+  "collection_1_category": "",
+  "collection_1_category_source": {
+    "label": "Collection Card 1 Category ID(s)",
+    "type": "text",
+    "formatted_value": false
+  },
+  "collection_2_title": "",
+  "collection_2_title_source": {
+    "label": "Collection Card 2 Title",
+    "type": "text",
+    "formatted_value": ""
+  },
+  "collection_2_category": "",
+  "collection_2_category_source": {
+    "label": "Collection Card 2 Category ID(s)",
+    "type": "text",
+    "formatted_value": false
+  },
+  "collection_3_title": "",
+  "collection_3_title_source": {
+    "label": "Collection Card 3 Title",
+    "type": "text",
+    "formatted_value": ""
+  },
+  "collection_3_category": "",
+  "collection_3_category_source": {
+    "label": "Collection Card 3 Category ID(s)",
+    "type": "text",
+    "formatted_value": false
+  },
+  "flash_sale_title": "Flash Deal",
+  "flash_sale_title_source": {
+    "label": "flash sale title",
+    "type": "text",
+    "formatted_value": "Flash Deal"
+  },
+  "flash_sale_end_date": "2026-05-23 00:00:00",
+  "flash_sale_end_date_source": {
+    "label": "flash sale end date",
+    "type": "date_time_picker",
+    "formatted_value": "23/05/2026 12:00 am"
+  },
+  "flash_sale_collection": false,
+  "flash_sale_collection_source": {
+    "label": "flash sale collection",
+    "type": "image",
+    "formatted_value": false
+  },
+  "campaign_id": "",
+  "campaign_id_source": {
+    "label": "Campaign ID (Unique)",
+    "type": "text",
+    "formatted_value": ""
+  },
+  "campaign_name": "",
+  "campaign_name_source": {
+    "label": "Campaign Name",
+    "type": "text",
+    "formatted_value": ""
+  },
+  "campaign_theme": "monsoon",
+  "campaign_theme_source": {
+    "label": "Campaign Theme Motif",
+    "type": "select",
+    "formatted_value": "monsoon"
+  },
+  "campaign_headline": "",
+  "campaign_headline_source": {
+    "label": "Campaign Headline Override",
+    "type": "text",
+    "formatted_value": ""
+  },
+  "campaign_cta_text": "",
+  "campaign_cta_text_source": {
+    "label": "Campaign CTA Button Text",
+    "type": "text",
+    "formatted_value": ""
+  },
+  "campaign_promo_text": "",
+  "campaign_promo_text_source": {
+    "label": "Announcement Bar Ribbon Copy",
+    "type": "text",
+    "formatted_value": ""
+  },
+  "campaign_color_primary": "",
+  "campaign_color_primary_source": {
+    "label": "Primary Brand Color (HSL)",
+    "type": "text",
+    "formatted_value": ""
+  },
+  "campaign_color_accent": "",
+  "campaign_color_accent_source": {
+    "label": "Accent/Highlight Color (HSL)",
+    "type": "text",
+    "formatted_value": ""
+  },
+  "campaign_color_surface": "",
+  "campaign_color_surface_source": {
+    "label": "Section Surface Background Color (HSL)",
+    "type": "text",
+    "formatted_value": ""
+  },
+  "hero_title": "Mosoon Sale LIVE",
+  "hero_title_source": {
+    "label": "Hero Title",
+    "type": "text",
+    "formatted_value": "Mosoon Sale LIVE"
+  },
+  "hero_subtitle": "Smart Kitchen, Cleaning & Home Solutions",
+  "hero_subtitle_source": {
+    "label": "Hero Subtitle",
+    "type": "textarea",
+    "formatted_value": "Smart Kitchen, Cleaning & Home Solutions"
+  },
+  "hero_image": {
+    "ID": 6165,
+    "id": 6165,
+    "title": "SmartKitechen",
+    "filename": "SmartKitechen.png",
+    "filesize": 8741292,
+    "url": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?fit=3712%2C1152&ssl=1",
+    "link": "https://www.tkraft.in/homepage-content/smartkitechen/",
+    "alt": "",
+    "author": "1",
+    "description": "",
+    "caption": "",
+    "name": "smartkitechen",
+    "status": "inherit",
+    "uploaded_to": 6144,
+    "date": "2026-05-24 13:30:12",
+    "modified": "2026-05-24 13:30:12",
+    "menu_order": 0,
+    "mime_type": "image/png",
+    "type": "image",
+    "subtype": "png",
+    "icon": "https://www.tkraft.in/wp-includes/images/media/default.png",
+    "width": 3712,
+    "height": 1152,
+    "sizes": {
+      "thumbnail": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?resize=555%2C360&ssl=1",
+      "thumbnail-width": 555,
+      "thumbnail-height": 360,
+      "medium": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?fit=570%2C177&ssl=1",
+      "medium-width": 570,
+      "medium-height": 177,
+      "medium_large": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?fit=768%2C238&ssl=1",
+      "medium_large-width": 768,
+      "medium_large-height": 238,
+      "large": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?fit=770%2C239&ssl=1",
+      "large-width": 770,
+      "large-height": 239,
+      "1536x1536": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?fit=1536%2C477&ssl=1",
+      "1536x1536-width": 1536,
+      "1536x1536-height": 477,
+      "2048x2048": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?fit=2048%2C636&ssl=1",
+      "2048x2048-width": 2048,
+      "2048x2048-height": 636,
+      "post-thumbnail": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?resize=360%2C210&ssl=1",
+      "post-thumbnail-width": 360,
+      "post-thumbnail-height": 210,
+      "konte-post-thumbnail-medium": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?resize=580%2C400&ssl=1",
+      "konte-post-thumbnail-medium-width": 580,
+      "konte-post-thumbnail-medium-height": 400,
+      "konte-post-thumbnail-large": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?resize=750%2C420&ssl=1",
+      "konte-post-thumbnail-large-width": 750,
+      "konte-post-thumbnail-large-height": 420,
+      "konte-post-thumbnail-navigation": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?resize=100%2C68&ssl=1",
+      "konte-post-thumbnail-navigation-width": 100,
+      "konte-post-thumbnail-navigation-height": 68,
+      "konte-post-thumbnail-shortcode": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?resize=450%2C300&ssl=1",
+      "konte-post-thumbnail-shortcode-width": 450,
+      "konte-post-thumbnail-shortcode-height": 300,
+      "konte-portfolio-thumbnail": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?resize=660%2C660&ssl=1",
+      "konte-portfolio-thumbnail-width": 660,
+      "konte-portfolio-thumbnail-height": 660,
+      "konte-portfolio-masonry": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?fit=660%2C205&ssl=1",
+      "konte-portfolio-masonry-width": 660,
+      "konte-portfolio-masonry-height": 205,
+      "woocommerce_thumbnail": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?resize=680%2C680&ssl=1",
+      "woocommerce_thumbnail-width": 680,
+      "woocommerce_thumbnail-height": 680,
+      "woocommerce_single": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?fit=840%2C261&ssl=1",
+      "woocommerce_single-width": 840,
+      "woocommerce_single-height": 261,
+      "woocommerce_gallery_thumbnail": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?resize=120%2C140&ssl=1",
+      "woocommerce_gallery_thumbnail-width": 120,
+      "woocommerce_gallery_thumbnail-height": 140,
+      "jetpack-portfolio-admin-thumb": "https://www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png",
+      "jetpack-portfolio-admin-thumb-width": 50,
+      "jetpack-portfolio-admin-thumb-height": 16
+    }
+  },
+  "hero_image_source": {
+    "label": "Hero Image",
+    "type": "image",
+    "formatted_value": {
+      "ID": 6165,
+      "id": 6165,
+      "title": "SmartKitechen",
+      "filename": "SmartKitechen.png",
+      "filesize": 8741292,
+      "url": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?fit=3712%2C1152&ssl=1",
+      "link": "https://www.tkraft.in/homepage-content/smartkitechen/",
+      "alt": "",
+      "author": "1",
+      "description": "",
+      "caption": "",
+      "name": "smartkitechen",
+      "status": "inherit",
+      "uploaded_to": 6144,
+      "date": "2026-05-24 13:30:12",
+      "modified": "2026-05-24 13:30:12",
+      "menu_order": 0,
+      "mime_type": "image/png",
+      "type": "image",
+      "subtype": "png",
+      "icon": "https://www.tkraft.in/wp-includes/images/media/default.png",
+      "width": 3712,
+      "height": 1152,
+      "sizes": {
+        "thumbnail": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?resize=555%2C360&ssl=1",
+        "thumbnail-width": 555,
+        "thumbnail-height": 360,
+        "medium": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?fit=570%2C177&ssl=1",
+        "medium-width": 570,
+        "medium-height": 177,
+        "medium_large": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?fit=768%2C238&ssl=1",
+        "medium_large-width": 768,
+        "medium_large-height": 238,
+        "large": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?fit=770%2C239&ssl=1",
+        "large-width": 770,
+        "large-height": 239,
+        "1536x1536": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?fit=1536%2C477&ssl=1",
+        "1536x1536-width": 1536,
+        "1536x1536-height": 477,
+        "2048x2048": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?fit=2048%2C636&ssl=1",
+        "2048x2048-width": 2048,
+        "2048x2048-height": 636,
+        "post-thumbnail": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?resize=360%2C210&ssl=1",
+        "post-thumbnail-width": 360,
+        "post-thumbnail-height": 210,
+        "konte-post-thumbnail-medium": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?resize=580%2C400&ssl=1",
+        "konte-post-thumbnail-medium-width": 580,
+        "konte-post-thumbnail-medium-height": 400,
+        "konte-post-thumbnail-large": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?resize=750%2C420&ssl=1",
+        "konte-post-thumbnail-large-width": 750,
+        "konte-post-thumbnail-large-height": 420,
+        "konte-post-thumbnail-navigation": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?resize=100%2C68&ssl=1",
+        "konte-post-thumbnail-navigation-width": 100,
+        "konte-post-thumbnail-navigation-height": 68,
+        "konte-post-thumbnail-shortcode": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?resize=450%2C300&ssl=1",
+        "konte-post-thumbnail-shortcode-width": 450,
+        "konte-post-thumbnail-shortcode-height": 300,
+        "konte-portfolio-thumbnail": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?resize=660%2C660&ssl=1",
+        "konte-portfolio-thumbnail-width": 660,
+        "konte-portfolio-thumbnail-height": 660,
+        "konte-portfolio-masonry": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?fit=660%2C205&ssl=1",
+        "konte-portfolio-masonry-width": 660,
+        "konte-portfolio-masonry-height": 205,
+        "woocommerce_thumbnail": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?resize=680%2C680&ssl=1",
+        "woocommerce_thumbnail-width": 680,
+        "woocommerce_thumbnail-height": 680,
+        "woocommerce_single": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?fit=840%2C261&ssl=1",
+        "woocommerce_single-width": 840,
+        "woocommerce_single-height": 261,
+        "woocommerce_gallery_thumbnail": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png?resize=120%2C140&ssl=1",
+        "woocommerce_gallery_thumbnail-width": 120,
+        "woocommerce_gallery_thumbnail-height": 140,
+        "jetpack-portfolio-admin-thumb": "https://www.tkraft.in/wp-content/uploads/2026/05/SmartKitechen.png",
+        "jetpack-portfolio-admin-thumb-width": 50,
+        "jetpack-portfolio-admin-thumb-height": 16
+      }
+    }
+  },
+  "hero_cta_text": "Shop Now",
+  "hero_cta_text_source": {
+    "label": "Hero CTA Text",
+    "type": "text",
+    "formatted_value": "Shop Now"
+  },
+  "hero_cta_url": "https://www.tkraft.in/shop/",
+  "hero_cta_url_source": {
+    "label": "Hero CTA URL",
+    "type": "url",
+    "formatted_value": "https://www.tkraft.in/shop/"
+  },
+  "hero_scroll_interval_seconds": 6,
+  "hero_scroll_interval_seconds_source": {
+    "label": "Banner Rotation Speed (Seconds)",
+    "type": "number",
+    "formatted_value": "6"
+  },
+  "categories_title": "",
+  "categories_title_source": {
+    "label": "Categories Section Title",
+    "type": "text",
+    "formatted_value": ""
+  },
+  "categories_subtitle": "",
+  "categories_subtitle_source": {
+    "label": "Categories Section Subtitle",
+    "type": "text",
+    "formatted_value": ""
+  },
+  "categories_slugs": "",
+  "categories_slugs_source": {
+    "label": "Category Slugs list (Comma-separated)",
+    "type": "text",
+    "formatted_value": ""
+  },
+  "trending_title": "Trending Now",
+  "trending_title_source": {
+    "label": "trending_title",
+    "type": "text",
+    "formatted_value": "Trending Now"
+  },
+  "trending_limit": 8,
+  "trending_limit_source": {
+    "label": "Trending Carousel Limit",
+    "type": "number",
+    "formatted_value": "8"
+  },
+  "bestsellers_title": "",
+  "bestsellers_title_source": {
+    "label": "Best Sellers Section Title",
+    "type": "text",
+    "formatted_value": ""
+  },
+  "bestsellers_limit": 8,
+  "bestsellers_limit_source": {
+    "label": "Best Sellers Carousel Limit",
+    "type": "number",
+    "formatted_value": "8"
+  },
+  "new_arrivals_title": "",
+  "new_arrivals_title_source": {
+    "label": "New Arrivals Section Title",
+    "type": "text",
+    "formatted_value": ""
+  },
+  "new_arrivals_limit": 8,
+  "new_arrivals_limit_source": {
+    "label": "New Arrivals Carousel Limit",
+    "type": "number",
+    "formatted_value": "8"
+  },
+  "promo_1_title": "",
+  "promo_1_title_source": {
+    "label": "Promo Card 1 Title",
+    "type": "text",
+    "formatted_value": ""
+  },
+  "promo_1_subtitle": "",
+  "promo_1_subtitle_source": {
+    "label": "Promo Card 1 Subtitle",
+    "type": "text",
+    "formatted_value": ""
+  },
+  "promo_1_image": false,
+  "promo_1_image_source": {
+    "label": "Promo Card 1 Background Image",
+    "type": "image",
+    "formatted_value": false
+  },
+  "promo_1_cta_text": "",
+  "promo_1_cta_text_source": {
+    "label": "Promo Card 1 Button Text",
+    "type": "text",
+    "formatted_value": ""
+  },
+  "promo_1_cta_link": "",
+  "promo_1_cta_link_source": {
+    "label": "Promo Card 1 Link URL",
+    "type": "text",
+    "formatted_value": ""
+  },
+  "promo_2_title": "",
+  "promo_2_title_source": {
+    "label": "Promo Card 2 Title",
+    "type": "text",
+    "formatted_value": ""
+  },
+  "promo_2_subtitle": "",
+  "promo_2_subtitle_source": {
+    "label": "Promo Card 2 Subtitle",
+    "type": "text",
+    "formatted_value": ""
+  },
+  "promo_2_image": false,
+  "promo_2_image_source": {
+    "label": "Promo Card 2 Background Image",
+    "type": "image",
+    "formatted_value": false
+  },
+  "promo_2_cta_text": "",
+  "promo_2_cta_text_source": {
+    "label": "Promo Card 2 Button Text",
+    "type": "text",
+    "formatted_value": ""
+  },
+  "promo_2_cta_link": "",
+  "promo_2_cta_link_source": {
+    "label": "Promo Card 2 Link URL",
+    "type": "text",
+    "formatted_value": ""
+  },
+  "cta_subtitle": "",
+  "cta_subtitle_source": {
+    "label": "Call-to-Action Section Subtitle",
+    "type": "text",
+    "formatted_value": ""
+  },
+  "cta_cta_text": "",
+  "cta_cta_text_source": {
+    "label": "Call-to-Action Button Text",
+    "type": "text",
+    "formatted_value": ""
+  },
+  "cta_cta_link": "",
+  "cta_cta_link_source": {
+    "label": "Call-to-Action Redirect URL",
+    "type": "text",
+    "formatted_value": ""
+  },
+  "enable_section_hero": true,
+  "enable_section_hero_source": {
+    "label": "Enable Hero Banner",
+    "type": "true_false",
+    "formatted_value": true
+  },
+  "enable_section_benefits": true,
+  "enable_section_benefits_source": {
+    "label": "Enable Customer Benefits",
+    "type": "true_false",
+    "formatted_value": true
+  },
+  "enable_section_categories": true,
+  "enable_section_categories_source": {
+    "label": "Enable Categories Grid",
+    "type": "true_false",
+    "formatted_value": true
+  },
+  "enable_section_trending": true,
+  "enable_section_trending_source": {
+    "label": "enable section trending",
+    "type": "true_false",
+    "formatted_value": true
+  },
+  "enable_section_promo": true,
+  "enable_section_promo_source": {
+    "label": "enable section promo",
+    "type": "true_false",
+    "formatted_value": true
+  },
+  "enable_section_highlights": true,
+  "enable_section_highlights_source": {
+    "label": "Enable Brand Highlights (Trust Section)",
+    "type": "true_false",
+    "formatted_value": true
+  },
+  "enable_section_testimonials": true,
+  "enable_section_testimonials_source": {
+    "label": "Enable Testimonials",
+    "type": "true_false",
+    "formatted_value": true
+  },
+  "enable_section_newsletter": true,
+  "enable_section_newsletter_source": {
+    "label": "Enable Newsletter Signup",
+    "type": "true_false",
+    "formatted_value": true
+  },
+  "hero_image_mobile": false,
+  "hero_image_mobile_source": {
+    "label": "Hero Slide Mobile Image",
+    "type": "image",
+    "formatted_value": false
+  },
+  "categories_hide_on_mobile": false,
+  "categories_hide_on_mobile_source": {
+    "label": "Hide Categories Grid on Mobile",
+    "type": "true_false",
+    "formatted_value": false
+  },
+  "trending_limit_mobile": 4,
+  "trending_limit_mobile_source": {
+    "label": "Trending Carousel Limit on Mobile",
+    "type": "number",
+    "formatted_value": "4"
+  },
+  "bestsellers_limit_mobile": 4,
+  "bestsellers_limit_mobile_source": {
+    "label": "Best Sellers Carousel Limit on Mobile",
+    "type": "number",
+    "formatted_value": "4"
+  },
+  "new_arrivals_limit_mobile": 4,
+  "new_arrivals_limit_mobile_source": {
+    "label": "New Arrivals Carousel Limit on Mobile",
+    "type": "number",
+    "formatted_value": "4"
+  },
+  "promo_1_image_mobile": false,
+  "promo_1_image_mobile_source": {
+    "label": "Promo Card 1 Mobile Image",
+    "type": "image",
+    "formatted_value": false
+  },
+  "promo_2_image_mobile": false,
+  "promo_2_image_mobile_source": {
+    "label": "Promo Card 2 Mobile Image",
+    "type": "image",
+    "formatted_value": false
+  },
+  "cta_image_mobile": false,
+  "cta_image_mobile_source": {
+    "label": "Call-to-Action Mobile Background Image",
+    "type": "image",
+    "formatted_value": false
+  },
+  "benefits_title": "",
+  "benefits_title_source": {
+    "label": "Benefits Section Title",
+    "type": "text",
+    "formatted_value": ""
+  },
+  "benefits_subtitle": "",
+  "benefits_subtitle_source": {
+    "label": "Benefits Section Subtitle",
+    "type": "text",
+    "formatted_value": ""
+  },
+  "highlights_title": "",
+  "highlights_title_source": {
+    "label": "Highlights Section Title",
+    "type": "text",
+    "formatted_value": ""
+  },
+  "highlights_subtitle": "",
+  "highlights_subtitle_source": {
+    "label": "Highlights Section Subtitle",
+    "type": "text",
+    "formatted_value": ""
+  },
+  "testimonials_title": "",
+  "testimonials_title_source": {
+    "label": "Testimonials Section Title",
+    "type": "text",
+    "formatted_value": ""
+  },
+  "testimonials_subtitle": "",
+  "testimonials_subtitle_source": {
+    "label": "Testimonials Section Subtitle",
+    "type": "text",
+    "formatted_value": ""
+  },
+  "newsletter_title": "",
+  "newsletter_title_source": {
+    "label": "Newsletter Section Title",
+    "type": "text",
+    "formatted_value": ""
+  },
+  "newsletter_subtitle": "",
+  "newsletter_subtitle_source": {
+    "label": "Newsletter Section Subtitle",
+    "type": "text",
+    "formatted_value": ""
+  },
+  "newsletter_placeholder": "",
+  "newsletter_placeholder_source": {
+    "label": "Newsletter Input Placeholder",
+    "type": "text",
+    "formatted_value": ""
+  },
+  "newsletter_cta_text": "",
+  "newsletter_cta_text_source": {
+    "label": "Newsletter Button Text",
+    "type": "text",
+    "formatted_value": ""
+  },
+  "enable_section_grid": true,
+  "enable_section_grid_source": {
+    "label": "Enable Custom Grid Section",
+    "type": "true_false",
+    "formatted_value": true
+  },
+  "grid_title": "Featured Highlights",
+  "grid_title_source": {
+    "label": "Custom Grid Title",
+    "type": "text",
+    "formatted_value": "Featured Highlights"
+  },
+  "grid_subtitle": "Elevate your spaces with premium organizers",
+  "grid_subtitle_source": {
+    "label": "Custom Grid Subtitle",
+    "type": "text",
+    "formatted_value": "Elevate your spaces with premium organizers"
+  },
+  "grid_items": null,
+  "grid_items_source": {
+    "label": "Custom Grid Cards",
+    "type": "repeater",
+    "formatted_value": false
+  },
+  "test_field": "Test Data set",
+  "test_field_source": {
+    "label": "test field",
+    "type": "text",
+    "formatted_value": "Test Data set"
+  },
+  "promo_title": "Mosoon Home Sale",
+  "promo_title_source": {
+    "label": "promo title",
+    "type": "text",
+    "formatted_value": "Mosoon Home Sale"
+  },
+  "promo_description": "Up To 50% Off",
+  "promo_description_source": {
+    "label": "promo description",
+    "type": "textarea",
+    "formatted_value": "Up To 50% Off"
+  },
+  "promo_image": {
+    "ID": 6307,
+    "id": 6307,
+    "title": "BigSalePromo",
+    "filename": "BigSalePromo.jpg",
+    "filesize": 45247,
+    "url": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?fit=1240%2C250&ssl=1",
+    "link": "https://www.tkraft.in/home-12/bigsalepromo/",
+    "alt": "",
+    "author": "1",
+    "description": "",
+    "caption": "",
+    "name": "bigsalepromo",
+    "status": "inherit",
+    "uploaded_to": 972,
+    "date": "2026-05-25 11:32:28",
+    "modified": "2026-05-25 11:32:28",
+    "menu_order": 0,
+    "mime_type": "image/jpeg",
+    "type": "image",
+    "subtype": "jpeg",
+    "icon": "https://www.tkraft.in/wp-includes/images/media/default.png",
+    "width": 1240,
+    "height": 250,
+    "sizes": {
+      "thumbnail": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?resize=555%2C250&ssl=1",
+      "thumbnail-width": 555,
+      "thumbnail-height": 250,
+      "medium": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?fit=570%2C115&ssl=1",
+      "medium-width": 570,
+      "medium-height": 115,
+      "medium_large": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?fit=768%2C155&ssl=1",
+      "medium_large-width": 768,
+      "medium_large-height": 155,
+      "large": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?fit=770%2C155&ssl=1",
+      "large-width": 770,
+      "large-height": 155,
+      "1536x1536": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?fit=1240%2C250&ssl=1",
+      "1536x1536-width": 1240,
+      "1536x1536-height": 250,
+      "2048x2048": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?fit=1240%2C250&ssl=1",
+      "2048x2048-width": 1240,
+      "2048x2048-height": 250,
+      "post-thumbnail": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?resize=360%2C210&ssl=1",
+      "post-thumbnail-width": 360,
+      "post-thumbnail-height": 210,
+      "konte-post-thumbnail-medium": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?resize=580%2C250&ssl=1",
+      "konte-post-thumbnail-medium-width": 580,
+      "konte-post-thumbnail-medium-height": 250,
+      "konte-post-thumbnail-large": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?resize=750%2C250&ssl=1",
+      "konte-post-thumbnail-large-width": 750,
+      "konte-post-thumbnail-large-height": 250,
+      "konte-post-thumbnail-navigation": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?resize=100%2C68&ssl=1",
+      "konte-post-thumbnail-navigation-width": 100,
+      "konte-post-thumbnail-navigation-height": 68,
+      "konte-post-thumbnail-shortcode": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?resize=450%2C250&ssl=1",
+      "konte-post-thumbnail-shortcode-width": 450,
+      "konte-post-thumbnail-shortcode-height": 250,
+      "konte-portfolio-thumbnail": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?resize=660%2C250&ssl=1",
+      "konte-portfolio-thumbnail-width": 660,
+      "konte-portfolio-thumbnail-height": 250,
+      "konte-portfolio-masonry": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?fit=660%2C133&ssl=1",
+      "konte-portfolio-masonry-width": 660,
+      "konte-portfolio-masonry-height": 133,
+      "woocommerce_thumbnail": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?resize=680%2C250&ssl=1",
+      "woocommerce_thumbnail-width": 680,
+      "woocommerce_thumbnail-height": 250,
+      "woocommerce_single": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?fit=840%2C169&ssl=1",
+      "woocommerce_single-width": 840,
+      "woocommerce_single-height": 169,
+      "woocommerce_gallery_thumbnail": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?resize=120%2C140&ssl=1",
+      "woocommerce_gallery_thumbnail-width": 120,
+      "woocommerce_gallery_thumbnail-height": 140,
+      "jetpack-portfolio-admin-thumb": "https://www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg",
+      "jetpack-portfolio-admin-thumb-width": 50,
+      "jetpack-portfolio-admin-thumb-height": 10
+    }
+  },
+  "promo_image_source": {
+    "label": "promo image",
+    "type": "image",
+    "formatted_value": {
+      "ID": 6307,
+      "id": 6307,
+      "title": "BigSalePromo",
+      "filename": "BigSalePromo.jpg",
+      "filesize": 45247,
+      "url": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?fit=1240%2C250&ssl=1",
+      "link": "https://www.tkraft.in/home-12/bigsalepromo/",
+      "alt": "",
+      "author": "1",
+      "description": "",
+      "caption": "",
+      "name": "bigsalepromo",
+      "status": "inherit",
+      "uploaded_to": 972,
+      "date": "2026-05-25 11:32:28",
+      "modified": "2026-05-25 11:32:28",
+      "menu_order": 0,
+      "mime_type": "image/jpeg",
+      "type": "image",
+      "subtype": "jpeg",
+      "icon": "https://www.tkraft.in/wp-includes/images/media/default.png",
+      "width": 1240,
+      "height": 250,
+      "sizes": {
+        "thumbnail": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?resize=555%2C250&ssl=1",
+        "thumbnail-width": 555,
+        "thumbnail-height": 250,
+        "medium": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?fit=570%2C115&ssl=1",
+        "medium-width": 570,
+        "medium-height": 115,
+        "medium_large": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?fit=768%2C155&ssl=1",
+        "medium_large-width": 768,
+        "medium_large-height": 155,
+        "large": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?fit=770%2C155&ssl=1",
+        "large-width": 770,
+        "large-height": 155,
+        "1536x1536": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?fit=1240%2C250&ssl=1",
+        "1536x1536-width": 1240,
+        "1536x1536-height": 250,
+        "2048x2048": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?fit=1240%2C250&ssl=1",
+        "2048x2048-width": 1240,
+        "2048x2048-height": 250,
+        "post-thumbnail": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?resize=360%2C210&ssl=1",
+        "post-thumbnail-width": 360,
+        "post-thumbnail-height": 210,
+        "konte-post-thumbnail-medium": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?resize=580%2C250&ssl=1",
+        "konte-post-thumbnail-medium-width": 580,
+        "konte-post-thumbnail-medium-height": 250,
+        "konte-post-thumbnail-large": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?resize=750%2C250&ssl=1",
+        "konte-post-thumbnail-large-width": 750,
+        "konte-post-thumbnail-large-height": 250,
+        "konte-post-thumbnail-navigation": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?resize=100%2C68&ssl=1",
+        "konte-post-thumbnail-navigation-width": 100,
+        "konte-post-thumbnail-navigation-height": 68,
+        "konte-post-thumbnail-shortcode": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?resize=450%2C250&ssl=1",
+        "konte-post-thumbnail-shortcode-width": 450,
+        "konte-post-thumbnail-shortcode-height": 250,
+        "konte-portfolio-thumbnail": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?resize=660%2C250&ssl=1",
+        "konte-portfolio-thumbnail-width": 660,
+        "konte-portfolio-thumbnail-height": 250,
+        "konte-portfolio-masonry": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?fit=660%2C133&ssl=1",
+        "konte-portfolio-masonry-width": 660,
+        "konte-portfolio-masonry-height": 133,
+        "woocommerce_thumbnail": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?resize=680%2C250&ssl=1",
+        "woocommerce_thumbnail-width": 680,
+        "woocommerce_thumbnail-height": 250,
+        "woocommerce_single": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?fit=840%2C169&ssl=1",
+        "woocommerce_single-width": 840,
+        "woocommerce_single-height": 169,
+        "woocommerce_gallery_thumbnail": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?resize=120%2C140&ssl=1",
+        "woocommerce_gallery_thumbnail-width": 120,
+        "woocommerce_gallery_thumbnail-height": 140,
+        "jetpack-portfolio-admin-thumb": "https://www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg",
+        "jetpack-portfolio-admin-thumb-width": 50,
+        "jetpack-portfolio-admin-thumb-height": 10
+      }
+    }
+  },
+  "promo_cta_text": "Shop Now",
+  "promo_cta_text_source": {
+    "label": "promo cta text",
+    "type": "text",
+    "formatted_value": "Shop Now"
+  },
+  "promo_cta_url": "https://www.tkraft.in/product-category/home/",
+  "promo_cta_url_source": {
+    "label": "promo cta url",
+    "type": "url",
+    "formatted_value": "https://www.tkraft.in/product-category/home/"
+  },
+  "login_promo_banner": {
+    "ID": 6307,
+    "id": 6307,
+    "title": "BigSalePromo",
+    "filename": "BigSalePromo.jpg",
+    "filesize": 45247,
+    "url": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?fit=1240%2C250&ssl=1",
+    "link": "https://www.tkraft.in/home-12/bigsalepromo/",
+    "alt": "",
+    "author": "1",
+    "description": "",
+    "caption": "",
+    "name": "bigsalepromo",
+    "status": "inherit",
+    "uploaded_to": 972,
+    "date": "2026-05-25 11:32:28",
+    "modified": "2026-05-25 11:32:28",
+    "menu_order": 0,
+    "mime_type": "image/jpeg",
+    "type": "image",
+    "subtype": "jpeg",
+    "icon": "https://www.tkraft.in/wp-includes/images/media/default.png",
+    "width": 1240,
+    "height": 250,
+    "sizes": {
+      "thumbnail": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?resize=555%2C250&ssl=1",
+      "thumbnail-width": 555,
+      "thumbnail-height": 250,
+      "medium": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?fit=570%2C115&ssl=1",
+      "medium-width": 570,
+      "medium-height": 115,
+      "medium_large": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?fit=768%2C155&ssl=1",
+      "medium_large-width": 768,
+      "medium_large-height": 155,
+      "large": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?fit=770%2C155&ssl=1",
+      "large-width": 770,
+      "large-height": 155,
+      "1536x1536": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?fit=1240%2C250&ssl=1",
+      "1536x1536-width": 1240,
+      "1536x1536-height": 250,
+      "2048x2048": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?fit=1240%2C250&ssl=1",
+      "2048x2048-width": 1240,
+      "2048x2048-height": 250,
+      "post-thumbnail": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?resize=360%2C210&ssl=1",
+      "post-thumbnail-width": 360,
+      "post-thumbnail-height": 210,
+      "konte-post-thumbnail-medium": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?resize=580%2C250&ssl=1",
+      "konte-post-thumbnail-medium-width": 580,
+      "konte-post-thumbnail-medium-height": 250,
+      "konte-post-thumbnail-large": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?resize=750%2C250&ssl=1",
+      "konte-post-thumbnail-large-width": 750,
+      "konte-post-thumbnail-large-height": 250,
+      "konte-post-thumbnail-navigation": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?resize=100%2C68&ssl=1",
+      "konte-post-thumbnail-navigation-width": 100,
+      "konte-post-thumbnail-navigation-height": 68,
+      "konte-post-thumbnail-shortcode": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?resize=450%2C250&ssl=1",
+      "konte-post-thumbnail-shortcode-width": 450,
+      "konte-post-thumbnail-shortcode-height": 250,
+      "konte-portfolio-thumbnail": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?resize=660%2C250&ssl=1",
+      "konte-portfolio-thumbnail-width": 660,
+      "konte-portfolio-thumbnail-height": 250,
+      "konte-portfolio-masonry": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?fit=660%2C133&ssl=1",
+      "konte-portfolio-masonry-width": 660,
+      "konte-portfolio-masonry-height": 133,
+      "woocommerce_thumbnail": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?resize=680%2C250&ssl=1",
+      "woocommerce_thumbnail-width": 680,
+      "woocommerce_thumbnail-height": 250,
+      "woocommerce_single": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?fit=840%2C169&ssl=1",
+      "woocommerce_single-width": 840,
+      "woocommerce_single-height": 169,
+      "woocommerce_gallery_thumbnail": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?resize=120%2C140&ssl=1",
+      "woocommerce_gallery_thumbnail-width": 120,
+      "woocommerce_gallery_thumbnail-height": 140,
+      "jetpack-portfolio-admin-thumb": "https://www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg",
+      "jetpack-portfolio-admin-thumb-width": 50,
+      "jetpack-portfolio-admin-thumb-height": 10
+    }
+  },
+  "login_promo_banner_source": {
+    "label": "login promo banner",
+    "type": "image",
+    "formatted_value": {
+      "ID": 6307,
+      "id": 6307,
+      "title": "BigSalePromo",
+      "filename": "BigSalePromo.jpg",
+      "filesize": 45247,
+      "url": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?fit=1240%2C250&ssl=1",
+      "link": "https://www.tkraft.in/home-12/bigsalepromo/",
+      "alt": "",
+      "author": "1",
+      "description": "",
+      "caption": "",
+      "name": "bigsalepromo",
+      "status": "inherit",
+      "uploaded_to": 972,
+      "date": "2026-05-25 11:32:28",
+      "modified": "2026-05-25 11:32:28",
+      "menu_order": 0,
+      "mime_type": "image/jpeg",
+      "type": "image",
+      "subtype": "jpeg",
+      "icon": "https://www.tkraft.in/wp-includes/images/media/default.png",
+      "width": 1240,
+      "height": 250,
+      "sizes": {
+        "thumbnail": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?resize=555%2C250&ssl=1",
+        "thumbnail-width": 555,
+        "thumbnail-height": 250,
+        "medium": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?fit=570%2C115&ssl=1",
+        "medium-width": 570,
+        "medium-height": 115,
+        "medium_large": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?fit=768%2C155&ssl=1",
+        "medium_large-width": 768,
+        "medium_large-height": 155,
+        "large": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?fit=770%2C155&ssl=1",
+        "large-width": 770,
+        "large-height": 155,
+        "1536x1536": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?fit=1240%2C250&ssl=1",
+        "1536x1536-width": 1240,
+        "1536x1536-height": 250,
+        "2048x2048": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?fit=1240%2C250&ssl=1",
+        "2048x2048-width": 1240,
+        "2048x2048-height": 250,
+        "post-thumbnail": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?resize=360%2C210&ssl=1",
+        "post-thumbnail-width": 360,
+        "post-thumbnail-height": 210,
+        "konte-post-thumbnail-medium": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?resize=580%2C250&ssl=1",
+        "konte-post-thumbnail-medium-width": 580,
+        "konte-post-thumbnail-medium-height": 250,
+        "konte-post-thumbnail-large": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?resize=750%2C250&ssl=1",
+        "konte-post-thumbnail-large-width": 750,
+        "konte-post-thumbnail-large-height": 250,
+        "konte-post-thumbnail-navigation": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?resize=100%2C68&ssl=1",
+        "konte-post-thumbnail-navigation-width": 100,
+        "konte-post-thumbnail-navigation-height": 68,
+        "konte-post-thumbnail-shortcode": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?resize=450%2C250&ssl=1",
+        "konte-post-thumbnail-shortcode-width": 450,
+        "konte-post-thumbnail-shortcode-height": 250,
+        "konte-portfolio-thumbnail": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?resize=660%2C250&ssl=1",
+        "konte-portfolio-thumbnail-width": 660,
+        "konte-portfolio-thumbnail-height": 250,
+        "konte-portfolio-masonry": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?fit=660%2C133&ssl=1",
+        "konte-portfolio-masonry-width": 660,
+        "konte-portfolio-masonry-height": 133,
+        "woocommerce_thumbnail": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?resize=680%2C250&ssl=1",
+        "woocommerce_thumbnail-width": 680,
+        "woocommerce_thumbnail-height": 250,
+        "woocommerce_single": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?fit=840%2C169&ssl=1",
+        "woocommerce_single-width": 840,
+        "woocommerce_single-height": 169,
+        "woocommerce_gallery_thumbnail": "https://i0.wp.com/www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg?resize=120%2C140&ssl=1",
+        "woocommerce_gallery_thumbnail-width": 120,
+        "woocommerce_gallery_thumbnail-height": 140,
+        "jetpack-portfolio-admin-thumb": "https://www.tkraft.in/wp-content/uploads/2026/05/BigSalePromo.jpg",
+        "jetpack-portfolio-admin-thumb-width": 50,
+        "jetpack-portfolio-admin-thumb-height": 10
+      }
+    }
+  },
+  "trending_count": 3,
+  "trending_count_source": {
+    "label": "trending_count",
+    "type": "number",
+    "formatted_value": "3"
+  },
+  "benefit_1_title": "Fast Shipping",
+  "benefit_1_title_source": {
+    "label": "benefit 1 title",
+    "type": "text",
+    "formatted_value": "Fast Shipping"
+  },
+  "benefit_1_icon": {
+    "type": "dashicons",
+    "value": ""
+  },
+  "benefit_1_icon_source": {
+    "label": "benefit 1 icon",
+    "type": "icon_picker",
+    "formatted_value": ""
+  },
+  "benefit_2_title": "Secure Payments",
+  "benefit_2_title_source": {
+    "label": "benefit 2 title",
+    "type": "text",
+    "formatted_value": "Secure Payments"
+  },
+  "benefit_2_icon": {
+    "type": "dashicons",
+    "value": "dashicons-lock"
+  },
+  "benefit_2_icon_source": {
+    "label": "benefit 2 icon",
+    "type": "icon_picker",
+    "formatted_value": "dashicons-lock"
+  },
+  "benefit_3_title": "Easy Returns",
+  "benefit_3_title_source": {
+    "label": "benefit 3 title",
+    "type": "text",
+    "formatted_value": "Easy Returns"
+  },
+  "benefit_3_icon": {
+    "type": "dashicons",
+    "value": "dashicons-editor-break"
+  },
+  "benefit_3_icon_source": {
+    "label": "benefit 3 icon",
+    "type": "icon_picker",
+    "formatted_value": "dashicons-editor-break"
+  },
+  "benefit_4_title": "Quality Products",
+  "benefit_4_title_source": {
+    "label": "benefit 4 title",
+    "type": "text",
+    "formatted_value": "Quality Products"
+  },
+  "benefit_4_icon": {
+    "type": "dashicons",
+    "value": "dashicons-star-filled"
+  },
+  "benefit_4_icon_source": {
+    "label": "benefit 4 icon",
+    "type": "icon_picker",
+    "formatted_value": "dashicons-star-filled"
+  },
+  "why_buy_item_1": "Affordable Products",
+  "why_buy_item_1_source": {
+    "label": "why buy item 1",
+    "type": "text",
+    "formatted_value": "Affordable Products"
+  },
+  "why_buy_item_2": "Carefully Selected Items",
+  "why_buy_item_2_source": {
+    "label": "why buy item 2",
+    "type": "text",
+    "formatted_value": "Carefully Selected Items"
+  },
+  "why_buy_item_3": "Fast Customer Support",
+  "why_buy_item_3_source": {
+    "label": "why buy item 3",
+    "type": "text",
+    "formatted_value": "Fast Customer Support"
+  },
+  "why_buy_item_4": "Secure Checkout",
+  "why_buy_item_4_source": {
+    "label": "why buy item 4",
+    "type": "text",
+    "formatted_value": "Secure Checkout"
+  },
+  "hero_desktop_image": "https://www.tkraft.in/wp-content/uploads/2026/08/ChatGPT20Image20May20162C2020262C2004_30_4920PM.png",
+  "hero_mobile_image": "https://www.tkraft.in/wp-content/uploads/2026/08/ChatGPT20Image20May20162C2020262C2004_30_4920PM.png",
+  "bundles_title": "Bundle & Save More",
+  "bundles_subtitle": "Equip your home with complete starter packs engineered for maximum utility and maximum savings.",
+  "budget_199_image": "https://www.tkraft.in/wp-content/uploads/2026/05/Gloss.jpeg"
+}

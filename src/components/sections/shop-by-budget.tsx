@@ -5,48 +5,58 @@ import Link from "next/link";
 import { ArrowRight, Sparkles, Tag, Layers, Zap, Gift } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export function ShopByBudgetSection() {
+interface ShopByBudgetSectionProps {
+  title?: string;
+  subtitle?: string;
+  data?: any;
+}
+
+export function ShopByBudgetSection({ title, subtitle, data }: ShopByBudgetSectionProps) {
   const budgetTiers = [
     {
-      title: "Under ₹199",
+      title: data?.budget_199_title || "Under ₹199",
       subtitle: "Pocket-Friendly Fixes",
       description: "Drill-free hooks, cable clips & essential home accessories",
       itemCount: "45+ Products",
       badge: "Best Value",
       href: "/shop?maxPrice=199",
+      image: data?.budget_199_image,
       bgColor: "from-orange-500/10 via-amber-500/5 to-transparent",
       borderColor: "hover:border-orange-500/40",
       icon: Tag,
     },
     {
-      title: "Under ₹299",
+      title: data?.budget_299_title || "Under ₹299",
       subtitle: "Smart Storage Organizers",
       description: "Transparent drawer dividers & daily utility holders",
       itemCount: "60+ Products",
       badge: "Most Popular",
       href: "/shop?maxPrice=299",
+      image: data?.budget_299_image,
       bgColor: "from-amber-500/10 via-orange-500/5 to-transparent",
       borderColor: "hover:border-amber-500/40",
       icon: Sparkles,
     },
     {
-      title: "Under ₹499",
+      title: data?.budget_499_title || "Under ₹499",
       subtitle: "Kitchen & Bath Systems",
       description: "Heavy-duty acrylic shelves & airtight pantry containers",
       itemCount: "85+ Products",
       badge: "Trending Deals",
       href: "/shop?maxPrice=499",
+      image: data?.budget_499_image,
       bgColor: "from-blue-500/10 via-indigo-500/5 to-transparent",
       borderColor: "hover:border-blue-500/40",
       icon: Layers,
     },
     {
-      title: "Under ₹999",
+      title: data?.budget_999_title || "Under ₹999",
       subtitle: "Multi-Tier Storage Units",
       description: "Space-maximizing trolleys, racks & wardrobe organizers",
       itemCount: "40+ Products",
       badge: "Premium Quality",
       href: "/shop?maxPrice=999",
+      image: data?.budget_999_image,
       bgColor: "from-purple-500/10 via-pink-500/5 to-transparent",
       borderColor: "hover:border-purple-500/40",
       icon: Zap,
@@ -58,6 +68,7 @@ export function ShopByBudgetSection() {
       itemCount: "25+ Packs",
       badge: "Max Savings",
       href: "/shop?onSale=true",
+      image: data?.budget_combo_image,
       bgColor: "from-emerald-500/10 via-teal-500/5 to-transparent",
       borderColor: "hover:border-emerald-500/40",
       icon: Gift,
@@ -74,10 +85,10 @@ export function ShopByBudgetSection() {
               High-Value Discovery
             </span>
             <h2 className="text-2xl md:text-3xl font-display font-extrabold text-[hsl(var(--color-text))]">
-              Shop By Budget
+              {title || "Shop By Budget"}
             </h2>
             <p className="text-xs md:text-sm text-[hsl(var(--color-text-muted))] mt-1 max-w-xl">
-              Curated everyday home & kitchen utility solutions priced for every household. Premium engineering without the luxury markup.
+              {subtitle || "Curated everyday home & kitchen utility solutions priced for every household. Premium engineering without the luxury markup."}
             </p>
           </div>
           <Link

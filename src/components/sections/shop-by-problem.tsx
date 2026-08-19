@@ -6,8 +6,14 @@ import Image from "next/image";
 import { ArrowRight, CheckCircle, ShieldAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export function ShopByProblemSection() {
-  const problemCards = [
+interface ShopByProblemSectionProps {
+  title?: string;
+  subtitle?: string;
+  data?: any;
+}
+
+export function ShopByProblemSection({ title, subtitle, data }: ShopByProblemSectionProps) {
+  const defaultCards = [
     {
       title: "Kitchen Made Easy",
       problem: "Cluttered Countertops & Spilled Spices",
@@ -40,13 +46,40 @@ export function ShopByProblemSection() {
       categorySlug: "storage-and-organization",
       badge: "Space Saver",
     },
+  ];
+
+  const problemCards = [
     {
-      title: "Car Care Essentials",
-      problem: "Scattered Trunk Cargo & Dusty Dashboards",
-      solution: "Heavy-duty trunk organizers & soft microfiber dusters",
-      image: "https://images.unsplash.com/photo-1507136566006-cfc505b114fe?auto=format&fit=crop&w=800&q=80",
-      categorySlug: "car-accessories",
-      badge: "On-the-Go",
+      title: data?.problem_1_title || defaultCards[0].title,
+      problem: data?.problem_1_problem || defaultCards[0].problem,
+      solution: data?.problem_1_solution || defaultCards[0].solution,
+      image: data?.problem_1_image || defaultCards[0].image,
+      categorySlug: "kitchen",
+      badge: "Kitchen Utility",
+    },
+    {
+      title: data?.problem_2_title || defaultCards[1].title,
+      problem: data?.problem_2_problem || defaultCards[1].problem,
+      solution: data?.problem_2_solution || defaultCards[1].solution,
+      image: data?.problem_2_image || defaultCards[1].image,
+      categorySlug: "cleaning-essential",
+      badge: "Zero Effort",
+    },
+    {
+      title: data?.problem_3_title || defaultCards[2].title,
+      problem: data?.problem_3_problem || defaultCards[2].problem,
+      solution: data?.problem_3_solution || defaultCards[2].solution,
+      image: data?.problem_3_image || defaultCards[2].image,
+      categorySlug: "bathroom-accessories",
+      badge: "Rental Friendly",
+    },
+    {
+      title: data?.problem_4_title || defaultCards[3].title,
+      problem: data?.problem_4_problem || defaultCards[3].problem,
+      solution: data?.problem_4_solution || defaultCards[3].solution,
+      image: data?.problem_4_image || defaultCards[3].image,
+      categorySlug: "storage-and-organization",
+      badge: "Space Saver",
     },
   ];
 
@@ -60,10 +93,10 @@ export function ShopByProblemSection() {
               Targeted Problem Solvers
             </span>
             <h2 className="text-2xl md:text-3xl font-display font-extrabold text-[hsl(var(--color-text))]">
-              Shop By Problem
+              {title || "Shop By Problem"}
             </h2>
             <p className="text-xs md:text-sm text-[hsl(var(--color-text-muted))] mt-1 max-w-xl">
-              Solve real household frustrations with thoughtfully engineered organizers that protect your walls and save time every single day.
+              {subtitle || "Solve real household frustrations with thoughtfully engineered organizers that protect your walls and save time every single day."}
             </p>
           </div>
           <Link
@@ -75,7 +108,7 @@ export function ShopByProblemSection() {
         </div>
 
         {/* Problem Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {problemCards.map((card, idx) => (
             <div
               key={idx}

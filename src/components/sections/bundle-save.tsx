@@ -7,7 +7,13 @@ import { ShoppingCart, Sparkles, Check, ArrowRight } from "lucide-react";
 import { formatPrice, getDiscountPercent } from "@/lib/utils";
 import { useCartStore, useUIStore } from "@/store";
 
-export function BundleSaveSection() {
+interface BundleSaveSectionProps {
+  title?: string;
+  subtitle?: string;
+  data?: any;
+}
+
+export function BundleSaveSection({ title, subtitle, data }: BundleSaveSectionProps) {
   const addItem = useCartStore((s) => s.addItem);
   const openCart = useCartStore((s) => s.openCart);
   const showToast = useUIStore((s) => s.showToast);
@@ -15,12 +21,12 @@ export function BundleSaveSection() {
   const bundles = [
     {
       id: "bundle_kitchen_starter",
-      title: "Kitchen Organization Starter Pack",
+      title: data?.bundle_1_title || "Kitchen Organization Starter Pack",
       subtitle: "Complete drill-free spice & jar storage setup",
       regularPrice: 1999,
       salePrice: 1299,
       saveAmount: 700,
-      image: "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=800&q=80",
+      image: data?.bundle_1_image || "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=800&q=80",
       itemsIncluded: [
         "4x Airtight Glass Pantry Jars (1000ml)",
         "1x SS304 Drill-Free Spice Rack",
@@ -30,12 +36,12 @@ export function BundleSaveSection() {
     },
     {
       id: "bundle_bathroom_caddy",
-      title: "Drill-Free Bathroom Caddy Set",
+      title: data?.bundle_2_title || "Drill-Free Bathroom Caddy Set",
       subtitle: "Corner shelf + towel bar + soap dispenser holder",
       regularPrice: 1599,
       salePrice: 999,
       saveAmount: 600,
-      image: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=800&q=80",
+      image: data?.bundle_2_image || "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=800&q=80",
       itemsIncluded: [
         "2x Heavy-Duty Corner Wall Shelves",
         "1x Stainless Steel Towel Bar",
@@ -45,18 +51,18 @@ export function BundleSaveSection() {
     },
     {
       id: "bundle_cleaning_express",
-      title: "Express Home Deep Clean Kit",
+      title: data?.bundle_3_title || "Express Home Deep Clean Kit",
       subtitle: "Window squeegee + groove brush + microfiber mop",
       regularPrice: 1299,
       salePrice: 799,
       saveAmount: 500,
-      image: "https://images.unsplash.com/photo-1583947215259-38e31be8751f?auto=format&fit=crop&w=800&q=80",
+      image: data?.bundle_3_image || "https://images.unsplash.com/photo-1583947215259-38e31be8751f?auto=format&fit=crop&w=800&q=80",
       itemsIncluded: [
-        "1x 360° Rotating Floor Squeegee",
-        "2x Multi-Surface Microfiber Cloths",
-        "1x Window & Groove Scrubber Tool",
+        "1x 360° Rotating Squeegee Mop",
+        "1x Window Sill Groove Cleaning Brush",
+        "2x Washable Microfiber Refill Pads",
       ],
-      badge: "Customer Choice",
+      badge: "Fast Shipping",
     },
   ];
 
@@ -108,10 +114,10 @@ export function BundleSaveSection() {
               <Sparkles className="h-4 w-4" /> Multi-Item Value Bundles
             </span>
             <h2 className="text-2xl md:text-3xl font-display font-extrabold text-[hsl(var(--color-text))]">
-              Bundle & Save More
+              {title || "Bundle & Save More"}
             </h2>
             <p className="text-xs md:text-sm text-[hsl(var(--color-text-muted))] mt-1 max-w-xl">
-              Equip your home with complete starter packs engineered for maximum utility and maximum savings.
+              {subtitle || "Equip your home with complete starter packs engineered for maximum utility and maximum savings."}
             </p>
           </div>
           <Link

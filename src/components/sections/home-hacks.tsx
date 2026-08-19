@@ -6,29 +6,35 @@ import Link from "next/link";
 import { ArrowRight, BookOpen, Lightbulb, Compass } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export function HomeHacksSection() {
+interface HomeHacksSectionProps {
+  title?: string;
+  subtitle?: string;
+  data?: any;
+}
+
+export function HomeHacksSection({ title, subtitle, data }: HomeHacksSectionProps) {
   const hacks = [
     {
-      title: "5 Kitchen Organization Hacks Every Small Apartment Needs",
+      title: data?.hack_1_title || "5 Kitchen Organization Hacks Every Small Apartment Needs",
       category: "Kitchen Tricks",
       readTime: "4 min read",
-      image: "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=800&q=80",
+      image: data?.hack_1_image || "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=800&q=80",
       excerpt: "Maximize cabinet space without drilling holes in rented walls using adhesive acrylic floating shelves.",
       blogSlug: "how-to-organize-small-kitchen-without-drilling",
     },
     {
-      title: "How to Keep Bathroom Tile Grout Mold-Free All Year",
+      title: data?.hack_2_title || "How to Keep Bathroom Tile Grout Mold-Free All Year",
       category: "Cleaning Tips",
       readTime: "3 min read",
-      image: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=800&q=80",
+      image: data?.hack_2_image || "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=800&q=80",
       excerpt: "Prevent moisture buildup behind wall racks using elevated slotted drainage caddies.",
       blogSlug: "tile-cleaning-mistakes-weak-adhesive-hooks",
     },
     {
-      title: "The Ultimate Closet Drawer Organization Guide",
+      title: data?.hack_3_title || "The Ultimate Closet Drawer Organization Guide",
       category: "Wardrobe Ideas",
       readTime: "5 min read",
-      image: "https://images.unsplash.com/photo-1595428774223-ef52624120d2?auto=format&fit=crop&w=800&q=80",
+      image: data?.hack_3_image || "https://images.unsplash.com/photo-1595428774223-ef52624120d2?auto=format&fit=crop&w=800&q=80",
       excerpt: "Categorize clothing, underwear, and accessories using transparent PET honeycomb grid dividers.",
       blogSlug: "storage-solutions-rental-apartments-guide",
     },
@@ -44,10 +50,10 @@ export function HomeHacksSection() {
               <Lightbulb className="h-4 w-4" /> Practical Ideas & Inspiration
             </span>
             <h2 className="text-2xl md:text-3xl font-display font-extrabold text-[hsl(var(--color-text))]">
-              Home Hacks & Guides
+              {title || "Home Hacks & Guides"}
             </h2>
             <p className="text-xs md:text-sm text-[hsl(var(--color-text-muted))] mt-1 max-w-xl">
-              Expert advice, maintenance tips, and room organization guides curated by our home utility specialists.
+              {subtitle || "Expert advice, maintenance tips, and room organization guides curated by our home utility specialists."}
             </p>
           </div>
           <Link
